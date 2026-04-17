@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+        .bg-425c7b { background: #425c7b; color: #fff; }
+        .bg-586f8b { background: #586f8b; color: #fff; }
+        .bg-d9e9e9 { background: #d9e9e9; }
+
+        main {
+            width: 100%;
+            background: #f7f7f7;
+            margin-left: 240px;
+        }
+        .pd {
+            border-top: 11px solid #f7f7f7;
+            position: fixed;
+            top: 62px;
+            width: 100%;
+            z-index: 999;
+        }
+        td, th {
+            height: 45px;
+            text-align: center;
+            font-size: 12pt;
+        }
+        tbody td {
+            border: 1px solid #d7d7d7;
+            background: #fff;
+        }
+        .scroll-container {
+            padding: 10px;
+        }
+        .scrolltable {
+            width: 100%;
+            border: 2px solid #cccccc;
+            color: #222222;
+        }
+        .nav__link {
+            display: flex;
+            align-items: center;
+            height: 64px;
+            padding-left: 25px;
+            border-left: 4px solid #2f425a;
+            cursor:pointer;
+        }
+        .active {
+            border-left: 4px solid #00bec2;
+            background: #293a4f;
+            color: #fff;
+            padding-left: 30px;
+        }
+        .bg-gray { background: #eaeaea; }
+
+        .link-btn {
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        .btn-css {
+            width: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+            height: 90%;
+            border-radius: 5px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);
+            transition: all 0.15s ease-in-out;
+            background: #fafafa;
+        }
+        .btn-css:hover {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+        }
+        section {
+            display: flex;
+            margin-top: 62px;
+        }
+        .nav_section {
+            width: 240px;
+            background: #2f425a;
+            color: #c3c3c3;
+            position: fixed;
+            height: 100%;
+        }
+        .icon-image {
+            margin-right: 10px;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            margin-top: 62px;
+            padding: 20px;
+        }
+
+        .card-box {
+            background:#fff;
+            border-radius:8px;
+            padding:16px 20px;
+            box-shadow:0 1px 3px rgba(0,0,0,0.08);
+            margin-bottom:16px;
+        }
+        .card-box h2 {
+            margin:0 0 10px;
+            font-size:18px;
+        }
+        .card-box p {
+            margin:0 0 8px;
+            font-size:13px;
+            color:#666;
+        }
+        .card-box form {
+            margin-top:10px;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{Include/layout :: header}"></div>
+<div th:replace="~{Include/layout :: nav_section}"></div>
+
+<div class="main-content">
+    <!-- KPI 템플릿 다운로드 -->
+    <div class="card-box">
+        <h2>KPI 템플릿 다운로드</h2>
+        <p>kpi_info_2025 테이블에 맞는 엑셀 양식을 다운로드합니다.</p>
+        <form th:action="@{/excel/kpi/template}" method="get" class="scroll-container">
+            <button type="submit" class="btn-css" style="width:auto;padding:0 20px;">
+                템플릿 다운로드
+            </button>
+        </form>
+    </div>
+
+    <!-- KPI 엑셀 업로드 -->
+    <div class="card-box">
+        <h2>KPI 엑셀 업로드</h2>
+        <p>
+            · 엑셀을 여러 번 업로드해도 <b>기존 데이터는 삭제되지 않고 누적</b>됩니다.<br>
+            · 한 번에 3개가 아니라, <b>파일을 3번 나눠서 업로드</b>하면 됩니다. (각 업로드마다 INSERT만 수행)
+        </p>
+        <form class="scroll-container"
+              th:action="@{/excel/kpi/upload}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <input type="file"
+                   name="file"
+                   accept=".xlsx"
+                   required>
+
+            <!-- 필요하면 year 사용 (컨트롤러에서 model에 year 넣어줄 때) -->
+            <input type="hidden" name="year" th:value="${year}"/>
+
+            <button type="submit" class="btn-css" style="width:auto;padding:0 20px;margin-left:8px;">
+                엑셀 업로드
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<div th:replace="~{Include/layout :: scripts}"></div>
+<script th:src="@{/js/admin/admin.js}"></script>
+
+<!-- 스피너 오버레이 -->
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+
+</body>
+</html>

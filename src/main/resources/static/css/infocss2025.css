@@ -1,0 +1,165 @@
+@charset "UTF-8";
+/* 2025 login page responsive design */
+/* Small devices (tablets) */
+@media screen and (max-width: 767px) {
+  /** Mobile */
+  .main-content {
+    margin-left: 0;
+  }
+  .info-container {
+    margin: 0 5%;
+  }
+  .info_name {
+    font-size: 4rem;
+  }
+  .info_id {
+    font-size: 3rem;
+  }
+  .info_hs {
+    font-size: 2.6rem;
+  }
+  .info_date {
+    font-size: 2.6rem;
+  }
+  .target_text {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 80px;
+  }
+  .target_text .notice {
+    width: 100%;
+    justify-content: center;
+    height: 40px;
+    align-items: center;
+  }
+  .target_text img {
+
+  }
+  .target_text span {
+    font-size: 2.2rem;
+  }
+  .quick {
+    width: 100%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+  }
+  .target_container {
+    margin: 0;
+    padding: 0 0 100px;
+  }
+  .target_header span {
+    font-size: 2.2rem;
+}
+  .target_section {
+    padding: 5px;
+  }
+  th, td {
+
+  }
+  .td1, .td2, .td3, .td4, .td5, .td6, .td7, .td8 {
+    padding: 10px 5px 10px 5px;
+    font-size: 1.5rem;
+  }
+  td {
+
+  }
+}
+
+@media all and (min-width: 768px) and (max-width: 1023px) {
+  /** Tablet  */
+}
+
+@media all and (max-width: 1023px) {
+  /** Mobile & Tablet  */
+}
+/* =========================
+   모바일 전용: 성명(5열)만 왼쪽 고정 + 평가/수정(8열)만 오른쪽 고정
+   ========================= */
+@media (max-width: 768px){
+  /* 섹션/컨테이너는 스크롤 안 만짐 */
+  .target_section{ overflow: visible !important; }
+  .target_container{ overflow: visible; }
+
+  /* ✅ 표만 스크롤: sticky 기준이 되는 유일한 스크롤 조상 */
+  .table-scroll{
+    position: relative;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 표는 정상 table 레이아웃 유지 */
+  .targettb{
+    width: 100%;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    table-layout: fixed !important;
+    min-width: 100%;                 /* 가로 스크롤 허용 */
+  }
+
+  /* 헤더/본문 배경 고정 */
+  .targettb thead th{
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #1b304a !important;
+    color: #fff !important;
+    background-clip: padding-box;
+  }
+  .targettb tbody td{
+    background: #fff !important;
+    background-clip: padding-box;
+    white-space: nowrap;
+  }
+
+  :root{
+    --w1: 30px;    /* 순번 */
+    --w2: 88px;   /* 부서명 */
+    --w3: 53px;   /* 사번 */
+    --w4: 85px;    /* 직급 */
+    --w5: 45px;   /* 성명(← 고정) */
+    --w6: 62px;   /* 진행률 */
+    --w7: 54px;   /* 점수  */
+    --w8: 72px;   /* 평가/수정(→ 고정) */
+  }
+
+  .targettb thead th.td1, .targettb tbody td:nth-child(1){ width: var(--w1); min-width: var(--w1); }
+  .targettb thead th.td2, .targettb tbody td:nth-child(2){ width: var(--w2); min-width: var(--w2); }
+  .targettb thead th.td3, .targettb tbody td:nth-child(3){ width: var(--w3); min-width: var(--w3); }
+  .targettb thead th.td4, .targettb tbody td:nth-child(4){ width: var(--w4); min-width: var(--w4); }
+  .targettb thead th.td5, .targettb tbody td:nth-child(5){ width: var(--w5); min-width: var(--w5); }
+  .targettb thead th.td6, .targettb tbody td:nth-child(6){ width: var(--w6); min-width: var(--w6); }
+  .targettb thead th.td7, .targettb tbody td:nth-child(7){ width: var(--w7); min-width: var(--w7); }
+  .targettb thead th.td8, .targettb tbody td:nth-child(8){ width: var(--w8); min-width: var(--w8); }
+
+  /* ✅ 좌측 고정: 5열(성명) */
+  .targettb thead th:nth-child(5),
+  .targettb tbody td:nth-child(5){
+    position: sticky;
+    /* left: calc(var(--w1) + var(--w2) + var(--w3) + var(--w4)); */
+    z-index: 15; /* 헤더보다 낮게면 14, 높게면 16 */
+    box-shadow: 6px 0 8px -6px rgba(0,0,0,.12);
+    background: inherit; /* th/td 각각의 배경 유지 */
+  }
+
+  /* ✅ 우측 고정: 8열(평가/수정) */
+  .targettb thead th:nth-child(8),
+  .targettb tbody td:nth-child(8){
+    position: sticky;
+    right: 0;
+    z-index: 33;
+    box-shadow: -6px 0 8px -6px rgba(0,0,0,.12);
+    background: inherit;
+  }
+
+  /* 버튼 줄바꿈 방지 */
+  .form-btn, .modify-btn{
+    display:inline-block;
+    min-width: calc(var(--w8) - 24px);
+    text-align:center;
+  }
+
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table class="tbl">
+  <thead>
+  <tr>
+    <th>No</th>
+    <th th:each="i : ${#numbers.sequence(1,82)}"
+        th:text="${'kcol' + (i<10 ? '0'+i : i)}"></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="row,idx : ${rows}">
+    <td th:text="${idx.index + 1}"></td>
+    <td th:each="i : ${#numbers.sequence(1,82)}"
+        th:text="${row['kcol' + (i<10 ? '0'+i : i)]}"></td>
+  </tr>
+  </tbody>
+</table>
+
+<form th:action="@{/aff/excel/kpi/confirm}" method="post">
+  <label>
+    <input type="checkbox" name="reset" checked> 기존 데이터 삭제 후 저장
+  </label>
+  <button type="submit">DB 저장</button>
+</form>
+</body>
+</html>

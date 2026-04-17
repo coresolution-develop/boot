@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">  
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+  <style>
+    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    .card{
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+    }
+    .card h2 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    color: #2a384a;
+  }
+  .compact .card h2 {
+    font-size: 18px;
+  }
+    .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0%;background: #2a7bff;}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align: center;}
+    .right{text-align:right}
+    input[type=text], input[type=number], select {
+      height: 32px;
+      padding: 6px 10px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      box-sizing: border-box;
+    font-size: 12px;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+  }
+  .toolbar-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .toolbar-left input[type=text], .toolbar-left select {
+    height: 36px;
+    padding: 6px 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  .compact .toolbar input[type=text], .compact .toolbar select {
+    height: 32px;
+    font-size: 12px;
+  }
+  #kTotal, #kDone, #kProg {
+    font-size: 14px;
+    font-weight: bold;
+  }
+    @media (max-width:920px){ .kpis{grid-template-columns:1fr} }
+
+/* 카드 등장 애니메이션 */
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 초기 상태: 보이지 않게 */
+.card {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+/* 페이지 준비되면 실행 */
+.page-ready .card {
+  animation: card-rise .32s ease-out both;
+}
+
+/* 여러 카드가 있으면 살짝씩 지연 (스태거) */
+.page-ready .card:nth-of-type(2) { animation-delay: .05s; }
+.page-ready .card:nth-of-type(3) { animation-delay: .10s; }
+.page-ready .card:nth-of-type(4) { animation-delay: .15s; }
+
+/* 모션 최소화 환경에선 애니메이션 비활성화 */
+@media (prefers-reduced-motion: reduce) {
+  .card, .page-ready .card { animation: none !important; opacity: 1; transform: none; }
+}
+  </style>
+</head>
+<body class="page-ready">
+    <div th:replace="~{Include/layout :: header}"></div>
+    <div th:replace="~{Include/layout :: nav_section}"></div>
+    <div class="main-content compact">
+        <div class="main-inner">
+            <div class="card">
+                <div class="intro">
+                  <h2>기관별 평가 진행률</h2>
+                </div>
+                <form id="f" style="display: flex; align-items: center; gap: 10px;">
+                  <div class="toolbar">
+                      <div class="toolbar-left">
+                        <label>연도 <input type="number" name="year" th:value="${year}"></label>
+                        <!-- <label>EV
+                            <select name="ev" th:value="${ev}">
+                            <option>ALL</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
+                            </select>
+                        </label> -->
+                        <label>검색 <input type="text" name="search" th:value="${search}" placeholder="기관명"></label>
+                        <button class="white-btn" type="submit" style="height: 32px;">조회</button>
+                        <!-- <button type="button" id="btnCsv">CSV</button> -->
+                      </div>
+                  </div>
+                </form>
+            </div>
+
+            <div class="kpis">
+                <div class="card"><div><h2>총 평가 수</h2></div><div id="kTotal" class="right">-</div></div>
+                <div class="card"><div><h2>평가완료</h2></div><div id="kDone" class="right">-</div></div>
+                <div class="card"><div><h2>평균 진행률</h2></div><div id="kProg" class="right">-</div></div>
+            </div>
+
+            <div class="card">
+                <table id="tbl">
+                <thead>
+                <tr>
+                    <th>기관명</th>
+                    <th>총 평가 수</th>
+                    <th>완료</th>
+                    <th>미완료</th>
+                    <th style="width:220px">진행률</th>
+                    <th>업데이트</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  
+
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+	<div th:replace="~{Include/layout :: scripts}"></div>
+  <script>
+  const fmt = n => n?.toLocaleString?.('ko-KR') ?? n;
+  const form = document.getElementById('f');
+  const tbody = document.querySelector('#tbl tbody');
+  const spinnerOverlay = document.getElementById('spinner-overlay');  // 이름도 살짝 다르게
+
+  const showOrgSpinner = () => {          // 이름 변경
+    spinnerOverlay?.classList.add('show');
+  };
+
+  const hideOrgSpinner = () => {          // 이름 변경
+    spinnerOverlay?.classList.remove('show');
+  };
+
+  function load(page = 1) {
+    const p = new URLSearchParams(new FormData(form));
+    p.set('page', page);
+    p.set('size', 20);
+
+    showOrgSpinner(); // 로딩 시작
+
+    fetch('/api/admin/progress/org?' + p.toString())
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('kTotal').textContent = fmt(d.summary.totalPairs);
+        document.getElementById('kDone').textContent  = fmt(d.summary.completedPairs);
+        document.getElementById('kProg').textContent  = (d.summary.progress || 0) + '%';
+
+        tbody.innerHTML = '';
+        d.rows.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.orgName}</td>
+            <td>${fmt(r.totalPairs)}</td>
+            <td>${fmt(r.completedPairs)}</td>
+            <td>${fmt(r.pendingPairs)}</td>
+            <td>
+              <div class="progress"><div class="bar" style="width:${r.progress}%"></div></div>
+              <div class="right">${r.progress}%</div>
+            </td>
+            <td>${r.updatedAt ?? ''}</td>`;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(e => {
+        alert('로드 실패: ' + e);
+      })
+      .finally(() => {
+        hideOrgSpinner(); // 성공/실패 상관없이 마지막에 스피너 종료
+      });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    load(1);
+  });
+
+  // 첫 진입 시 자동 로딩
+  load(1);
+</script>
+</body>
+</html>

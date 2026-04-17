@@ -1,0 +1,23 @@
+@charset "UTF-8";
+
+#result {
+	width: 100%;
+}
+
+.login > div {
+	display: flex;
+	border-bottom: 2px solid #111;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.login > div img {
+	width: 15px;
+	height: 30px;
+}
+.login > div h2 {
+	position: relative;
+	right: 50%;
+	translate: 50%;
+	border-bottom: none;
+}

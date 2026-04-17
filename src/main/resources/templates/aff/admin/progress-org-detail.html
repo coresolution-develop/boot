@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+  th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/aff/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+  <style>
+    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+    
+    .card{
+      background: #fff;
+      border: 1px solid #e9ecef;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+    }
+    .card h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    color: #2a384a;
+  }
+  .compact .card h2 {
+    font-size: 18px;
+  }
+    .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0%;background: #2a7bff;}
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout: auto;
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    th,td{padding:10px;border-bottom:1px solid #eee;text-align: center;font-size: 12px;}
+    .right{text-align:right}
+    input[type=text], input[type=number], select {
+      height: 32px;
+      padding: 6px 10px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      box-sizing: border-box;
+    font-size: 12px;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+  }
+  .toolbar-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .toolbar-left input[type=text], .toolbar-left select {
+    height: 36px;
+    padding: 6px 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    box-sizing: border-box;
+  }
+  .compact .toolbar input[type=text], .compact .toolbar select {
+    height: 32px;
+    font-size: 12px;
+  }
+  #kTotal, #kDone, #kProg {
+    font-size: 14px;
+    font-weight: bold;
+  }
+    @media (max-width:920px){ .kpis{grid-template-columns:1fr} }
+
+    .progress{height:10px;background:#eee;border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0%;background: #2a7bff;}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #eee; text-align: center;}
+    .right{text-align:right}
+    .tag{display:inline-block;padding:2px 8px;border-radius:999px;border:1px solid #ccc;font-size:12px}
+    .link{color:#0366d6;cursor:pointer}
+    input[type=text], input[type=number], select {
+      height: 32px;
+      padding: 6px 10px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+    @media (max-width:920px){ .kpis{grid-template-columns:1fr} }
+
+/* 카드 등장 애니메이션 */
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 초기 상태: 보이지 않게 */
+.card {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+/* 페이지 준비되면 실행 */
+.page-ready .card {
+  animation: card-rise .32s ease-out both;
+}
+
+/* 여러 카드가 있으면 살짝씩 지연 (스태거) */
+.page-ready .card:nth-of-type(2) { animation-delay: .05s; }
+.page-ready .card:nth-of-type(3) { animation-delay: .10s; }
+.page-ready .card:nth-of-type(4) { animation-delay: .15s; }
+
+/* 모션 최소화 환경에선 애니메이션 비활성화 */
+@media (prefers-reduced-motion: reduce) {
+  .card, .page-ready .card { animation: none !important; opacity: 1; transform: none; }
+}
+/* 스크롤 카드 컨테이너 */
+.scroll-card {
+  overflow: auto;                 /* 세로/가로 모두 대응 */
+  height: calc(100% - 218px);     /* 기존 높이 유지 */
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+}
+
+/* sticky가 안정적으로 동작하도록 separate 권장 */
+.scroll-card table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* 헤더 고정 */
+.scroll-card thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;                     /* 본문 셀 위로 */
+  background: #fff;               /* 투명 배경 방지 */
+  /* 살짝 그림자 주면 고정 느낌 좋음(선택) */
+  box-shadow: 0 1px 0 0 #e9ecef, 0 2px 6px rgba(0,0,0,.03);
+}
+
+/* 첫 행/첫 열 경계선 유지(옵션) */
+.scroll-card th, .scroll-card td {
+  border-bottom: 1px solid #eee;
+}
+
+/* (옵션) 첫 번째 컬럼도 고정하고 싶다면 주석 해제 
+#tbl th:first-child,
+#tbl td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;       
+  background: #fff;
+  box-shadow: 1px 0 0 #e9ecef;
+}
+*/
+
+/* iOS 사파리 스크롤 부드럽게(옵션) */
+.scroll-card {
+  -webkit-overflow-scrolling: touch;
+  height: 100%;
+}
+.scroll-card{ position: relative; overflow:auto; }
+.scroll-card table{ border-collapse: separate; border-spacing:0; }
+
+.scroll-card thead{ position: sticky; top:0; z-index:3; background:#fff; }
+.scroll-card thead th{
+  position: sticky; top:0; z-index:4;
+  background:#fff;                 /* 투명 X */
+  box-shadow: 0 1px 0 #e9ecef, 0 2px 6px rgba(0,0,0,.03); /* 경계감 */
+}
+.table-card { padding: 0; height: calc(100% - 218px);}                 /* 테이블 카드 패딩 제거(선택) */
+.table-wrap { display: flex; flex-direction: column; height: 100%;}
+
+/* 헤더는 고정, 그림자/경계 */
+.tbl-head thead th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 1px 0 #e9ecef, 0 2px 6px rgba(0, 0, 0, .03);
+  border: none;
+}
+
+.tbl { width:100%; border-collapse: separate; border-spacing:0; table-layout: fixed; }
+.tbl th,.tbl td { padding:10px; border-bottom:1px solid #eee; text-align:center; font-size:12px; }
+.tbl tr:last-child {
+  border-bottom: none;
+}
+.tbl tr:last-child td{
+  border-bottom: none;
+}
+/* tbody만 스크롤 */
+.tbody-scroll{
+  flex: 1 1 auto;
+  overflow: auto;                     /* ← 스크롤바는 여기만 생김 */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 진행률 칸 등 기존 스타일 유지 */
+.progress{height:10px;background:#eee;border-radius:999px;overflow:hidden}
+.bar{height:100%;width:0;background:#2a7bff}
+  </style>
+</head>
+<body class="page-ready">
+
+  <div th:replace="~{Include/afflayout :: header}"></div>
+  <div th:replace="~{Include/afflayout :: nav_section}"></div>
+  <div class="main-content">
+      <div class="main-inner" style="height: 100%;">
+        <div class="card" style="height: 101px;">
+          <div class="intro">
+            <h2 h1 th:text="'기관별 진행률 - ' + ${org}"></h2>
+          </div>
+          <form id="f" style="display: flex; align-items: center; gap: 10px;">
+            <input type="hidden" name="org" th:value="${org}">
+            <label>연도 <input type="number" name="year" th:value="${year}"></label>
+            <!-- <label>EV
+              <select name="ev" th:value="${ev}">
+                <option>ALL</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option>
+              </select>
+            </label> -->
+            <label>검색 <input type="text" name="search" th:value="${search}" placeholder="사번/이름"></label>
+            <button class="white-btn" type="submit" style="height: 32px;">조회</button>
+          </form>
+        </div>
+
+        <div class="kpis" style="height: 107px;">
+          <div class="card"><div><h2>대상수 합계</h2></div><div id="kNeed" class="right">-</div></div>
+          <div class="card"><div><h2>완료 합계</h2></div><div id="kDone" class="right">-</div></div>
+          <div class="card"><div><h2>평균 진행률</h2></div><div id="kProg" class="right">-</div></div>
+        </div>
+
+        <!-- <div class="card" style="height: calc(100% - 218px);">
+          <div class="scroll-card" style="overflow-y: scroll; ">
+            <table id="tbl">
+              <thead>
+              <tr>
+                <th>사번</th>
+                <th>이름</th>
+                <th>직책</th>
+                <th>부서</th>     
+                <th>대상수</th>
+                <th>완료</th>
+                <th>미완료</th>
+                <th style="width:220px">진행률</th>
+                <th>업데이트</th>
+              </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div> -->
+        <div class="card table-card">
+  <div class="table-wrap">
+    <!-- 헤더 테이블 (스크롤 없음) -->
+    <table class="tbl tbl-head">
+      <colgroup>
+        <col style="width:10%"><col style="width:10%"><col style="width:10%">
+        <col style="width:16%"><col style="width:8%"><col style="width:8%">
+        <col style="width:8%"><col style="width:20%"><col style="width:10%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>사번</th>
+          <th>이름</th>
+          <th>직책</th>
+          <th>부서</th>
+          <th>대상수</th>
+          <th>완료</th>
+          <th>미완료</th>
+          <th>진행률</th>
+          <th>업데이트</th>
+        </tr>
+      </thead>
+    </table>
+
+    <!-- 바디 스크롤 영역 -->
+    <div class="tbody-scroll">
+      <table class="tbl tbl-body">
+        <colgroup>
+          <!-- 위와 동일한 colgroup 반드시 복사 -->
+          <col style="width:10%"><col style="width:10%"><col style="width:10%">
+          <col style="width:16%"><col style="width:8%"><col style="width:8%">
+          <col style="width:8%"><col style="width:20%"><col style="width:10%">
+        </colgroup>
+        <tbody id="tbl-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+      </div>
+  </div>
+  <!-- 간단 모달 -->
+  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);">
+    <div style="background:#fff;max-width:640px;margin:8% auto;padding:16px;border-radius:12px">
+      <h3>미완료 페어</h3>
+      <div id="modal-body"></div>
+      <div style="text-align:right;margin-top:10px"><button id="modal-close">닫기</button></div>
+    </div>
+  </div>
+
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+	<div th:replace="~{Include/afflayout :: scripts}"></div>
+ <script>
+  const fmt   = n => n?.toLocaleString?.('ko-KR') ?? n;
+  const form  = document.getElementById('f');
+  const tbody = document.getElementById('tbl-body'); // 기존 '#tbl tbody' 대신
+  const modal = document.getElementById('modal');
+  const modalBody = document.getElementById('modal-body');
+  document.getElementById('modal-close').onclick = () => modal.style.display='none';
+
+  // 🔹 이 페이지 전용 스피너 제어 함수 (이름 겹치지 않게)
+  const spinnerOverlay = document.getElementById('spinner-overlay');
+  const showOrgSpinner = () => { spinnerOverlay?.classList.add('show'); };
+  const hideOrgSpinner = () => { spinnerOverlay?.classList.remove('show'); };
+
+  function load() {
+    const p = new URLSearchParams(new FormData(form)); // page/size 없음
+
+    showOrgSpinner();   // ✅ 로딩 시작 시 스피너 ON
+
+    fetch('/aff/api/admin/progress/org/members?' + p.toString())
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('kNeed').textContent = fmt(d.summary.needPairs);
+        document.getElementById('kDone').textContent = fmt(d.summary.donePairs);
+        document.getElementById('kProg').textContent = (d.summary.progress || 0) + '%';
+
+        tbody.innerHTML = '';
+        d.rows.forEach(r => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${r.targetId}</td>
+            <td>${r.targetName}</td>
+            <td>${r.position || ''}</td>
+            <td>${r.deptName || ''} <span style="color:#999">(${r.subCode || ''})</span></td>
+            <td>${fmt(r.needPairs)}</td>
+            <td>${fmt(r.donePairs)}</td>
+            <td>${fmt(r.pendingPairs)}</td>
+            <td>
+              <div class="progress"><div class="bar" style="width:${r.progress}%"></div></div>
+              <div class="right">${r.progress}%</div>
+            </td>
+            <td>${r.updatedAt ?? ''}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(e => {
+        alert('로드 실패: ' + e);
+      })
+      .finally(() => {
+        hideOrgSpinner(); // ✅ 성공/실패 상관없이 마지막에 스피너 OFF
+      });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    load();
+  });
+
+  // 첫 진입 시 자동 로드
+  load();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login"> <!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">
+    <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+    <title></title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/demoinfocss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/pwdset.css?ver=0226}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+
+    @media (max-width: 1024px){
+        section {
+            width: 100%;
+            height: 100%;
+            position: inherit;
+            transform: none;
+        }
+        .login {
+            align-items: normal;
+            margin: 0;
+        }
+        .line {
+            width: 100%;
+            background: #1b304a;
+            height: 9px;
+            position: relative;
+            top: 0;
+            left: 0;
+        }
+        .login-head {
+            margin-top: 40px;
+        }
+        .normal {
+            margin: 35px 5px 0 5px;
+        }
+        input[type=text], input[type=password], button {
+            width: 100%;
+        }
+        button {
+            width: 100%;
+        }
+        .modal_body {
+            left: 50%;
+        }
+        .modal.show {
+            margin: 0;
+        }
+    }
+
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{Include/layout :: header}"></div>
+    <div th:replace="~{Include/layout :: nav_section2}"></div>
+
+    <main class="main-content">
+        <form id="frm" th:action="@{/pwdAction}" method="post">
+            <input type="hidden" name="idx" id="idx" th:value="${idx}">
+            <section>
+                <div class="login">
+                    <div class="line"></div>
+                    <div class="login-head">
+                        <div class="head-span-area">
+                            <span class="bold">비밀번호 변경</span>
+                        </div>
+                    </div>
+                    
+                    <ul class="normal">
+                        <li><input type="text" name="id" id="id" placeholder="사번" title="사번" readonly="readonly" th:value="${id}"></li>
+                        <li><input type="text" name="name" id="name" placeholder="이름" title="이름" readonly="readonly" th:value="${name}"></li>
+                        <li><input type="password" name="pwd" id="pwd" placeholder="비밀번호" title="비밀번호" autofocus="autofocus"></li>
+                        <li><input type="password" name="pwd2" id="pwd2" placeholder="비밀번호확인" title="비밀번호확인"></li>
+                        <li><button class="bold" type="button" id="btn" value="">비밀번호 변경</button></li>			
+                    </ul>
+                </div>
+            </section>
+            <div class="modal normal">
+                <div class="modal_body">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg">text</div>
+                        <div class="modal_footer">
+                            <div class="btn modal_btn" onclick="closePopup()">
+                                확인
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal2 normal">
+                <div class="modal_body2">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg2">text</div>
+                        <div class="modal_footer2">
+                            <div class="btn modal_btn2" onclick="closePopup2()">
+                                확인
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal3 normal">
+                <div class="modal_body3">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg3">text</div>
+                        <div class="modal_footer3">
+                            <div class="btn modal_btn2" onclick="modal_insert()">
+                                확인
+                            </div>
+                            <div class="btn pink_btn2" onclick="closePopup3()">
+                                취소
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal4 normal">
+                <div class="modal_body4">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg4">text</div>
+                        <div class="modal_footer4">
+                            <div class="btn modal_btn2" onclick="modal_insert()">
+                                확인
+                            </div>
+                            <div class="btn pink_btn2" onclick="closePopup4()">
+                                취소
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script th:replace="~{Include/layout :: scripts}"></script>
+    <!-- 평가 페이지에서 쓰는 동일 JS 재사용 -->
+    <script th:src="@{/js/user/pwdset.js(v=${#dates.createNow().time})}" defer></script>
+</body>
+
+</html>

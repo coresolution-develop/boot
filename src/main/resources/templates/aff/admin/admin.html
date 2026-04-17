@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+.bg-425c7b {
+	background: #425c7b;
+	color: #fff;
+}
+.bg-586f8b {
+	background: #586f8b;
+	color: #fff;
+}
+.bg-d9e9e9 {
+	background: #d9e9e9;
+}/* 
+.tr-bottom::before {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-bottom: 1px solid #cccccc;
+} */
+main {
+	width: 100%;
+	background: #f7f7f7;
+	margin-left: 240px;
+}
+.pd {
+	border-top: 11px solid #f7f7f7;
+	position: fixed;
+	top: 62px;
+	width: 100%;
+	z-index: 999;
+}
+td, th {/* 
+	border: 1px solid #d7d7d7; */
+	height: 45px;
+	text-align: center;/*
+	border-right: 1px solid #d7d7d7; 
+	border-bottom: 1px solid #d7d7d7; */
+	font-size: 12pt;
+}
+tbody td {
+	border: 1px solid #d7d7d7;
+	background: #fff;
+}
+.lasttd {/* 
+	border-right:1px solid #d7d7d7;
+	border-bottom:1px solid #d7d7d7; */
+}
+
+.scroll-container {
+	padding: 10px; 
+}
+.scrolltable {
+	width: 100%;
+	border: 2px solid #cccccc;
+	color: #222222;
+}
+.sticky-top {
+	position: -webkit-sticky;
+    position: sticky;
+    top: 72px;
+    z-index: 2; /* 높은 z-index 값을 설정 */
+}
+.sticky-top::before {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-bottom: 1px solid #d7d7d7;
+    border-right: 1px solid #d7d7d7;
+}
+.sticky-top:nth-child(1)::before {
+	border-right: 1px solid #cccccc;	
+}
+.sticky-top:nth-child(2)::before {
+	border-left: 1px solid #cccccc;	
+}
+.sticky-middle {
+	position: -webkit-sticky;
+    position: sticky;
+    top: 117px;
+    z-index: 2;
+}
+.sticky-middle::before {
+	content: "";
+	position: absolute;
+	top: -1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-top: 1px solid #d7d7d7;
+    border-right: 1px solid #d7d7d7;
+}
+.sticky-middle:nth-child(4)::before {
+	border-right: 1px solid #cccccc;
+}
+.sticky-bottom {
+	position: -webkit-sticky;
+    position: sticky;
+    top: 162px;
+    z-index: 2;
+    color: #222222;
+}
+.sticky-bottom::before {
+	content: "";
+	position: absolute;
+	top: 0px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-top: 2px solid #d7d7d7;
+    border-right: 1px solid #d7d7d7;
+	border-bottom: 2px solid #cccccc;
+}
+.sticky-bottom:nth-child(2)::before {
+	border-left: 1px solid #cccccc;
+}
+tbody th, tbody td {
+    position: relative; /* 상대 위치 설정 */
+    z-index: 1; /* 낮은 z-index 값을 설정 */
+}
+tbody td::before {
+    border-right: 1px solid #d7d7d7;
+	border-bottom: 1px solid #d7d7d7;
+}
+.scrolltable > thead{
+	color: #fff;
+}
+.scrolltable td:nth-child(4) {
+	border-right: 2px solid #ccc;
+}
+.nav__link {
+	display: flex;
+	align-items: center;
+	height: 64px;
+	padding-left: 25px;
+	border-left: 4px solid #2f425a;
+	cursor:pointer;
+}
+.active {
+	border-left: 4px solid #00bec2;
+	background: #293a4f;
+	color: #fff;
+	padding-left: 30px;
+	
+}
+.bg-gray {
+	background: #eaeaea;
+}
+.infotable {
+	width: 100%;
+	border: 2px solid #cccccc;
+}
+.infotable > thead > tr > th {
+	background: #425c7b;
+	color: #fff;
+	border: 1px solid #d7d7d7;
+	border-bottom: 2px solid #ccc;
+}
+.pointer {
+	cursor: pointer;
+}
+.info-sticky-top::before {
+	content: "";
+	border-bottom: 2px solid #ccc;
+}
+.link-btn {
+	cursor: pointer;
+	width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.btn-css {
+	width: 90%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 1px solid #ddd;
+	height: 90%;
+	border-radius: 5px;
+	box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);
+	-webkit-transition: all 0.15s ease-in-out;
+	-moz-transition: all 0.15s ease-in-out;
+	-ms-transition: all 0.15s ease-in-out;
+	-o-transition: all 0.15s ease-in-out;
+	transition: all 0.15s ease-in-out;
+	background: #fafafa;
+}
+.btn-css:hover {
+	-webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	-moz-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	-ms-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	-o-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+}
+section {
+	display: flex;
+	margin-top: 62px;
+}
+.nav_section {
+    width: 240px;
+    background: #2f425a;
+    color: #c3c3c3;
+    position: fixed;
+    height: 100%;
+}
+.icon-image {
+	margin-right: 10px;
+}
+
+    </style>
+</head>
+<body>
+    <div th:replace="~{Include/layout :: header}"></div>
+    <div th:replace="~{Include/layout :: nav_section}"></div>
+    <div class="main-content">
+        <form th:action="@{/excel/downloadTemplate}" method="get" class="scroll-container">
+			<div></div>
+            <button type="submit">템플릿 다운로드</button>
+        </form>
+		<form class="scroll-container" th:action="@{/admin/upload}" method="post" enctype="multipart/form-data">
+			<input type="file" name="file" accept=".xlsx, .xls">
+			<input type="hidden" name="year" id="uploadYear" value="" />
+			<button type="submit">엑셀 업로드</button>
+
+
+		</form>
+
+    </div>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+	<div th:replace="~{Include/layout :: scripts}"></div>
+    <script th:src="@{/js/admin/admin.js}"></script>
+
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+</body>
+</html>

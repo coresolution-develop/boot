@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${title != null ? title : '접근 제한'}">접근 제한</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <style>
+    .wrap {max-width:720px; margin:80px auto; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:28px; text-align:center;}
+    h2{margin:0 0 8px 0;}
+    .desc{color:#6b7280; margin-bottom:10px; line-height:1.6;}
+    .date{font-weight:600; margin:14px 0 8px;}
+    .meta{color:#6b7280; font-size:12px; margin-left:6px;}
+    .count{font-feature-settings:"tnum"; font-variant-numeric:tabular-nums; color:#111827; margin:12px 0 18px; font-weight:700;}
+    .btns{display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap;}
+    .btn{display:inline-block; padding:10px 16px; border:1px solid #d1d5db; border-radius:8px; background:#fff; cursor:pointer;}
+    .btn.primary{background:#111827; color:#fff; border-color:#111827;}
+    .badge{display:inline-block; padding:4px 10px; border-radius:999px; font-size:12px; border:1px solid #e5e7eb; color:#374151; margin-bottom:10px;}
+    .muted{color:#6b7280;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 상태 배지 -->
+  <div class="badge" th:text="${gateStatus}">BEFORE_OPEN</div>
+
+  <!-- 제목/문구 분기 -->
+  <div th:switch="${gateStatus}">
+    <!-- 공개 전 -->
+    <div th:case="'BEFORE_OPEN'">
+      <h2>아직 열리지 않았습니다</h2>
+      <p class="desc" th:text="|요청하신 연도(${year})는 공개일 이후에 이용할 수 있습니다.|"></p>
+
+      <p class="date">
+        공개 예정일:
+        <span th:text="${openAtText != null ? openAtText : '미정'}">미정</span>
+        <small class="meta" th:text="${tz != null ? tz : 'KST (UTC+9)'}">KST (UTC+9)</small>
+      </p>
+
+      <p id="countdown" class="count" th:if="${openAtIso != null}">--일 --:--:-- 남음</p>
+      <p class="muted" th:if="${openAtIso == null}">공개 예정 시간이 아직 설정되지 않았습니다.</p>
+    </div>
+
+    <!-- 마감 후 -->
+    <div th:case="'AFTER_CLOSE'">
+      <h2>마감되어 접근할 수 없습니다</h2>
+      <p class="desc" th:text="|요청하신 연도(${year})는 마감 시간이 지나 접근이 제한됩니다.|"></p>
+
+      <p class="date">
+        마감 일시:
+        <span th:text="${closeAtText != null ? closeAtText : '미정'}">미정</span>
+        <small class="meta" th:text="${tz != null ? tz : 'KST (UTC+9)'}">KST (UTC+9)</small>
+      </p>
+
+      <p class="muted">필요 시 관리자에게 문의해 주세요.</p>
+    </div>
+
+    <!-- 비활성/정책 OFF -->
+    <div th:case="'DISABLED'">
+      <h2>현재 비활성화되어 있습니다</h2>
+      <p class="desc" th:text="|요청하신 연도(${year})는 현재 비활성화 상태입니다.|"></p>
+      <p class="muted">관리자 설정을 확인해 주세요.</p>
+    </div>
+
+    <!-- 기타 -->
+    <div th:case="*">
+      <h2>접근할 수 없습니다</h2>
+      <p class="desc">현재 설정에 의해 접근이 제한됩니다.</p>
+    </div>
+  </div>
+
+  <!-- 버튼 -->
+  <div class="btns">
+    <button class="btn" type="button" id="go-back"
+            th:data-back-url="${backUrl != null ? backUrl : '/'}">이전 페이지로</button>
+    <a class="btn primary" th:href="@{/pe/login}">로그인으로</a>
+  </div>
+</div>
+
+<script th:inline="javascript">
+  (function(){
+    const btn = document.getElementById('go-back');
+    const fallback = btn?.dataset?.backUrl || '/';
+    btn?.addEventListener('click', function(){
+      if (document.referrer && history.length > 1) { history.back(); return; }
+      location.href = fallback;
+    });
+
+    /*[[*/
+    const gateStatus = /*[[${gateStatus}]]*/ null;
+    const openAtIso  = /*[[${openAtIso}]]*/ null;
+    /*]]*/
+
+    // BEFORE_OPEN일 때만 카운트다운
+    const cdEl = document.getElementById('countdown');
+    if (gateStatus === 'BEFORE_OPEN' && openAtIso && cdEl){
+      const target = new Date(openAtIso);
+      function tick(){
+        const now = new Date();
+        let diff = target - now;
+        if (diff <= 0){
+          cdEl.textContent = '잠시 후 새로고침하면 이동할 수 있습니다.';
+          clearInterval(timer);
+          return;
+        }
+        const d = Math.floor(diff / (1000*60*60*24)); diff %= 1000*60*60*24;
+        const h = Math.floor(diff / (1000*60*60));    diff %= 1000*60*60;
+        const m = Math.floor(diff / (1000*60));       diff %= 1000*60;
+        const s = Math.floor(diff / 1000);
+        const pad = n => String(n).padStart(2,'0');
+        cdEl.textContent = `${d}일 ${pad(h)}:${pad(m)}:${pad(s)} 남음`;
+      }
+      tick();
+      const timer = setInterval(tick, 1000);
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/login"> <!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">
+    <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+    <title></title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/demoinfocss.css}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+        .card { padding:12px; border:1px solid #e5e7eb; border-radius:12px; margin:10px 0; }
+/* ===== 기본 레이아웃 & 스크롤 ===== */
+.table-wrap {
+  overflow-x: auto;            /* 가로 스크롤 */
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+/* max-content 로 전체 너비 생성 + 고정 레이아웃으로 줄바꿈 안정 */
+.tbl {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 14px;
+}
+
+/* 셀 스타일 */
+.tbl th, .tbl td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+  color: #111827;
+  background: #fff;
+  word-break: break-word;
+}
+
+/* 헤더 고정 + 살짝 분리선 */
+.tbl thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8fafc;
+  font-weight: 600;
+  color: #374151;
+  box-shadow: inset 0 -1px 0 #e5e7eb;
+}
+
+/* 줄무늬 & 호버 하이라이트 */
+.tbl tbody tr:nth-child(even) td { background: #fbfdff; }
+.tbl tbody tr:hover td { background: #f3f4f6; }
+
+/* 숫자/짧은 값 정렬 */
+.center { text-align: center; }
+
+/* 유형 뱃지/보조 텍스트 */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  font-size: 12px;
+  color: #111827;
+  background: #fff;
+}
+.sub { font-size: 12px; color: #6b7280; }
+
+/* 평가의견은 여러 줄 허용 */
+.tbl td.opinion {
+  max-width: 320px;              /* 필요시 너비 조정 */
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* === 마지막 20개(문항) 컬럼 공통 스타일 ===
+   테이블의 "마지막 20개 칸"에 동일 스타일 적용 (헤더/바디 모두)  */
+.tbl thead th:nth-last-child(-n+20),
+.tbl tbody td:nth-last-child(-n+20) {
+  text-align: center;
+  font-size: 12px;
+  white-space: nowrap;           /* 값만 찍으니 줄바꿈 방지 */
+  width: 72px;                   /* 문항열 폭(원하면 60~80px로 조정) */
+}
+
+/* 점수 칼럼(3번째) 가운데 정렬 & 고정 폭(선택) */
+.tbl thead th:nth-child(3),
+.tbl tbody td:nth-child(3) {
+  width: 70px;
+  text-align: center;
+  font-weight: 700;
+}
+
+/* 평가자 정보 칼럼(2번째) 살짝 더 넓게(선택) */
+.tbl thead th:nth-child(2),
+.tbl tbody td:nth-child(2) {
+  min-width: 250px;
+}
+
+/* 유형 칼럼(1번째) 약간 컴팩트 */
+.tbl thead th:first-child,
+.tbl tbody td:first-child {
+  min-width: 110px;
+}
+
+/* sticky 첫 행 외에 첫 열 고정이 필요하면 아래 주석 해제(옵션)
+.tbl th:first-child, .tbl td:first-child {
+  position: sticky; left: 0; z-index: 3;
+  background: #fff;
+  box-shadow: 1px 0 0 #e5e7eb;
+}
+*/
+/* 프린트 최적화 */
+@media print {
+  .table-wrap { overflow: visible; border: none; }
+  .tbl thead th { position: static; box-shadow: none; }
+  .tbl th, .tbl td { padding: 6px 8px; font-size: 12px; }
+}
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{Include/layout :: header}"></div>
+    <div th:replace="~{Include/layout :: nav_section2}"></div>
+
+    <main class="main-content">
+        <!-- 연도 선택기 -->
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 16px 4px;">
+            <label style="font-size:14px;color:#374151;">조회 연도</label>
+            <form method="get" action="" style="display:inline;">
+                <select name="year" onchange="this.form.submit()"
+                        style="padding:4px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;">
+                    <th:block th:each="y : ${availableYears}">
+                        <option th:value="${y}" th:text="${y + '년'}"
+                                th:selected="${y == year.toString()}"></option>
+                    </th:block>
+                </select>
+            </form>
+        </div>
+        <!-- 전년도 조회 배너 -->
+        <div th:if="${isPastYear}"
+             style="margin:8px 16px;padding:10px 14px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;font-size:13px;color:#92400e;">
+            📋 <strong th:text="${year + '년'}">년도</strong> 데이터를 조회 중입니다. 읽기 전용입니다.
+        </div>
+
+        <div class="info">
+            <div class="info-container">
+                <div class="info_name">
+                    <span class="normal" th:text="${userInfo.name}"> </span>
+                    <span class="light info_id" th:text="| (사원번호 : ${userInfo.id})|"></span>
+                </div>
+                <div class="info_hs light">
+                    <span th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|"></span>
+                </div>
+                <div class="info_date light">
+                    <span th:text="|입사일자 : ${#dates.format(userInfo.createAt, 'yyyy-MM-dd')}|"></span>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+
+    </main>
+
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script th:replace="~{Include/layout :: scripts}"></script>
+    <script th:src="@{/js/user/myPage.js(v=${#dates.createNow().time})}" defer></script>
+</body>
+
+</html>

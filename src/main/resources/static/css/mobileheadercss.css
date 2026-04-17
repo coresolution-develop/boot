@@ -1,0 +1,58 @@
+@charset "UTF-8";
+.wrapper {
+	display: none;
+}
+.wrapper {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 100;
+}
+.logo {
+	background-color: #1b304a;
+	position: relative;
+	width: 100%;
+    z-index: 1001;
+}
+.home-icon {
+	position: absolute;
+	left: 15px;
+	top: 23px;
+	z-index: 1;
+}
+.home-icon > a > img {
+	width: 10px;
+}
+.logo-img {
+	align-items: center;
+	display: flex;
+	height: 62px;
+}
+.logo-img > img {
+	position: relative;
+	left: 50%;
+	transform: translate(-50%);
+	height: 30px;
+}
+.logout-img > a{
+	position: absolute;
+	right: 15px;
+	top: 18px;
+}
+.logout-img > a > img {
+	height: 25px;
+}
+@media all and (max-width: 460px) {
+	.wrapper {
+		display: block;
+	}
+	.head-img-area {
+		display: none;
+	}
+	
+	
+
+
+
+
+}

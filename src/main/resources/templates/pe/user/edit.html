@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>코어솔루션 인사평가 시스템</title>
+
+  <link rel="stylesheet" th:href="@{/css/css.css}" />
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}" />
+  <link rel="stylesheet" th:href="@{/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoinfocss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoformcss.css}" />
+  <link rel="stylesheet" th:href="@{/css/formmediacss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoform2css.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/formcss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}" />
+  <style>
+    .main-content {
+      padding: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- 공통 레이아웃 -->
+  <div th:replace="~{Include/layout :: header}"></div>
+  <div th:replace="~{Include/layout :: nav_section2}"></div>
+
+  <main class="main-content">
+    <!-- 페이지 어딘가에 렌더(이미 있으면 재사용) -->
+<div id="ctx"
+     th:data-eval="${userInfo.id}"
+     th:data-target="${target.id}"  
+     th:data-type="${dataType}"
+     th:data-ev="${dataEv}"
+     th:data-year="${year}"></div>
+    <!-- 상단 정보 -->
+    <section class="info">
+      <div class="info-container">
+        <div class="info_name">
+          <span class="normal" th:text="${maskPersonalInfo ? (#strings.isEmpty(userInfo.name) ? '' : #strings.substring(userInfo.name, 0, 1) + '*') : userInfo.name}">이름</span>
+          <span class="light info_id" th:text="| (사원번호 : ${maskPersonalInfo ? (#strings.isEmpty(userInfo.id) ? '' : (#strings.length(userInfo.id) > 2 ? #strings.substring(userInfo.id, 0, 2) + '***' : '***')) : userInfo.id})|">(사원번호)</span>
+        </div>
+        <div class="info_hs light">
+          <span th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|">회사/부서/직급</span>
+        </div>
+        <div class="info_date light">
+          <span th:text="|입사일자 : ${#dates.format(userInfo.createAt,'yyyy-MM-dd')}|">입사일자</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 안내 -->
+    <section class="target_info" id="targetInfo">
+      <div class="target_text flex">
+        <img th:src="@{/icon/ev/ok.png}" alt="ok" />
+        <span class="bold">평가대상자를 확인 후 평가를 진행해주세요!</span>
+      </div>
+    </section>
+
+    <!-- 평가 대상 -->
+    <section class="target_area">
+      <div class="target">
+        <div class="target_box">
+          <table>
+            <tr class="target_box_header">
+              <td colspan="4">평가대상자</td>
+            </tr>
+            <tr class="target_box_1">
+              <td>부서명</td>
+              <td>사원번호</td>
+              <td>직급</td>
+              <td>성명</td>
+            </tr>
+            <tr class="target_box_2">
+              <td th:text="${target.subName}">부서</td>
+              <td th:text="${maskPersonalInfo ? (#strings.isEmpty(target.id) ? '' : (#strings.length(target.id) > 2 ? #strings.substring(target.id, 0, 2) + '***' : '***')) : target.id}">사번</td>
+              <td th:text="${target.position}">직급</td>
+              <td th:text="${maskPersonalInfo ? (#strings.isEmpty(target.name) ? '' : #strings.substring(target.name, 0, 1) + '*') : target.name}">성명</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 질문/입력 -->
+      <form id="editForm" onsubmit="return false;">
+        <input type="hidden" id="score" name="score" value="" />
+  <input type="hidden" name="year" th:value="${year}">
+
+        <section class="section">
+          <div class="container">
+            <div class="section-content">
+              <div class="scrollbase">
+
+                <!-- 객관식 그룹 (섬김/배움/키움/나눔/목표관리) -->
+                <th:block th:with="groups=${ {'섬김','배움','키움','나눔','목표관리'} }">
+                  <section th:each="g : ${groups}">
+                    <div class="bold area_header" th:text="${g}"></div>
+
+                    <!-- g를 #vars.g로, d3 널/공백 방어 -->
+                    <div th:with="qs=${questions.?[(d3 != null ? #strings.trim(d3) : '') == #vars.g]}">
+
+                      <div class="question-area" th:each="q : ${qs}"
+                        th:classappend="|${#strings.substring(g,0,1).toLowerCase()}${q.idx}|">
+
+                        <!-- ✅ 전역 카운터로 번호 증가 -->
+                        <p class="question bold" th:with="n=${seq.incrementAndGet()}" th:text="|${n}. ${q.d1}|"></p>
+
+                        <div class="answer">
+                          <label class="label" th:each="label : ${ {'매우우수','우수','보통','미흡','매우미흡'} }">
+                            <span class="alignBox">
+                              <input class="radio" type="radio" th:name="|${#strings.substring(g,0,1)}${q.idx}|"
+                                th:value="${label}">
+                              <span class="radioimg"></span>
+                              <span class="inputTxt" th:text="${label}"></span>
+                            </span>
+                          </label>
+                        </div>
+
+                        <div class="q-1">
+                          <div class="q-2"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </th:block>
+
+                <!-- 주관식 -->
+                <!-- ✅ d3 널/공백 방어 -->
+                <th:block th:with="essay=${questions.?[(d3 != null ? #strings.trim(d3) : '') == '주관식']}">
+                  <div class="area-content" th:if="${!#lists.isEmpty(essay)}">
+                    <div class="bold area_header text-target">주관식</div>
+
+                    <table class="text-area-table" th:each="q : ${essay}">
+                      <tr class="text-area-tr1">
+                        <td>
+                          <p class="question question-text bold" th:text="${q.d1}">종합평가</p>
+                        </td>
+                      </tr>
+                      <tr class="text-area-tr2">
+                        <td><textarea th:id="|t${q.idx}|" th:name="|t${q.idx}|" rows="5"></textarea></td>
+                      </tr>
+                    </table>
+                  </div>
+                </th:block>
+
+                <!-- 완료 버튼 -->
+                <div class="end_area flex flex-center">
+                  <button class="end" id="btnSave" type="button">평가완료</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 스피너 / 모달(평가 페이지와 동일) -->
+        <div id="spinner-overlay" style="display:none;">
+          <div class="spinner-container">
+            <div class="spinner"></div>
+            <p>잠시만 기다려주세요</p>
+          </div>
+        </div>
+
+        <div class="modal normal" id="modal-info">
+          <div class="modal_body">
+            <div>
+              <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
+              <div class="menu_msg" id="modal-info-text">text</div>
+              <div class="modal_footer">
+                <div class="btn modal_btn" id="modal-info-close">확인</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal normal" id="modal-confirm">
+          <div class="modal_body">
+            <div>
+              <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
+              <div class="menu_msg" id="modal-confirm-text">text</div>
+              <div class="modal_footer">
+                <div class="btn modal_btn2" id="modal-confirm-ok">확인</div>
+                <div class="btn pink_btn2" id="modal-confirm-cancel">취소</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+
+    <script th:replace="~{Include/layout :: scripts}"></script>
+  <!-- 동일한 전역 설정(평가 페이지와 동일) + 편집모드만 추가 -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    window.__PE_CONFIG = {
+      MODE: 'edit', // ★ 편집모드 플래그
+      DATA_TYPE:  /*[[${dataType}]]*/ 'AA',
+      DATA_EV:    /*[[${dataEv}]]*/ 'C',
+      YEAR:       /*[[${year}]]*/ '2025',
+      EVALUATOR:  /*[[${evaluatorId}]]*/ '00000000',
+      TARGET_ID:  /*[[${target.id}]]*/ '000000',
+      TARGET_NAME:/*[[${maskPersonalInfo ? (#strings.isEmpty(target.name) ? '' : #strings.substring(target.name, 0, 1) + '*') : target.name}]]*/ '홍*',
+      ACTION_URL: /*[[@{/formAction/{eval}/{target}/{ev}/{type}(eval=${evaluatorId},target=${target.id},ev=${dataEv},type=${dataType})}]]*/ '/formAction',
+      INFO_URL:   /*[[@{/info/{eval}(eval=${evaluatorId})}]]*/ '/info',
+      END_URL:    /*[[@{/FormEnd/{eval}/{target}(eval=${evaluatorId},target=${target.id})}]]*/ '/FormEnd'
+    };
+
+    // ★ 기존 답변 주입용 JSON
+    window.__PE_ANSWERS = /*[[${answersBundleJson}]]*/ '{"radios":{},"essays":{}}';
+    /*]]>*/
+  </script>
+
+  <!-- 평가 페이지에서 쓰는 동일 JS 재사용 -->
+  <script th:src="@{/js/user/edit.js(v=${#dates.createNow().time})}" defer></script>
+
+  <!-- ★ 프리필 스크립트 (가볍게) -->
+  <script>
+    // form.js(defer)가 먼저 실행된 뒤에 프리필이 돌도록 DOMContentLoaded에 연결
+    (function () {
+      function prefill() {
+        try {
+          const raw = window.__PE_ANSWERS || '{}';
+          const bundle = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          const radios = bundle.radios || {};
+          const essays = bundle.essays || {};
+
+          // 라디오 채우기
+          Object.entries(radios).forEach(([name, value]) => {
+            document.querySelectorAll(`input[type="radio"][name="${name}"]`).forEach(el => {
+              if (el.value === value) el.checked = true;
+            });
+          });
+
+          // 주관식 채우기
+          Object.entries(essays).forEach(([name, value]) => {
+            const el = document.querySelector(`textarea[name="${name}"]`);
+            if (el) el.value = value ?? '';
+          });
+
+          console.log('[prefill] done', { radios, essays });
+        } catch (e) {
+          console.warn('[prefill] failed', e, window.__PE_ANSWERS);
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', prefill);
+      } else {
+        prefill();
+      }
+    })();
+  </script>
+  <script th:inline="javascript">
+/*<![CDATA[*/
+(function () {
+  'use strict';
+
+  // 스피너/모달을 body 바로 아래로 이동(레이어 이슈 방지)
+  ['spinner-overlay', 'modal-info', 'modal-confirm'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.parentElement !== document.body) document.body.appendChild(el);
+  });
+
+  // jQuery 필수
+  if (typeof window.jQuery === 'undefined') {
+    console.error('[edit] jQuery 필요');
+    return;
+  }
+  const $ = window.jQuery;
+
+  // 서버 주입 전역 설정 값
+  const CFG = window.__PE_CONFIG || {};
+  const {
+    DATA_TYPE = 'AA',
+    DATA_EV = 'C',
+    YEAR = '2025',
+    EVALUATOR = '00000000',
+    TARGET_ID = '000000',
+    TARGET_NAME = '홍길동',
+    INFO_URL = '/info',
+    END_URL = '/FormEnd'
+  } = CFG;
+
+  // 컨텍스트(REST 경로 구성)
+  const ds = document.getElementById('ctx')?.dataset || {};
+  const evalId = ds.eval, target = ds.target, type = ds.type, ev = ds.ev, year = ds.year;
+  const EDIT_API_URL =
+    `/api/formAction/edit/${encodeURIComponent(evalId)}` +
+    `/${encodeURIComponent(target)}/${encodeURIComponent(ev)}/${encodeURIComponent(type)}?year=${encodeURIComponent(year)}`;
+
+  // ===== 공통 UI 유틸 (form.js와 동일 동작) =====
+  function spinner(show = true) {
+    const el = document.getElementById('spinner-overlay');
+    if (!el) return;
+    if (show) {
+      el.style.display = 'flex';
+      requestAnimationFrame(() => el.classList.add('show'));
+    } else {
+      el.classList.remove('show');
+      const onEnd = (e) => {
+        if (e.target !== el) return;
+        el.style.display = 'none';
+        el.removeEventListener('transitionend', onEnd);
+      };
+      el.addEventListener('transitionend', onEnd);
+    }
+  }
+  function showInfo(msg) {
+    $('#modal-info-text').html(msg);
+    $('#modal-info').addClass('show');
+    $('body').css('overflow', 'hidden');
+  }
+  function hideInfo() {
+    $('#modal-info').removeClass('show');
+    $('body').css('overflow', 'auto');
+  }
+  function confirmModal(msg, onOk) {
+    $('#modal-confirm-text').html(msg);
+    $('#modal-confirm').addClass('show');
+    $('body').css('overflow', 'hidden');
+    $('#modal-confirm-ok').off('click.pe').on('click.pe', function () {
+      $('#modal-confirm').removeClass('show');
+      $('body').css('overflow', 'auto');
+      onOk && onOk();
+    });
+    $('#modal-confirm-cancel').off('click.pe').on('click.pe', function () {
+      $('#modal-confirm').removeClass('show');
+      $('body').css('overflow', 'auto');
+    });
+  }
+  $('#modal-info-close').off('click').on('click', hideInfo);
+
+  // ===== 점수 매핑 & 검증/합산 (form.js 동일 로직) =====
+  function mapScore(val) {
+    switch (val) {
+      case '매우우수': return 5;
+      case '우수': return 4;
+      case '보통': return 3;
+      case '미흡': return 2;
+      case '매우미흡': return 1;
+      default: return 0;
+    }
+  }
+  function computeAndValidate() {
+    let total = 0;
+    const missing = [];
+
+    // 라디오 그룹별 선택 여부/점수 합산
+    const radiosByName = {};
+    $('input.radio[type=radio]').each(function () {
+      (radiosByName[this.name] ||= []).push(this);
+    });
+
+    Object.keys(radiosByName).forEach(function (nm) {
+      const $group = $(`input[name="${nm}"]`);
+      const $checked = $group.filter(':checked');
+
+      const title = $group.first()
+        .closest('.question-area')
+        .find('p.question')
+        .text()
+        .trim() || `문항(${nm})`;
+
+      if ($checked.length === 0) {
+        missing.push(title);
+      } else {
+        let base = mapScore($checked.val());
+        if (DATA_TYPE === 'AA') base *= 2; // AA 가중치
+        total += base;
+      }
+    });
+
+    // 주관식 필수
+    $('textarea[name^="t"]').each(function () {
+      if (!$(this).val().trim()) {
+        const title = $(this).closest('table').find('p.question-text').text().trim() || '주관식';
+        missing.push(title);
+      }
+    });
+
+    return { ok: missing.length === 0, missing, total };
+  }
+
+  // ===== 이벤트 바인딩 (저장 버튼) =====
+  $(function () {
+    const $btn = $('#btnSave');
+
+    $btn.off('click.pe').on('click.pe', async function (e) {
+      e.preventDefault();
+
+      const { ok, missing, total } = computeAndValidate();
+      if (!ok) {
+        showInfo('<p>현재 답변하지 않은 항목이 있습니다.</p><p>모든 문항에 응답 후 다시 시도해주세요.</p>');
+        return;
+      }
+
+      confirmModal(
+        `<p><strong>${TARGET_NAME}</strong> 님의 평가 예상점수는 <strong>${total}점</strong>입니다.</p><p>저장하시겠습니까?</p>`,
+        async function () {
+          // payload 구성(편집 API는 JSON 사용)
+          const radios = {};
+          document.querySelectorAll('input.radio:checked').forEach(el => {
+            radios[el.name] = el.value;
+          });
+          const essays = {};
+          document.querySelectorAll('textarea[name^="t"]').forEach(el => {
+            essays[el.name] = el.value ?? '';
+          });
+
+          const payload = { radios, essays, score: total };
+
+          spinner(true);
+          try {
+            const res = await fetch(EDIT_API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const json = await res.json().catch(() => ({}));
+            spinner(false);
+
+            // 결과 코드 대응 (form.js와 유사 처리)
+            // - '1' : 이미 완료
+            // - '2' 또는 'ok' : 저장/완료 성공
+            if (json.result === '1') {
+              showInfo('<p>이미 평가가 완료된 대상입니다.</p><p>마이페이지로 이동합니다.</p>');
+              $('#modal-info-close').off('click.go').on('click.go', function () {
+                window.location.href = CFG.INFO_URL;
+              });
+            } else if (json.result === '2' || json.result === 'ok') {
+              window.location.href = CFG.END_URL;
+            } else {
+              showInfo('<p>저장 중 오류가 발생했습니다.</p><p>다시 시도해주세요.</p>');
+            }
+          } catch (err) {
+            console.error('[edit save] error', err);
+            spinner(false);
+            showInfo('<p>저장 중 오류가 발생했습니다.</p><p>다시 시도해주세요.</p>');
+          }
+        }
+      );
+    });
+
+    // 상단 안내 고정(평가 페이지 동일)
+    (function () {
+      const targetInfo = document.getElementById('targetInfo');
+      if (!targetInfo) return;
+      const initial = 207;
+      window.addEventListener('scroll', () => {
+        const y = window.scrollY || window.pageYOffset;
+        if (y >= initial) targetInfo.classList.add('fixed');
+        else targetInfo.classList.remove('fixed');
+      });
+    })();
+
+    $('.menu1').addClass('active');
+  });
+})();
+/*]]>*/
+</script>
+</body>
+
+</html>

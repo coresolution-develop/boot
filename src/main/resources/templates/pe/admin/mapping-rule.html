@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+  <meta charset="utf-8">
+  <title>평가 구간 규칙 관리</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}"/>
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}"/>
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}"/>
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}"/>
+  <link rel="stylesheet" th:href="@{/css/formcss2025.css}"/>
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}"/>
+  <style>
+    .rule-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .rule-table th { background:#425c7b; color:#fff; padding:8px 6px; text-align:center; border:1px solid #d7d7d7; }
+    .rule-table td { padding:7px 6px; border:1px solid #e0e0e0; text-align:center; background:#fff; }
+    .rule-table tr:hover td { background:#f5f9ff; }
+    .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; }
+    .badge-active   { background:#d1fae5; color:#065f46; }
+    .badge-inactive { background:#f3f4f6; color:#6b7280; }
+    .tag { display:inline-block; background:#e0f2fe; color:#0369a1; padding:1px 6px; border-radius:4px; font-size:11px; margin:1px; }
+    .btn { border:none; padding:5px 12px; border-radius:4px; cursor:pointer; font-size:12px; }
+    .btn-primary  { background:#2563eb; color:#fff; }
+    .btn-danger   { background:#dc2626; color:#fff; }
+    .btn-warning  { background:#d97706; color:#fff; }
+    .btn-success  { background:#16a34a; color:#fff; }
+    .btn-gray     { background:#6b7280; color:#fff; }
+    .btn:hover { opacity:0.85; }
+    .toolbar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+    .form-card { background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; padding:16px 20px; margin-bottom:18px; }
+    .form-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:10px; }
+    .form-group label { display:block; font-size:12px; color:#374151; margin-bottom:3px; font-weight:600; }
+    .form-group input, .form-group select { width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px; box-sizing:border-box; }
+    .form-group select { background:#fff; }
+    .section-title { font-size:15px; font-weight:700; color:#1e3a5f; border-left:4px solid #2563eb; padding-left:10px; margin-bottom:12px; }
+    .arrow-label { text-align:center; padding-top:22px; font-size:18px; color:#374151; font-weight:700; }
+    .result-banner { padding:10px 14px; border-radius:6px; margin-top:8px; font-size:13px; display:none; }
+    .result-ok  { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+    .result-err { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
+    #form-section { display:none; }
+  </style>
+</head>
+<body>
+<div th:replace="~{Include/layout :: header}"></div>
+<div th:replace="~{Include/layout :: nav_section}"></div>
+
+<div class="main-content" style="padding:24px 28px;">
+
+  <h2 style="margin-bottom:20px;">평가 구간 규칙 관리</h2>
+
+  <!-- ── 툴바 ───────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <label style="font-size:13px; font-weight:600;">연도</label>
+    <input id="sel-year" type="number" th:value="${currentYear}" style="width:80px; padding:5px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+
+    <button class="btn btn-primary" onclick="loadRules()">조회</button>
+    <button class="btn btn-success" onclick="toggleForm()">+ 규칙 추가</button>
+    <button class="btn btn-gray" onclick="seedDefaults()">기본 규칙 8개 생성</button>
+
+    <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+      <span style="font-size:12px; color:#6b7280;">전년도 규칙 복사:</span>
+      <input id="copy-from" type="number" th:value="${currentYear - 1}" style="width:72px; padding:5px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      <span style="font-size:12px;">→</span>
+      <input id="copy-to" type="number" th:value="${currentYear}" style="width:72px; padding:5px 8px; border:1px solid #d1d5db; border-radius:4px; font-size:13px;">
+      <button class="btn btn-warning" onclick="copyYear()">복사</button>
+    </div>
+  </div>
+
+  <!-- ── 대상 재생성 영역 ─────────────────────────────────────── -->
+  <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:6px; padding:12px 16px; margin-bottom:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+    <span style="font-size:13px; color:#92400e; font-weight:600;">직원 명부 업로드 후 아래 버튼으로 평가 대상을 재생성하세요.</span>
+    <button class="btn btn-danger" onclick="applyRules()">▶ 규칙 적용 (평가 대상 재생성)</button>
+    <span id="apply-result" class="result-banner"></span>
+  </div>
+
+  <!-- ── 규칙 추가/수정 폼 ─────────────────────────────────────── -->
+  <div id="form-section" class="form-card">
+    <div class="section-title" id="form-title">새 규칙 추가</div>
+    <input type="hidden" id="f-id">
+    <input type="hidden" id="f-year">
+
+    <div class="form-group" style="margin-bottom:10px;">
+      <label>규칙 이름 <span style="color:#dc2626">*</span></label>
+      <input id="f-name" type="text" placeholder="예: 경혁팀 → 진료부" style="max-width:320px;">
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 40px 1fr; gap:10px; align-items:start; margin-bottom:10px;">
+      <!-- 평가자 조건 -->
+      <div>
+        <div class="section-title" style="font-size:13px; margin-bottom:8px;">평가자 조건</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>역할</label>
+            <select id="f-ev-role">
+              <option value="">(전체)</option>
+              <option value="sub_head">부서장 (sub_head)</option>
+              <option value="sub_member">부서원 (sub_member)</option>
+              <option value="team_head">경혁팀장 (team_head)</option>
+              <option value="GH_TEAM">경혁팀원 (GH_TEAM)</option>
+              <option value="one_person_sub">1인부서 (one_person_sub)</option>
+              <option value="medical_leader">의료리더 (medical_leader)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>부서코드 접두어</label>
+            <input id="f-ev-sub" type="text" placeholder="예: A (진료부)">
+          </div>
+          <div class="form-group">
+            <label>팀코드</label>
+            <input id="f-ev-team" type="text" placeholder="예: GH_TEAM">
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-label">→</div>
+
+      <!-- 대상자 조건 -->
+      <div>
+        <div class="section-title" style="font-size:13px; margin-bottom:8px;">대상자 조건</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>역할</label>
+            <select id="f-tg-role">
+              <option value="">(전체)</option>
+              <option value="sub_head">부서장 (sub_head)</option>
+              <option value="sub_member">부서원 (sub_member)</option>
+              <option value="team_head">경혁팀장 (team_head)</option>
+              <option value="GH_TEAM">경혁팀원 (GH_TEAM)</option>
+              <option value="one_person_sub">1인부서 (one_person_sub)</option>
+              <option value="medical_leader">의료리더 (medical_leader)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>부서코드 접두어</label>
+            <input id="f-tg-sub" type="text" placeholder="예: A (진료부)">
+          </div>
+          <div class="form-group">
+            <label>팀코드</label>
+            <input id="f-tg-team" type="text" placeholder="예: GH_TEAM">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 설정 -->
+    <div class="form-grid" style="margin-bottom:12px;">
+      <div class="form-group">
+        <label>대상 범위 <span style="color:#dc2626">*</span></label>
+        <select id="f-scope">
+          <option value="SAME_DEPT">같은 부서 (SAME_DEPT)</option>
+          <option value="ALL_PREFIX">접두어 전체 (ALL_PREFIX)</option>
+          <option value="SPECIFIC_ROLE">역할 전체 (SPECIFIC_ROLE)</option>
+          <option value="SPECIFIC_TEAM">팀 전체 (SPECIFIC_TEAM)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>data_ev <span style="color:#dc2626">*</span></label>
+        <select id="f-dev">
+          <option value="A">A — 진료팀장→진료부</option>
+          <option value="B">B — 진료부→경혁팀</option>
+          <option value="C">C — 경혁팀→진료부</option>
+          <option value="D">D — 경혁팀→경혁팀</option>
+          <option value="E">E — 부서장→부서원</option>
+          <option value="F">F — 부서원→부서장</option>
+          <option value="G">G — 부서원→부서원</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>data_type <span style="color:#dc2626">*</span></label>
+        <select id="f-dtype">
+          <option value="AA">AA</option>
+          <option value="AB">AB</option>
+          <option value="AC">AC</option>
+          <option value="AD">AD</option>
+          <option value="AE">AE</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>eval_type_code</label>
+        <input id="f-typecode" type="text" placeholder="예: GH_TO_GH (선택)">
+      </div>
+      <div class="form-group">
+        <label>기관명 (빈칸=전체)</label>
+        <input id="f-cname" type="text" placeholder="특정 기관만 적용 시 입력">
+      </div>
+      <div class="form-group" style="display:flex; gap:16px; align-items:flex-end; padding-bottom:4px;">
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input id="f-excludeself" type="checkbox" checked> 자기 자신 제외
+        </label>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input id="f-enabled" type="checkbox" checked> 활성
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:8px;">
+      <button class="btn btn-primary" onclick="saveRule()">저장</button>
+      <button class="btn btn-gray" onclick="cancelForm()">취소</button>
+    </div>
+    <div id="form-result" class="result-banner"></div>
+  </div>
+
+  <!-- ── 규칙 목록 ──────────────────────────────────────────────── -->
+  <div id="toolbar-count" style="font-size:13px; color:#6b7280; margin-bottom:8px;"></div>
+  <table class="rule-table">
+    <thead>
+      <tr>
+        <th style="width:40px;">ID</th>
+        <th style="width:140px;">규칙명</th>
+        <th>평가자</th>
+        <th style="width:24px;"></th>
+        <th>대상자</th>
+        <th style="width:100px;">범위</th>
+        <th style="width:50px;">EV</th>
+        <th style="width:50px;">TYPE</th>
+        <th style="width:100px;">eval_type_code</th>
+        <th style="width:100px;">기관</th>
+        <th style="width:60px;">제외자신</th>
+        <th style="width:60px;">상태</th>
+        <th style="width:90px;">액션</th>
+      </tr>
+    </thead>
+    <tbody id="rule-tbody"></tbody>
+  </table>
+</div>
+
+<div th:replace="~{Include/layout :: scripts}"></div>
+<script>
+const SCOPE_LABEL = {SAME_DEPT:'같은 부서', ALL_PREFIX:'접두어 전체', SPECIFIC_ROLE:'역할 전체', SPECIFIC_TEAM:'팀 전체'};
+const EV_LABEL = {A:'A(진료팀장→진료부)', B:'B(진료부→경혁팀)', C:'C(경혁→진료)', D:'D(경혁→경혁)', E:'E(부서장→부서원)', F:'F(부서원→부서장)', G:'G(부서원→부서원)'};
+
+function getYear() { return +document.getElementById('sel-year').value; }
+
+async function loadRules() {
+  const r = await fetch(`/admin/mapping-rule/list?year=${getYear()}`);
+  const j = await r.json();
+  const tbody = document.getElementById('rule-tbody');
+  tbody.innerHTML = '';
+  const rules = j.rules || [];
+  document.getElementById('toolbar-count').textContent = `총 ${rules.length}개 규칙`;
+  rules.forEach(rule => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${rule.id}</td>
+      <td style="text-align:left;">${rule.ruleName}</td>
+      <td>${buildConditionCell(rule.evaluatorRole, rule.evaluatorSubPrefix, rule.evaluatorTeamCode)}</td>
+      <td>→</td>
+      <td>${buildConditionCell(rule.targetRole, rule.targetSubPrefix, rule.targetTeamCode)}</td>
+      <td>${SCOPE_LABEL[rule.targetScope] || rule.targetScope}</td>
+      <td><span class="tag">${rule.dataEv}</span></td>
+      <td><span class="tag">${rule.dataType}</span></td>
+      <td style="font-size:11px;">${rule.evalTypeCode || '-'}</td>
+      <td style="font-size:11px;">${rule.cName || '전체'}</td>
+      <td>${rule.excludeSelf ? '✔' : '-'}</td>
+      <td><span class="badge ${rule.enabled ? 'badge-active':'badge-inactive'}">${rule.enabled ? '활성':'비활성'}</span></td>
+      <td>
+        <button class="btn btn-warning" onclick='editRule(${JSON.stringify(rule)})' style="padding:3px 8px; margin:1px;">수정</button>
+        <button class="btn btn-danger" onclick="deleteRule(${rule.id})" style="padding:3px 8px; margin:1px;">삭제</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function buildConditionCell(role, subPfx, teamCode) {
+  const parts = [];
+  if (role)    parts.push(`<span class="tag">${role}</span>`);
+  if (subPfx)  parts.push(`<span class="tag">sub:${subPfx}*</span>`);
+  if (teamCode)parts.push(`<span class="tag">team:${teamCode}</span>`);
+  return parts.length ? parts.join(' ') : '<span style="color:#aaa">-</span>';
+}
+
+function toggleForm(show) {
+  const s = document.getElementById('form-section');
+  if (show === undefined) show = s.style.display === 'none';
+  s.style.display = show ? 'block' : 'none';
+  if (!show) clearForm();
+}
+
+function clearForm() {
+  ['f-id','f-year','f-name','f-ev-sub','f-ev-team','f-tg-sub','f-tg-team','f-typecode','f-cname'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-ev-role').value='';
+  document.getElementById('f-tg-role').value='';
+  document.getElementById('f-scope').value='SAME_DEPT';
+  document.getElementById('f-dev').value='E';
+  document.getElementById('f-dtype').value='AA';
+  document.getElementById('f-excludeself').checked=true;
+  document.getElementById('f-enabled').checked=true;
+  document.getElementById('form-title').textContent='새 규칙 추가';
+  hideResult('form-result');
+}
+
+function cancelForm() { toggleForm(false); }
+
+function editRule(rule) {
+  toggleForm(true);
+  document.getElementById('form-title').textContent = '규칙 수정';
+  document.getElementById('f-id').value         = rule.id;
+  document.getElementById('f-year').value       = rule.evalYear;
+  document.getElementById('f-name').value       = rule.ruleName;
+  document.getElementById('f-ev-role').value    = rule.evaluatorRole   || '';
+  document.getElementById('f-ev-sub').value     = rule.evaluatorSubPrefix || '';
+  document.getElementById('f-ev-team').value    = rule.evaluatorTeamCode  || '';
+  document.getElementById('f-tg-role').value    = rule.targetRole         || '';
+  document.getElementById('f-tg-sub').value     = rule.targetSubPrefix    || '';
+  document.getElementById('f-tg-team').value    = rule.targetTeamCode     || '';
+  document.getElementById('f-scope').value      = rule.targetScope;
+  document.getElementById('f-dev').value        = rule.dataEv;
+  document.getElementById('f-dtype').value      = rule.dataType;
+  document.getElementById('f-typecode').value   = rule.evalTypeCode || '';
+  document.getElementById('f-cname').value      = rule.cName || '';
+  document.getElementById('f-excludeself').checked = rule.excludeSelf;
+  document.getElementById('f-enabled').checked  = rule.enabled;
+  document.getElementById('form-section').scrollIntoView({behavior:'smooth'});
+}
+
+async function saveRule() {
+  const idVal = document.getElementById('f-id').value;
+  const yearVal = document.getElementById('f-year').value;
+  const body = {
+    id:                  idVal ? +idVal : null,
+    evalYear:            yearVal ? +yearVal : getYear(),
+    ruleName:            document.getElementById('f-name').value.trim(),
+    evaluatorRole:       document.getElementById('f-ev-role').value  || null,
+    evaluatorSubPrefix:  document.getElementById('f-ev-sub').value.trim()  || null,
+    evaluatorTeamCode:   document.getElementById('f-ev-team').value.trim() || null,
+    targetRole:          document.getElementById('f-tg-role').value  || null,
+    targetSubPrefix:     document.getElementById('f-tg-sub').value.trim()  || null,
+    targetTeamCode:      document.getElementById('f-tg-team').value.trim() || null,
+    targetScope:         document.getElementById('f-scope').value,
+    dataEv:              document.getElementById('f-dev').value,
+    dataType:            document.getElementById('f-dtype').value,
+    evalTypeCode:        document.getElementById('f-typecode').value.trim() || null,
+    cName:               document.getElementById('f-cname').value.trim()    || null,
+    excludeSelf:         document.getElementById('f-excludeself').checked,
+    enabled:             document.getElementById('f-enabled').checked,
+  };
+  if (!body.ruleName) { showResult('form-result', '규칙 이름을 입력하세요.', false); return; }
+
+  const res = await fetch('/admin/mapping-rule/save', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const j = await res.json();
+  if (j.result === 'ok') {
+    showResult('form-result', '저장되었습니다.', true);
+    setTimeout(() => { toggleForm(false); loadRules(); }, 800);
+  } else {
+    showResult('form-result', '저장 실패: ' + (j.message || '알 수 없는 오류'), false);
+  }
+}
+
+async function deleteRule(id) {
+  if (!confirm('이 규칙을 삭제하시겠습니까?')) return;
+  const res = await fetch(`/admin/mapping-rule/${id}`, {method:'DELETE'});
+  const j = await res.json();
+  if (j.result === 'ok') loadRules();
+  else alert('삭제 실패');
+}
+
+async function copyYear() {
+  const from = +document.getElementById('copy-from').value;
+  const to   = +document.getElementById('copy-to').value;
+  if (!confirm(`${from}년 규칙을 ${to}년으로 복사하시겠습니까?`)) return;
+  const res = await fetch(`/admin/mapping-rule/copy-year?fromYear=${from}&toYear=${to}`, {method:'POST'});
+  const j = await res.json();
+  if (j.result === 'ok') { alert(`${j.copied}개 복사되었습니다.`); loadRules(); }
+  else alert('복사 실패: ' + (j.message || ''));
+}
+
+async function seedDefaults() {
+  if (!confirm(`${getYear()}년에 기본 규칙 8개를 생성하시겠습니까?\n이미 규칙이 있으면 아무것도 추가되지 않습니다.`)) return;
+  const res = await fetch(`/admin/mapping-rule/seed-defaults?year=${getYear()}`, {method:'POST'});
+  const j = await res.json();
+  alert(j.message || '완료');
+  loadRules();
+}
+
+async function applyRules() {
+  if (!confirm(`${getYear()}년 규칙을 적용하여 평가 대상을 재생성합니다.\n기존 기본 대상 데이터가 모두 삭제되고 새로 생성됩니다.\n계속하시겠습니까?`)) return;
+  const el = document.getElementById('apply-result');
+  el.className = 'result-banner result-ok';
+  el.style.display = 'inline-block';
+  el.textContent = '처리 중... (직원 수에 따라 1~2분 소요될 수 있습니다)';
+  const res = await fetch(`/admin/mapping-rule/apply?year=${getYear()}`, {method:'POST'});
+  const j = await res.json();
+  if (j.result === 'ok') {
+    el.className = 'result-banner result-ok';
+    el.textContent = '✅ ' + j.message;
+  } else {
+    el.className = 'result-banner result-err';
+    el.textContent = '❌ 오류: ' + (j.message || '알 수 없는 오류');
+  }
+}
+
+function showResult(elId, msg, ok) {
+  const el = document.getElementById(elId);
+  el.className = 'result-banner ' + (ok ? 'result-ok' : 'result-err');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideResult(elId) {
+  const el = document.getElementById(elId);
+  if (el) { el.style.display = 'none'; el.textContent = ''; }
+}
+
+loadRules();
+</script>
+</body>
+</html>

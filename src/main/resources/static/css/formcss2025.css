@@ -1,0 +1,50 @@
+@charset "UTF-8";
+/* 2025 login page responsive design */
+/* Small devices (tablets) */
+@media screen and (max-width: 767px) {
+  /** Mobile */
+  .main-content {
+    margin-left: 0;
+  }
+  .info {
+    padding: 28px;
+  }
+  .info-container {
+    margin: 0 5%;
+  }
+  .info-container {
+    margin: 0 5%;
+  }
+  .info_name {
+    font-size: 4rem;
+  }
+  .info_id {
+    font-size: 3rem;
+  }
+  .info_hs, .info_date {
+    font-size: 2.6rem;
+  }
+  td {
+    font-size: 2.2rem;
+  }
+  .section {
+    padding-top: 0;
+    }
+    #frm, #editForm {
+        margin: 0 5px;
+    }
+    .area-content {
+    padding: 5px 0 5px 0;
+    }
+    .container {
+    padding: 0;
+    }
+}
+
+@media all and (min-width: 768px) and (max-width: 1023px) {
+  /** Tablet  */
+}
+
+@media all and (max-width: 1023px) {
+  /** Mobile & Tablet  */
+}

@@ -1,0 +1,74 @@
+@charset "UTF-8";
+
+#spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.spinner-container {
+    text-align: center;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid white;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#spinner-overlay.show { display: flex !important; opacity: 1; }
+
+
+
+
+#spinner-overlay,
+.modal {
+  position: fixed !important;
+  inset: 0 !important;
+  display: none;                   /* JS에서 flex로 전환 */
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;                  /* 스피너 기본 */
+}
+#spinner-overlay.show { display: flex !important; opacity: 1; }
+
+.modal { background: rgba(0,0,0,0.45); z-index: 10001; } /* 모달이 스피너 위 */
+.modal .modal_body {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 520px;
+  width: calc(100% - 32px);
+}
+
+/* 숨김 강제 규칙이 있으면 무력화 */
+.modal.hide, .modal[hidden] { display: none !important; }
+/* 모달 강제 노출 클래스(선택) */
+.modal.is-open { display: flex !important; }
+
+
+@media (max-width: 1024px){
+  .spinner-container p {
+    font-size: 3rem;
+  }
+}

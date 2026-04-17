@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>부서 업로드 미리보기</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .preview-table { border-collapse: collapse; width: 100%; max-width: 500px; font-size: 14px; }
+        .preview-table th, .preview-table td {
+            border: 1px solid #ddd; padding: 6px 12px;
+        }
+        .preview-table th { background: #f4f4f4; }
+        .year-badge { display:inline-block; background:#2c6fad; color:#fff;
+                      padding:3px 12px; border-radius:4px; font-size:15px; margin-left:8px; }
+        .summary-ok { background:#e8f8f0; border-left:4px solid #27ae60;
+                      padding:10px 14px; border-radius:4px; margin-bottom:14px; }
+    </style>
+</head>
+<body>
+    <div th:replace="Include/layout :: header"></div>
+    <div th:replace="Include/layout :: nav_section"></div>
+
+    <div class="main-content">
+        <h2>
+            부서 업로드 미리보기
+            <span class="year-badge" th:text="${year} + '년도'">2026년도</span>
+        </h2>
+
+        <div class="summary-ok">
+            ✅ 총 <strong th:text="${#lists.size(subList)}">0</strong>개 부서를 업로드합니다.
+        </div>
+
+        <table class="preview-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>부서명</th>
+                    <th>부서코드</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="s,stat : ${subList}">
+                    <td th:text="${stat.index + 1}">1</td>
+                    <td th:text="${s.subName}">-</td>
+                    <td th:text="${s.subCode}">-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top:16px;">
+            <form th:action="@{/excel/subconfirm(year=${year})}" method="post">
+                <input type="hidden" name="year" th:value="${year}" />
+                <button type="submit" id="submitBtn" class="btn">
+                    ✅ <span th:text="${year}">2026</span>년도 부서 등록 확정
+                    (<span th:text="${#lists.size(subList)}">0</span>개)
+                </button>
+            </form>
+        </div>
+
+        <div id="spinner-overlay" style="display:none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>잠시만 기다려주세요</p>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="Include/layout :: scripts"></div>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        $('#submitBtn').on('click', function () {
+            document.getElementById('spinner-overlay').style.display = 'flex';
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

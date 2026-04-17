@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>코어솔루션 인사평가 시스템</title>
+
+  <link rel="stylesheet" th:href="@{/css/css.css}" />
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}" />
+  <link rel="stylesheet" th:href="@{/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoinfocss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoformcss.css}" />
+  <link rel="stylesheet" th:href="@{/css/formmediacss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoform2css.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/formcss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}" />
+  <style>.main-content{padding:0;}</style>
+</head>
+
+<body>
+  <!-- ✅ 계열사 레이아웃로 교체 -->
+  <div th:replace="~{Include/afflayout :: header}"></div>
+  <div th:replace="~{Include/afflayout :: nav_section2}"></div>
+
+  <main class="main-content">
+    <!-- 서버 주입 컨텍스트 -->
+    <div id="ctx"
+         th:data-eval="${userInfo.id}"
+         th:data-target="${target.id}"
+         th:data-type="${dataType}"
+         th:data-ev="${dataEv}"
+         th:data-year="${year}"></div>
+
+    <!-- 상단 정보 -->
+    <section class="info">
+      <div class="info-container">
+        <div class="info_name">
+          <span class="normal" th:text="${userInfo.name}">이름</span>
+          <span class="light info_id" th:text="| (사원번호 : ${userInfo.id})|">(사원번호)</span>
+        </div>
+        <div class="info_hs light">
+          <span th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|">회사/부서/직급</span>
+        </div>
+        <div class="info_date light">
+          <span th:text="|입사일자 : ${#dates.format(userInfo.createAt,'yyyy-MM-dd')}|">입사일자</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 안내 -->
+    <section class="target_info" id="targetInfo">
+      <div class="target_text flex">
+        <img th:src="@{/icon/ev/ok.png}" alt="ok" />
+        <span class="bold">평가대상자를 확인 후 평가를 진행해주세요!</span>
+      </div>
+    </section>
+
+    <!-- 평가 대상 -->
+    <section class="target_area">
+      <div class="target">
+        <div class="target_box">
+          <table>
+            <tr class="target_box_header"><td colspan="4">평가대상자</td></tr>
+            <tr class="target_box_1">
+              <td>부서명</td><td>사원번호</td><td>직급</td><td>성명</td>
+            </tr>
+            <tr class="target_box_2">
+              <td th:text="${target.subName}">부서</td>
+              <td th:text="${target.id}">사번</td>
+              <td th:text="${target.position}">직급</td>
+              <td th:text="${target.name}">성명</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <!-- 질문/입력 -->
+      <form id="editForm" onsubmit="return false;">
+        <input type="hidden" id="score" name="score" value="" />
+        <input type="hidden" name="year" th:value="${year}">
+
+        <section class="section">
+          <div class="container">
+            <div class="section-content">
+              <div class="scrollbase">
+
+                <!-- 그룹별 객관식 (동적 Map+Order 사용) -->
+<th:block th:if="${grouped != null and groupOrder != null}">
+  <section th:each="g : ${groupOrder}" th:with="qs=${grouped.get(g)}">
+    <th:block th:if="${qs != null and !qs.isEmpty()}">
+      <div class="bold area_header" th:text="${g}"></div>
+
+      <div class="question-area" th:each="q : ${qs}">
+        <p class="question bold"
+           th:with="n=${seq.incrementAndGet()}"
+           th:text="|${n}. ${q.d1}|"></p>
+
+        <div class="answer">
+          <label class="label" th:each="label : ${ {'매우우수','우수','보통','미흡','매우미흡'} }">
+            <span class="alignBox">
+              <!-- 라디오 name 통일: r{idx} -->
+              <input class="radio" type="radio"
+                     th:name="|r${q.idx}|"
+                     th:value="${label}"
+                     th:checked="${answerMap['r' + q.idx]} == ${label}">
+              <span class="radioimg"></span>
+              <span class="inputTxt" th:text="${label}"></span>
+            </span>
+          </label>
+        </div>
+
+        <div class="q-1"><div class="q-2"></div></div>
+      </div>
+    </th:block>
+  </section>
+</th:block>
+
+                <!-- 주관식: 서비스에서 분리해온 리스트 사용 -->
+<th:block th:if="${essay != null and !#lists.isEmpty(essay)}">
+  <div class="area-content">
+    <div class="bold area_header text-target">주관식</div>
+
+    <table class="text-area-table" th:each="q : ${essay}">
+      <tr class="text-area-tr1">
+        <td><p class="question question-text bold" th:text="${q.d1}">종합평가</p></td>
+      </tr>
+      <tr class="text-area-tr2">
+        <!-- textarea 내용 프리필: answerMap['t{idx}'] -->
+        <td>
+          <textarea th:id="|t${q.idx}|"
+                    th:name="|t${q.idx}|"
+                    rows="5"
+                    th:text="${answerMap['t' + q.idx]}"></textarea>
+        </td>
+      </tr>
+    </table>
+  </div>
+</th:block>
+                <!-- 완료 버튼 -->
+                <div class="end_area flex flex-center">
+                  <button class="end" id="btnSave" type="button">평가완료</button>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 스피너 / 모달 -->
+        <div id="spinner-overlay" style="display:none;">
+          <div class="spinner-container"><div class="spinner"></div><p>잠시만 기다려주세요</p></div>
+        </div>
+
+        <div class="modal normal" id="modal-info">
+          <div class="modal_body">
+            <div>
+              <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
+              <div class="menu_msg" id="modal-info-text">text</div>
+              <div class="modal_footer">
+                <div class="btn modal_btn" id="modal-info-close">확인</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal normal" id="modal-confirm">
+          <div class="modal_body">
+            <div>
+              <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
+              <div class="menu_msg" id="modal-confirm-text">text</div>
+              <div class="modal_footer">
+                <div class="btn modal_btn2" id="modal-confirm-ok">확인</div>
+                <div class="btn pink_btn2" id="modal-confirm-cancel">취소</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <!-- ✅ 계열사 스크립트 묶음 -->
+  <script th:replace="~{Include/afflayout :: scripts}"></script>
+
+  <!-- 전역 설정 -->
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    window.__PE_CONFIG = {
+      MODE: 'edit',
+      DATA_TYPE:  /*[[${dataType}]]*/ 'AD',      // AC/AD/AE
+      DATA_EV:    /*[[${dataEv}]]*/   'B',       // A/B/C/D
+      YEAR:       /*[[${year}]]*/     '2025',
+      EVALUATOR:  /*[[${evaluatorId}]]*/ '00000000',
+      TARGET_ID:  /*[[${target.id}]]*/ '000000',
+      TARGET_NAME:/*[[${target.name}]]*/ '홍길동',
+      // ✅ 계열사 경로로 통일
+      ACTION_URL: /*[[@{/aff/user/form/submit/{targetId}/{ev}/{type}(targetId=${target.id},ev=${dataEv},type=${dataType})}]]*/ '/aff/user/form/submit/x/y/z',
+      INFO_URL:   /*[[@{/aff/Info}]]*/ '/aff/Info',
+      END_URL:    /*[[@{/aff/FormEnd/{eval}/{target}(eval=${evaluatorId},target=${target.id})}]]*/ '/aff/FormEnd'
+    };
+
+    // 기존 답변 주입용 JSON
+    window.__PE_ANSWERS = /*[[${answersBundleJson}]]*/ '{"radios":{},"essays":{}}';
+    /*]]>*/
+  </script>
+
+  <!-- 평가 공용 로직 -->
+  <script th:src="@{/js/aff/user/form.js(v=${#dates.createNow().time})}" defer></script>
+
+  <!-- 프리필 -->
+  <script>
+    (function () {
+      function prefill() {
+        try {
+          const raw = window.__PE_ANSWERS || '{}';
+          const bundle = typeof raw === 'string' ? JSON.parse(raw) : raw;
+          const radios = bundle.radios || {};
+          const essays = bundle.essays || {};
+
+          Object.entries(radios).forEach(([name, value]) => {
+            document.querySelectorAll(`input[type="radio"][name="${name}"]`).forEach(el => {
+              if (el.value === value) el.checked = true;
+            });
+          });
+          Object.entries(essays).forEach(([name, value]) => {
+            const el = document.querySelector(`textarea[name="${name}"]`);
+            if (el) el.value = value ?? '';
+          });
+        } catch (e) { console.warn('[prefill] failed', e); }
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', prefill);
+      else prefill();
+    })();
+  </script>
+
+  <!-- 계열사용 저장/완료 스크립트 -->
+  <script th:inline="javascript">
+  /*<![CDATA[*/
+  (function () {
+    'use strict';
+
+    // 최상단 레이어로 이동
+    ['spinner-overlay','modal-info','modal-confirm'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el && el.parentElement!==document.body) document.body.appendChild(el);
+    });
+
+    if (typeof window.jQuery === 'undefined') {
+      console.error('[aff-edit] jQuery 필요'); return;
+    }
+    const $ = window.jQuery;
+
+    const CFG = window.__PE_CONFIG || {};
+    const {
+      DATA_TYPE='AD', DATA_EV='B', YEAR='2025',
+      EVALUATOR='00000000', TARGET_ID='000000', TARGET_NAME='홍길동',
+      INFO_URL='/aff/Info', END_URL='/aff/FormEnd'
+    } = CFG;
+
+    const ds = document.getElementById('ctx')?.dataset || {};
+    const evalId = ds.eval, target = ds.target, type = ds.type, ev = ds.ev, year = ds.year;
+
+    // ✅ 계열사 편집 API (JSON)
+    const EDIT_API_URL =
+      `/aff/api/editAction/${encodeURIComponent(evalId)}` +
+      `/${encodeURIComponent(target)}/${encodeURIComponent(ev)}/${encodeURIComponent(type)}?year=${encodeURIComponent(year)}`;
+
+    function spinner(show=true){
+      const el=document.getElementById('spinner-overlay'); if(!el) return;
+      if(show){ el.style.display='flex'; requestAnimationFrame(()=>el.classList.add('show')); }
+      else { el.classList.remove('show'); el.addEventListener('transitionend',()=>{ el.style.display='none'; },{once:true}); }
+    }
+    function showInfo(msg){ $('#modal-info-text').html(msg); $('#modal-info').addClass('show'); $('body').css('overflow','hidden'); }
+    function hideInfo(){ $('#modal-info').removeClass('show'); $('body').css('overflow','auto'); }
+    $('#modal-info-close').off('click').on('click', hideInfo);
+
+    function confirmModal(msg,onOk){
+      $('#modal-confirm-text').html(msg); $('#modal-confirm').addClass('show'); $('body').css('overflow','hidden');
+      $('#modal-confirm-ok').off('click.pe').on('click.pe',()=>{ $('#modal-confirm').removeClass('show'); $('body').css('overflow','auto'); onOk&&onOk();});
+      $('#modal-confirm-cancel').off('click.pe').on('click.pe',()=>{ $('#modal-confirm').removeClass('show'); $('body').css('overflow','auto');});
+    }
+
+    function mapScore(v){ return v==='매우우수'?5: v==='우수'?4: v==='보통'?3: v==='미흡'?2: v==='매우미흡'?1:0; }
+
+    function computeAndValidate(){
+      let total=0; const missing=[];
+      const radiosByName={};
+      $('input.radio[type=radio]').each(function(){ (radiosByName[this.name] ||= []).push(this); });
+      Object.keys(radiosByName).forEach(nm=>{
+        const $g=$(`input[name="${nm}"]`), $c=$g.filter(':checked');
+        const title=$g.first().closest('.question-area').find('p.question').text().trim()||`문항(${nm})`;
+        if($c.length===0) missing.push(title);
+        else { let s=mapScore($c.val()); if(DATA_TYPE==='AC') s*=2; total+=s; }
+      });
+      $('textarea[name^="t"]').each(function(){
+        if(!$(this).val().trim()){
+          const title=$(this).closest('table').find('p.question-text').text().trim()||'주관식';
+          missing.push(title);
+        }
+      });
+      return {ok: missing.length===0, missing, total};
+    }
+
+    $(function(){
+      $('#btnSave').off('click.pe').on('click.pe', async function(e){
+        e.preventDefault();
+        const {ok,missing,total}=computeAndValidate();
+        if(!ok){ showInfo('<p>현재 답변하지 않은 항목이 있습니다.</p><p>모든 문항에 응답 후 다시 시도해주세요.</p>'); return; }
+
+        confirmModal(
+          `<p><strong>${TARGET_NAME}</strong> 님의 평가 예상점수는 <strong>${total}점</strong>입니다.</p><p>저장하시겠습니까?</p>`,
+          async function(){
+            const radios={}; document.querySelectorAll('input.radio:checked').forEach(el=>{ radios[el.name]=el.value; });
+            const essays={}; document.querySelectorAll('textarea[name^="t"]').forEach(el=>{ essays[el.name]=el.value??''; });
+            const payload={radios,essays,score:total};
+
+            spinner(true);
+            try{
+              const res=await fetch(EDIT_API_URL,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)});
+              const json=await res.json().catch(()=>({}));
+              spinner(false);
+
+              if(json.result==='1'){ // 이미 완료
+                showInfo('<p>이미 평가가 완료된 대상입니다.</p><p>마이페이지로 이동합니다.</p>');
+                $('#modal-info-close').off('click.go').on('click.go',()=>{ window.location.href = INFO_URL; });
+              } else if(json.result==='2' || json.result==='ok'){
+                window.location.href = /* END_URL(서버 라우팅) */ (CFG.END_URL || '/aff/FormEnd');
+              } else {
+                showInfo('<p>저장 중 오류가 발생했습니다.</p><p>다시 시도해주세요.</p>');
+              }
+            }catch(err){
+              console.error('[aff edit save] error',err);
+              spinner(false);
+              showInfo('<p>저장 중 오류가 발생했습니다.</p><p>다시 시도해주세요.</p>');
+            }
+          }
+        );
+      });
+
+      // 상단 안내 고정
+      (function(){
+        const targetInfo=document.getElementById('targetInfo'); if(!targetInfo) return;
+        const initial=207;
+        window.addEventListener('scroll',()=>{
+          const y=window.scrollY||window.pageYOffset;
+          if(y>=initial) targetInfo.classList.add('fixed'); else targetInfo.classList.remove('fixed');
+        });
+      })();
+
+      $('.menu1').addClass('active');
+    });
+  })();
+  /*]]>*/
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table>
+  <thead>
+    <tr>
+      <th>No</th>
+      <th>소속기관명</th>
+      <th>사번</th>
+      <th>총점</th>
+      <th>홍보 점수(20점)</th>
+      <th>봉사 점수(15점)</th>
+      <th>교육 점수(15점)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="row,stat : ${rows}">
+      <td th:text="${stat.index + 1}">1</td>
+      <td th:text="${row['kcol01']}">기관</td>
+      <td th:text="${row['kcol02']}">123456</td>
+      <td th:text="${row['kcol03']}">100</td>
+      <td th:text="${row['kcol07']}">18</td>
+      <td th:text="${row['kcol11']}">14</td>
+      <td th:text="${row['kcol15']}">13</td>
+    </tr>
+  </tbody>
+</table>
+
+<form th:action="@{/excel/kpi/general/confirm}" method="post">
+  <button type="submit">DB 저장</button>
+</form>
+</body>
+</html>

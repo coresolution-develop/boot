@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/login">
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">
+    <meta property="og:description" content="코어솔루션 인사평가시스템">
+    <title></title>
+
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/demoinfocss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+    <link rel="stylesheet" th:href="@{/css/infocss2025.css}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+
+    <style>
+        .main-content{
+            padding: 0;
+            height: 100%;
+        }
+        .hidden { display: none !important; }
+
+        .modal {
+          position: fixed; inset: 0; z-index: 1000;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(0,0,0,.45);
+        }
+        .modal .panel{
+          width: min(520px, calc(100% - 32px));
+          background: #fff; color: #111;
+          border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,.25);
+          padding: 16px 16px 12px;
+          transform: translateY(8px); opacity: 0;
+          animation: modal-in .18s ease-out forwards;
+        }
+        .modal .header{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .modal .header h2{ font-size:18px; margin:0; }
+        .modal .header button{ border:0; background:transparent; font-size:22px; line-height:1; cursor:pointer; }
+        .modal .body{ margin:12px 0 16px; white-space:pre-line; }
+        .modal .footer{ display:flex; justify-content:flex-end; gap:8px; }
+        .modal .footer button{ padding:8px 12px; border-radius:8px; border:1px solid #ddd; background:#f6f6f6; cursor:pointer; }
+
+        @keyframes modal-in {
+          from { transform: translateY(8px); opacity: 0; }
+          to   { transform: translateY(0);  opacity: 1; }
+        }
+    </style>
+</head>
+
+<body>
+<div th:replace="~{Include/layout :: header}"></div>
+<div th:replace="~{Include/layout :: nav_section2}"></div>
+
+<main class="main-content">
+    <div class="info">
+        <div class="info-container">
+            <div class="info_name">
+                <span class="normal"
+                      th:text="${maskPersonalInfo ? (#strings.isEmpty(userInfo.name) ? '' : #strings.substring(userInfo.name, 0, 1) + '*') : userInfo.name}">홍*</span>
+                <span class="light info_id"
+                      th:text="| (사원번호 : ${maskPersonalInfo ? (#strings.isEmpty(userInfo.id) ? '' : (#strings.length(userInfo.id) > 2 ? #strings.substring(userInfo.id, 0, 2) + '***' : '***')) : userInfo.id})|">(사원번호 : 00***)</span>
+            </div>
+            <div class="info_hs light">
+                <span th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|">소속 / 부서 / 직급</span>
+            </div>
+            <div class="info_date light">
+                <span th:text="${userInfo.createAt != null ? '입사일자 : ' + #dates.format(userInfo.createAt, 'yyyy-MM-dd') : '입사일자 : -'}">입사일자 : -</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="target_info" id="targetInfo">
+        <div class="target_text flex">
+            <div class="notice">
+                <img src="/icon/ev/ok.png">
+                <span class="bold">평가대상자를 확인 후 평가를 진행해주세요!</span>
+            </div>
+            <!-- 퀵 버튼 -->
+            <div class="quick">
+                <span class="nav-btn nav-1" id="title1btn"
+                      th:if="${medicalAll != null and !#lists.isEmpty(medicalAll)}">진료부</span>
+                <span class="nav-btn nav-2" id="title2btn"
+                      th:if="${ghAll != null and !#lists.isEmpty(ghAll)}">경혁팀</span>
+                <span class="nav-btn nav-3" id="title3btn"
+                      th:if="${subHeads != null and !#lists.isEmpty(subHeads)}">부서장</span>
+                <span class="nav-btn nav-4" id="title4btn"
+                      th:if="${membersAll != null and !#lists.isEmpty(membersAll)}">부서원</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="target_area">
+        <div class="target_container">
+
+            <!-- 진료부 평가 (통합) -->
+            <section id="sec-medical" class="target_section"
+                     th:if="${medicalAll != null and !#lists.isEmpty(medicalAll)}">
+                <div class="flex target_header">
+                    <img th:src="@{/icon/ev/ev.png}" alt="icon">
+                    <span class="bold">진료부 평가</span>
+                </div>
+                <div class="line2"></div>
+                <div class="table-scroll">
+                    <table class="targettb">
+                        <thead>
+                        <tr>
+                            <th class="td1">순번</th>
+                            <th class="td2">부서명</th>
+                            <th class="td3">사번</th>
+                            <th class="td4">직급</th>
+                            <th class="td5">성명</th>
+                            <th class="td6">평가 진행률</th>
+                            <th class="td7">평가 점수</th>
+                            <th class="td8">평가 및 수정</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="employee, stat : ${medicalAll}">
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${employee.subName ?: '-'}">부서명</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.id) ? '' : (#strings.length(employee.id) > 2 ? #strings.substring(employee.id, 0, 2) + '***' : '***')) : employee.id}">사번</td>
+                            <td th:text="${employee.position ?: '-'}">직급</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.name) ? '' : #strings.substring(employee.name, 0, 1) + '*') : employee.name}">성명</td>
+
+                            <!-- 진행률: targetId|ev|type 키로 조회 -->
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:if="${p == null or p.total == 0}">미진행</span>
+                                <span th:if="${p != null and p.total > 0}">
+                                    <span th:if="${p.answered == 0}">미진행</span>
+                                    <span th:if="${p.answered > 0 and !p.completed}"
+                                          th:text="|진행중 (${p.answered}/${p.total})|">진행중</span>
+                                    <span class="score-text" th:if="${p.completed}">평가완료</span>
+                                </span>
+                            </td>
+
+                            <!-- 점수 -->
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:text="${p != null && p.totalScore != null ? p.totalScore + '점' : '-'}">-</span>
+                            </td>
+
+                            <!-- 평가/수정 버튼: employee.dataEv / dataType 사용 -->
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <div th:if="${p != null and p.completed}" class="modify-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/edit(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    수정하기
+                                </div>
+
+                                <div th:if="${p == null or !p.completed}" class="form-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/start(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    평가 하기
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 경혁팀 (통합) -->
+            <section id="sec-gh" class="target_section"
+                     th:if="${ghAll != null and !#lists.isEmpty(ghAll)}">
+                <div class="flex target_header">
+                    <img th:src="@{/icon/ev/ev.png}" alt="icon">
+                    <span class="bold">경혁팀 평가</span>
+                </div>
+                <div class="line2"></div>
+                <div class="table-scroll">
+                    <table class="targettb">
+                        <thead>
+                        <tr>
+                            <th class="td1">순번</th>
+                            <th class="td2">부서명</th>
+                            <th class="td3">사번</th>
+                            <th class="td4">직급</th>
+                            <th class="td5">성명</th>
+                            <th class="td6">평가 진행률</th>
+                            <th class="td7">평가 점수</th>
+                            <th class="td8">평가 및 수정</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="employee, stat : ${ghAll}">
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${employee.subName ?: '-'}">부서명</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.id) ? '' : (#strings.length(employee.id) > 2 ? #strings.substring(employee.id, 0, 2) + '***' : '***')) : employee.id}">사번</td>
+                            <td th:text="${employee.position ?: '-'}">직급</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.name) ? '' : #strings.substring(employee.name, 0, 1) + '*') : employee.name}">성명</td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:if="${p == null or p.total == 0}">미진행</span>
+                                <span th:if="${p != null and p.total > 0}">
+                                    <span th:if="${p.answered == 0}">미진행</span>
+                                    <span th:if="${p.answered > 0 and !p.completed}"
+                                          th:text="|진행중 (${p.answered}/${p.total})|">진행중</span>
+                                    <span class="score-text" th:if="${p.completed}">평가완료</span>
+                                </span>
+                            </td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:text="${p != null && p.totalScore != null ? p.totalScore + '점' : '-'}">-</span>
+                            </td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <div th:if="${p != null and p.completed}" class="modify-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/edit(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    수정하기
+                                </div>
+
+                                <div th:if="${p == null or !p.completed}" class="form-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/start(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    평가 하기
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 부서장 (부서원 → 부서장) -->
+            <section id="sec-heads" class="target_section"
+                     th:if="${subHeads != null and !#lists.isEmpty(subHeads)}">
+                <div class="flex target_header">
+                    <img th:src="@{/icon/ev/ev.png}" alt="icon">
+                    <span class="bold">부서장 평가</span>
+                </div>
+                <div class="line2"></div>
+                <div class="table-scroll">
+                    <table class="targettb">
+                        <thead>
+                        <tr>
+                            <th class="td1">순번</th>
+                            <th class="td2">부서명</th>
+                            <th class="td3">사번</th>
+                            <th class="td4">직급</th>
+                            <th class="td5">성명</th>
+                            <th class="td6">평가 진행률</th>
+                            <th class="td7">평가 점수</th>
+                            <th class="td8">평가 및 수정</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="employee, stat : ${subHeads}">
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${employee.subName ?: '-'}">부서명</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.id) ? '' : (#strings.length(employee.id) > 2 ? #strings.substring(employee.id, 0, 2) + '***' : '***')) : employee.id}">사번</td>
+                            <td th:text="${employee.position ?: '-'}">직급</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.name) ? '' : #strings.substring(employee.name, 0, 1) + '*') : employee.name}">성명</td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:if="${p == null or p.total == 0}">미진행</span>
+                                <span th:if="${p != null and p.total > 0}">
+                                    <span th:if="${p.answered == 0}">미진행</span>
+                                    <span th:if="${p.answered > 0 and !p.completed}"
+                                          th:text="|진행중 (${p.answered}/${p.total})|"></span>
+                                    <span class="score-text" th:if="${p.completed}">평가완료</span>
+                                </span>
+                            </td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:text="${p != null && p.totalScore != null ? p.totalScore + '점' : '-'}">-</span>
+                            </td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <div th:if="${p != null and p.completed}" class="modify-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/edit(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    수정하기
+                                </div>
+                                <div th:if="${p == null or !p.completed}" class="form-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/start(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    평가 하기
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 부서원 (통합) : 부서장→부서원 + 부서원↔부서원 -->
+            <section id="sec-members" class="target_section"
+                     th:if="${membersAll != null and !#lists.isEmpty(membersAll)}">
+                <div class="flex target_header">
+                    <img th:src="@{/icon/ev/ev.png}" alt="icon">
+                    <span class="bold">부서원 평가</span>
+                </div>
+                <div class="line2"></div>
+                <div class="table-scroll">
+                    <table class="targettb">
+                        <thead>
+                        <tr>
+                            <th class="td1">순번</th>
+                            <th class="td2">부서명</th>
+                            <th class="td3">사번</th>
+                            <th class="td4">직급</th>
+                            <th class="td5">성명</th>
+                            <th class="td6">평가 진행률</th>
+                            <th class="td7">평가 점수</th>
+                            <th class="td8">평가 및 수정</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="employee, stat : ${membersAll}">
+                            <td th:text="${stat.count}">1</td>
+                            <td th:text="${employee.subName ?: '-'}">부서명</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.id) ? '' : (#strings.length(employee.id) > 2 ? #strings.substring(employee.id, 0, 2) + '***' : '***')) : employee.id}">사번</td>
+                            <td th:text="${employee.position ?: '-'}">직급</td>
+                            <td th:text="${maskPersonalInfo ? (#strings.isEmpty(employee.name) ? '' : #strings.substring(employee.name, 0, 1) + '*') : employee.name}">성명</td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:if="${p == null || p.total == 0}">미진행</span>
+                                <span th:if="${p != null && p.total > 0}">
+                                    <span th:if="${p.answered == 0}">미진행</span>
+                                    <span th:if="${p.answered > 0 && !p.completed}"
+                                          th:text="|진행중 (${p.answered}/${p.total})|">진행중</span>
+                                    <span class="score-text" th:if="${p.completed}">평가완료</span>
+                                </span>
+                            </td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <span th:text="${p != null && p.totalScore != null ? p.totalScore + '점' : '-'}">-</span>
+                            </td>
+
+                            <td th:with="p=${progressMap[employee.id]}">
+                                <div th:if="${p != null and p.completed}" class="modify-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/edit(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    수정하기
+                                </div>
+                                <div th:if="${p == null or !p.completed}" class="form-btn" role="button" tabindex="0"
+                                     th:attr="data-href=@{/user/form/start(
+                                         targetId=${employee.id},
+                                         ev=${employee.dataEv},
+                                         type=${employee.dataType},
+                                         year=${year})}">
+                                    평가 하기
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 전부 비었을 때 -->
+            <div class="empty"
+                 th:if="${#lists.isEmpty(ghAll)
+                     and #lists.isEmpty(subHeads)
+                     and #lists.isEmpty(membersAll)
+                     and #lists.isEmpty(medicalAll)}">
+                평가 대상이 없습니다.
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- 페이지 맨 아래 모달 -->
+<div id="release-modal" class="modal hidden">
+    <div class="modal__backdrop"></div>
+    <div class="panel">
+        <div class="header">
+            <h2>평가 오픈 예정 안내</h2>
+            <button type="button" id="release-modal-close" aria-label="닫기">×</button>
+        </div>
+        <div class="body">
+            <span th:text="${releaseWindow != null ? releaseWindow.dataType : ''}"></span>
+            폼은 <b th:text="${openAtStr}"></b> 부터 열립니다.
+            <div th:if="${daysUntilOpen > 0}">D-<span th:text="${daysUntilOpen}"></span></div>
+        </div>
+        <div class="footer">
+            <button type="button" id="release-modal-close-2">확인</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script th:replace="~{Include/layout :: scripts}"></script>
+<script th:src="@{/js/user/info.js(v=${#dates.createNow().time})}" defer></script>
+<script th:inline="javascript">
+  const gateBlocked = /*[[${gateBlocked}]]*/ false;
+  const gateReason  = /*[[${gateReason}]]*/ null;      // "BEFORE_OPEN" | "AFTER_CLOSE"
+  const openAtStr   = /*[[${openAtStr}]]*/ null;
+  const closeAtStr  = /*[[${closeAtStr}]]*/ null;
+
+  console.log('gate =>', { gateBlocked, gateReason, openAtStr, closeAtStr });
+
+  const modal  = document.getElementById('release-modal');
+  const close1 = document.getElementById('release-modal-close');
+  const close2 = document.getElementById('release-modal-close-2');
+
+  const showModal = () => modal?.classList.remove('hidden');
+  const hideModal = () => modal?.classList.add('hidden');
+
+  // ✅ 평가하기(.form-btn) 클릭 가로채기
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.form-btn');
+    if (!btn) return;
+
+    const href = btn.getAttribute('data-href');
+    if (!href) return;
+
+    // ✅ 오픈 전/마감 후 모두 차단
+    if (gateBlocked) {
+      e.preventDefault();
+      e.stopImmediatePropagation?.();
+
+      // 모달 문구를 상황에 따라 바꾸고 싶으면 여기서 처리
+      // (예: BEFORE_OPEN => openAtStr, AFTER_CLOSE => closeAtStr)
+      // document.querySelector('#release-modal-msg')... 등으로 세팅 가능
+
+      showModal();
+      return false;
+    }
+
+    window.location.href = href;
+  });
+
+  // 수정하기(.modify-btn)도 “그냥 다 막기”면 같이 막아야 함
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.modify-btn');
+    if (!btn) return;
+
+    const href = btn.getAttribute('data-href');
+    if (!href) return;
+
+    if (gateBlocked) {
+      e.preventDefault();
+      e.stopImmediatePropagation?.();
+      showModal();
+      return false;
+    }
+
+    window.location.href = href;
+  });
+
+  close1?.addEventListener('click', hideModal);
+  close2?.addEventListener('click', hideModal);
+  modal?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('modal__backdrop')) hideModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') hideModal();
+  });
+</script>
+</body>
+</html>

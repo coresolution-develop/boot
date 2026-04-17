@@ -1,0 +1,129 @@
+@charset "UTF-8";
+
+:root, html {
+	font-size: 10px;
+	--footer--width: 861px;
+}
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+	-webkit-text-fill-color: #333333;
+    -webkit-box-shadow: 0 0 0px 1000px #efefef inset;
+}
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+	-webkit-text-fill-color: #333333;
+    -webkit-box-shadow: 0 0 0px 1000px #efefef inset;
+}
+body {
+	background: #f7f7f7;
+    width: 100vw;
+    height: 100vh;
+}
+section {
+    background: #fcfcfc;
+	width: 700px;
+	height: 590px;
+	border: 1px solid #dfdfdf;
+	margin: 0 auto;
+	position: absolute;
+	top: 42%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.login {
+	width: 100%;
+    height: calc(100% - 62px);
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 40px 0 0;
+}
+
+.login span {
+	font-size: 3rem;
+    color: #333333;
+}
+.login-head {
+	display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: center;
+    padding: 0px 50px;
+}
+.head-img-area {
+	cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.head-img-area > img {
+	width: 13px;
+}
+.head-span-area {
+	width: 100%;
+}
+
+ul {
+	margin-top: 35px;
+}
+li {
+	margin-bottom: 10px
+}
+li:nth-child(4) {
+	margin-bottom: 36px
+}
+li:last-child {
+	margin-bottom: 0;
+}
+input[type=text], input[type=password] {
+	padding-left: 40px;
+}
+
+input[type=text], input[type=password], button {
+    background: #efefef;
+    border: 1px solid #efefef;
+    width: 600px;
+    height: 68px;
+    font-size: 1.75rem;
+    color: #333333;
+}
+button {
+	background: #1b304a;
+	color: #fff;
+	cursor: pointer;
+}
+
+.footer {
+	width: 100%;
+    position: absolute;
+    bottom: 0;
+    height: 173px;
+    
+}
+
+.line {
+	width: 100%;
+    background: #1b304a;
+    height: 9px;
+    position: relative;
+    top: -65px;
+}
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,176 @@
+plugins {
+	id 'java'
+	id 'war'
+	id 'org.springframework.boot' version '3.4.7'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+import org.springframework.boot.gradle.tasks.bundling.BootWar
+import org.springframework.boot.gradle.tasks.run.BootRun
+
+def MAIN_CLASS = 'com.coresolution.pe.PeApplication'
+
+// toolchain → JavaVersion 매핑
+def TARGET_JAVA = providers.provider {
+    JavaVersion.toVersion(java.toolchain.languageVersion.get().asInt())
+}
+
+tasks.withType(BootWar).configureEach {
+    mainClass.set(MAIN_CLASS)
+    targetJavaVersion.set(TARGET_JAVA)  // ★ 핵심
+}
+
+
+group = 'com.coresolution'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(17)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+bootWar {
+    archiveBaseName.set('pe') // 산출물 이름 prefix
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+	implementation 'org.springframework.boot:spring-boot-starter-validation' // ← 추가
+
+	// ✅ 명시 고정 (IDE 인식/충돌 방지)	
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.2.Final'
+
+    // ✅ 혹시 남아있을 수 있는 javax.validation을 전역 제외
+    configurations.all {
+        exclude group: 'javax.validation', module: 'validation-api'
+    }
+
+    implementation 'org.apache.poi:poi:5.2.3'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
+	compileOnly 'org.projectlombok:lombok'
+	compileOnly("org.springframework.boot:spring-boot-devtools")
+	runtimeOnly 'com.mysql:mysql-connector-j'
+	annotationProcessor 'org.projectlombok:lombok'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.google.code.gson:gson:2.8.5'
+	implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // 선택: 관리자 입력 본문 sanitize용 (원하면 사용)
+    implementation 'org.jsoup:jsoup:1.17.2'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+tasks.withType(JavaCompile).configureEach {
+    options.fork = false
+    // fork=true인 경우 jvmArgs에서 잘못된 플래그를 제거
+    options.forkOptions.jvmArgs.removeAll { it == '-XshowSettings:all' }
+}
+// 공통 설정(모든 BootWar 태스크에 적용)
+tasks.withType(BootWar).configureEach {
+    mainClass.set(MAIN_CLASS)
+    targetJavaVersion.set(JavaVersion.VERSION_17)
+    archiveBaseName.set('pe')
+}
+// DEV
+tasks.register('bootWarDev', BootWar) {
+    group = "build"
+    description = "Build DEV profile WAR"
+    with bootWar
+    archiveClassifier.set('dev') // pe-0.0.1-SNAPSHOT-dev.war
+    // ⬇ 출력 위치: build/lib/dev
+    destinationDirectory.set(layout.buildDirectory.dir("lib/dev"))
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    // 1) dev 프로퍼티를 application.properties로
+    into('WEB-INF/classes') {
+        from('src/main/resources') { include 'application-dev.properties' }
+        rename { it == 'application-dev.properties' ? 'application.properties' : it }
+    }
+
+    // 2) 리소스(classpath) 강제 포함
+    into('WEB-INF/classes') {
+        from('src/main/resources') {
+            include 'templates/**', 'static/**', 'messages/**'
+        }
+    }
+}
+
+// PROD
+tasks.register('bootWarProd', BootWar) {
+    group = "build"
+    description = "Build PROD profile WAR"
+    with bootWar
+    archiveClassifier.set('prod') // pe-0.0.1-SNAPSHOT-prod.war
+    // ⬇ 출력 위치: build/lib/prod
+    destinationDirectory.set(layout.buildDirectory.dir("lib/prod"))
+
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    into('WEB-INF/classes') {
+        from('src/main/resources') { include 'application-prod.properties' }
+        rename { it == 'application-prod.properties' ? 'application.properties' : it }
+    }
+    into('WEB-INF/classes') {
+        from('src/main/resources') {
+            include 'templates/**', 'static/**', 'messages/**'
+        }
+    }
+}
+
+tasks.register('bootRunDev', BootRun) {
+    group = "application"
+    description = "Run DEV profile"
+    mainClass.set(MAIN_CLASS)
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "file.encoding", "UTF-8"
+
+    systemProperty "spring.profiles.active", "dev"
+}
+
+tasks.named('bootRun', BootRun) {
+    systemProperty "file.encoding", "UTF-8"
+
+    def activeProfile = System.getProperty("spring.profiles.active")
+    if (!activeProfile) {
+        activeProfile = System.getenv("SPRING_PROFILES_ACTIVE")
+    }
+    systemProperty "spring.profiles.active", activeProfile ?: "local"
+}
+
+tasks.register('bootRunProd', BootRun) {
+    group = "application"
+    description = "Run PROD profile"
+    mainClass.set(MAIN_CLASS)
+    classpath = sourceSets.main.runtimeClasspath
+    systemProperty "file.encoding", "UTF-8"
+
+    systemProperty "spring.profiles.active", "prod"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

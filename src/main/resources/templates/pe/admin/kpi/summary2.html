@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+  th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+  <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hr.sosyge.net/pe/login"> <!-- 공유시 입력될 URL -->
+  <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png"> <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+  <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+  <title>KPI 평가 총괄</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+  <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+  <style>
+    .main-content {
+      padding: 10px;
+    }
+
+    /* 화면 */
+    .main {
+      padding: 10px;
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    .tbl th,
+    .tbl td {
+      border: 0.6pt solid #d6d6d6;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
+    .tbl thead th {
+      background: #f2f4f7;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    .nowrap {
+      white-space: nowrap;
+    }
+
+    .point {
+      color: #d32f2f;
+      font-weight: 700;
+    }
+
+    /* 총점 강조 */
+
+    /* 인쇄: A4 가로 기본 */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+
+      html,
+      body {
+        margin: 0 !important;
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .tbl th,
+      .tbl td {
+        padding: 4px 6px !important;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tfoot {
+        display: table-footer-group;
+      }
+
+      tr,
+      th,
+      td {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+    }
+
+    /* 섹션 헤더 라인 높이 */
+    th.section {
+      background: #e9eef7;
+      font-weight: 800;
+    }
+
+    /* ===== 화면 공용 ===== */
+    .main-content,
+    .main {
+      padding: 10px;
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    .tbl th,
+    .tbl td {
+      border: 0.6pt solid #d6d6d6;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
+    .tbl thead th {
+      background: #f2f4f7;
+    }
+
+    .left {
+      text-align: left;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+
+    .nowrap {
+      white-space: nowrap;
+    }
+
+    .point {
+      color: #d32f2f;
+      font-weight: 700;
+    }
+
+
+    .tbl,
+    .tbl th,
+    .tbl td,
+    .tbl span {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, "Noto Sans KR", "Malgun Gothic", Arial, sans-serif !important;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 아이콘은 아이콘 클래스에만 적용 */
+    .icon,
+    [class^="mi-"],
+    [class*=" mi-"] {
+      font-family: "Material Icons", "Material Symbols Outlined" !important;
+    }
+
+    /* ===== 프린트 Fallback (Ctrl+P 등 직접인쇄 대비) ===== */
+    @media print {
+
+      html,
+      body,
+      main,
+      .main,
+      .main-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      #print-area {
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        transform: none !important;
+        overflow: visible !important;
+        background: #fff;
+      }
+
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        page-break-inside: auto;
+        break-inside: auto;
+      }
+
+      thead {
+        display: table-header-group;
+      }
+
+      tfoot {
+        display: table-footer-group;
+      }
+
+      tr,
+      th,
+      td {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .tbl th,
+      .tbl td {
+        padding: 8px 10px !important;
+      }
+
+      .print-title {
+        margin: 0 0 6mm 0 !important;
+        font-size: 20px !important;
+        font-weight: 800;
+        text-align: left;
+        break-after: avoid-page;
+      }
+
+      #print-area * {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+      }
+
+      #print-area::before,
+      #print-area::after {
+        content: "";
+        display: block;
+        height: 0.1px;
+      }
+
+      #print-header {
+        display: block !important;
+        margin-bottom: 6mm !important;
+        font-size: 24px !important;
+        text-align: left;
+      }
+    }
+
+    /* 화면 + 인쇄 모두 강제: 표 내부엔 일반 글꼴만! */
+    #print-area table.tbl,
+    #print-area table.tbl * {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, "Noto Sans KR", "Malgun Gothic", Arial, sans-serif !important;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 아이콘 폰트는 정말 아이콘 클래스에만 적용 (추가 안전장치) */
+    #print-area table.tbl .icon,
+    #print-area table.tbl [class^="mi-"],
+    #print-area table.tbl [class*=" mi-"],
+    #print-area table.tbl .material-icons,
+    #print-area table.tbl .material-symbols-outlined {
+      font-family: "Material Icons", "Material Symbols Outlined" !important;
+    }
+
+    /* 아이콘 폰트는 필요한 곳에서만 지정하고, 전역으로는 지정하지 않기 */
+    .icon,
+    [class^="mi-"],
+    [class*=" mi-"],
+    .material-icons,
+    .material-symbols-outlined {
+      font-family: "Material Icons", "Material Symbols Outlined" !important;
+      letter-spacing: normal;
+    }
+    /* 기본: 숨김 */
+.only-in-td { display: none !important; }
+
+/* td 내부에 있을 때만 표시 */
+td .only-in-td { display: inline !important; }   /* span이면 inline이 자연스러움 */
+
+/* 인쇄 때 숨길 게 있다면 같이 사용 */
+@media print {
+  td .only-in-td.no-print { display: none !important; }
+}
+.btn-animated:hover, .orange-btn:hover, .white-btn:hover, .custom:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+/* 헤더(62px) 바로 아래 10px padding을 덮는 흰 커버 */
+.sticky-pad-cover{
+  position: sticky;
+  top: 62px;       /* 헤더 높이 */
+  height: 10px;    /* 메인 padding */
+  background: #fff;
+  z-index: 150;    /* 헤더 아래, 폼 아래 */
+}
+/* 상단 폼 sticky */
+.filter-sticky{
+  position: sticky;
+  top: 72px;        /* 62(header) + 10(padding) */
+  z-index: 200;     /* thead 보다 위 */
+  background: #fff;
+  padding: 6px 8px;
+  margin: 0;        /* 폼 아래 틈 제거 */
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border-bottom: 1px solid rgba(0,0,0,.06); /* 경계선 */
+}
+
+/* thead sticky – 폼 바로 아래에 착 달라붙게 */
+.tbl thead th{
+  position: sticky;
+  top: var(--sticky-offset, 72px);   /* JS가 폼 높이까지 보정 */
+  z-index: 180;                      /* 본문 위, 폼 아래 */
+  background: #f2f4f7;
+  /* 빈틈으로 본문 글자 비치는 것 방지 */
+  background-clip: padding-box;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06) inset,
+              0 -1px 0 rgba(0,0,0,.06) inset;
+}
+
+/* 표 자체의 위쪽 경계 가시성 확보(틈 메우기) */
+.tbl{
+  border-collapse: collapse;
+  background:#fff;         /* 행 글자 비치는 것 차단 */
+}
+
+/* 프린트에서는 sticky/그림자 제거 */
+@media print{
+  .sticky-pad-cover{ display:none !important; }
+  .filter-sticky{ position: static !important; box-shadow:none !important; border-bottom:none !important; }
+  .tbl thead th{ position: static !important; box-shadow:none !important; }
+}
+  </style>
+</head>
+
+<body>
+  <!-- 공용 fragment -->
+<th:block th:fragment="val(v)">
+  <span class="nowrap only-in-td" th:if="${v != null and v != ''}" th:text="${v}"></span>
+  <span class="nowrap only-in-td no-print placeholder" th:if="${v == null or v == ''}">-</span>
+</th:block>
+
+<th:block th:fragment="fmt2(v)">
+  <span class="nowrap only-in-td" th:if="${v != null}"
+        th:text="${ T(java.math.BigDecimal).valueOf(v.doubleValue())
+                    .setScale(2, T(java.math.RoundingMode).HALF_UP)
+                    .stripTrailingZeros()
+                    .toPlainString() }"></span>
+  <span class="nowrap only-in-td no-print placeholder" th:if="${v == null}">-</span>
+</th:block>
+<th:block th:fragment="fmt2Default43(v)">
+  <span class="nowrap only-in-td" th:if="${v != null}"
+        th:text="${
+          T(java.math.BigDecimal).valueOf(
+            (v.doubleValue() == 0.0) ? 4.3 : v.doubleValue()
+          )
+          .setScale(2, T(java.math.RoundingMode).HALF_UP)
+          .stripTrailingZeros()
+          .toPlainString()
+        }">
+  </span>
+  <span class="nowrap only-in-td no-print placeholder" th:if="${v == null}">-</span>
+</th:block>
+  <div th:replace="~{Include/layout :: header}"></div>
+  <div th:replace="~{Include/layout :: nav_section}"></div>
+  <main id="print-area" class="main-content">
+    <!-- 헤더 62px 바로 아래, 메인 padding(10px)을 가리는 커버 -->
+  <div class="sticky-pad-cover" aria-hidden="true"></div>
+    <form method="get" th:action="@{/admin/kpi/summary2}" class="filter filter-sticky">
+      <div style="display:flex; gap:10px; align-items:center; margin:8px 0 12px;">
+        <div class="no-print">
+          <select class="custom" name="orgName" style="margin:0; width:150px;">
+            <option th:value="''" th:selected="${selectedOrgName == null or selectedOrgName == ''}">전체</option>
+            <option th:each="org : ${orgList}" th:value="${org}" th:text="${org}"
+              th:selected="${org == selectedOrgName}"></option>
+          </select>
+        </div>
+        <div class="no-print">
+          <select class="custom" name="year" id="yearSelect" style="margin:0; width:85px;">
+            <option th:each="y : ${#numbers.sequence(2024, currentYear)}" th:value="${y}" th:text="${y}"
+              th:selected="${y == selectedYear}"></option>
+          </select>
+        </div>
+        <div class="toolbar no-print">
+          <button class="white-btn" id="search-btn" type="submit" style="font-size:12px;padding:11px 20px;">조회</button>
+        </div>
+        <div class="toolbar no-print" style="display:flex; gap:8px;">
+          <button class="orange-btn" type="button" style="font-size:12px;padding:11px 20px;" onclick="printAs('A4L')">A4
+            출력</button>
+          <button class="orange-btn" type="button" style="font-size:12px;padding:11px 20px;" onclick="printAs('A3L')">A3
+            출력</button>
+          <button type="button" id="btn-save-all" class="btn btn-primary">
+            총점 일괄 저장
+          </button>
+          <select id="scoreSortSelect" class="custom" style="font-size: 12px; padding: 4px 8px;">
+    <option value="">기본 정렬</option>
+    <option value="desc">총점 높은 순</option>
+    <option value="asc">총점 낮은 순</option>
+  </select>
+        </div>
+      </div>
+    </form>
+
+    <div id="print-header" style="margin:8px 0 12px 0;">
+      <span style="font-weight: bold;"
+          th:text="${selectedYear + '년 KPI평가 총괄(경혁) : '}"></span>
+      <span th:text="${orgNameForTitle}"></span>
+    </div>
+
+    <table id="kpi-summary-table" class="tbl">
+      <colgroup>
+        <!-- 직원정보 (4) -->
+        <col style="width:9%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <col style="width:10%">
+        <!-- 총점/등급 (2) -->
+        <col style="width:7%">
+        <!-- Ⅰ. 재무성과 (4) -->
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <!-- Ⅱ. 고객서비스 (5) -->
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <!-- Ⅲ. 프로세스혁신 (4) -->
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <!-- Ⅳ. 학습성장 (4) -->
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <!-- Ⅴ. 다면평가 (4) -->
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+        <col style="width:7%">
+      </colgroup>
+
+      <thead>
+        <tr class="top">
+          <!-- 직원정보 -->
+          <th rowspan="2">부서명</th>
+          <th rowspan="2">사번</th>
+          <th rowspan="2">직책</th>
+          <th rowspan="2">성명</th>
+
+          <!-- 총점 -->
+          <th rowspan="2" data-field="totalScore">총점</th>
+
+          <!-- Ⅰ. 재무성과 -->
+          <th colspan="4">Ⅰ. 재무성과</th>
+
+          <!-- Ⅱ. 고객서비스 -->
+          <th colspan="5">Ⅱ. 고객서비스</th>
+
+          <!-- Ⅲ. 프로세스혁신 -->
+          <th colspan="4">Ⅲ. 프로세스혁신</th>
+
+          <!-- Ⅳ. 학습성장 -->
+          <th colspan="4">Ⅳ. 학습성장</th>
+
+          <!-- Ⅴ. 다면평가 (소계 20) -->
+          <th colspan="4">Ⅴ. 다면평가</th>
+        </tr>
+
+        <tr class="sub">
+          <!-- Ⅰ -->
+          <th>소계(I)<br>(40점)</th>
+          <th>병상가동률<br />(15점)</th>
+          <th>일당진료비<br />(15점)</th>
+          <th>매출/원가<br />(10점)</th>
+
+          <!-- Ⅱ -->
+          <th>소계(II)</th>
+          <th>환자만족도<br />(5점)</th>
+          <th>보호자만족도<br />(5점)</th>
+          <th>환자안전사고<br />(4점)</th>
+          <th>식사수발<br />(1점)</th>
+
+          <!-- Ⅲ -->
+          <th>소계(III)<br>(15점)</th>
+          <th>입원·장례 연계<br />(7점)</th>
+          <th>홍보활동<br />(5점)</th>
+          <th>QI 질향상<br />(3점)</th>
+
+          <!-- Ⅳ -->
+          <th>소계(IV)<br>(10점)</th>
+          <th>교육이수<br />(3점)</th>
+          <th>자원봉사<br />(4점)</th>
+          <th>독서토론<br />(3점)</th>
+
+          <!-- Ⅴ -->
+          <th>소계(V)<br>(20점)</th>
+          <th>경혁팀간<br />(10점)</th>
+          <th>부서원평가<br />(5점)</th>
+          <th>진료부평가<br />(5점)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr th:each="r : ${rows}" th:attr="data-year=${selectedYear}, data-emp-id=${r.empNo}">
+          <!-- 직원정보 -->
+          <td th:insert="~{::val(v=${r.deptName})}"></td>
+          <td th:insert="~{::val(v=${r.empNo})}"></td>
+          <td th:insert="~{::val(v=${r.position})}"></td>
+          <td th:insert="~{::val(v=${r.name})}"></td>
+
+          <!-- 총점 / 등급 -->
+          <td class="total-score" th:style="${'font-weight: bold; color: red;'}" th:insert="~{::fmt2(v=${r.total})}"></td>
+
+          <!-- Ⅰ. 재무성과: [소계, 병상가동률, 일당진료비, 매출/원가] -->
+          <td th:style="${'font-weight: bold; color: blue;'}" th:insert="~{::fmt2(v=${r.iSubtotal})}"></td>
+          <td th:insert="~{::val(v=${r.iBedAvailTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iDayChargeTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iSalesTxt})}"></td>
+
+          <!-- Ⅱ. 고객서비스: [소계, 환자만족도, 보호자만족도, 환자안전사고, 식사수발] -->
+          <td th:style="${'font-weight: bold; color: blue;'}" th:insert="~{::fmt2(v=${r.iiSubtotal})}"></td>
+          <td th:insert="~{::val(v=${r.iiPatientSatTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iiProtectorSatTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iiAccidentTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iiMealTxt})}"></td>
+
+          <!-- Ⅲ. 프로세스혁신: [소계, 입원·장례연계, 홍보활동, QI 질향상] -->
+          <td th:style="${'font-weight: bold; color: blue;'}" th:insert="~{::fmt2(v=${r.iiiSubtotal})}"></td>
+          <td th:insert="~{::val(v=${r.iiiLinkTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iiiPromotionTxt})}"></td>
+          <td th:insert="~{::val(v=${r.iiiQITxt})}"></td>
+
+          <!-- Ⅳ. 학습성장: [소계, 교육이수, 자원봉사, 독서토론] -->
+          <td th:style="${'font-weight: bold; color: blue;'}" th:insert="~{::fmt2(v=${r.ivSubtotal})}"></td>
+          <td th:insert="~{::val(v=${r.ivEduTxt})}"></td>
+          <td th:insert="~{::val(v=${r.ivVolunteerTxt})}"></td>
+          <td th:insert="~{::val(v=${r.ivDiscussTxt})}"></td>
+
+          <!-- Ⅴ. 다면평가: [경혁팀간, 부서원→부서장, 진료부→경혁팀, 소계] -->
+          <td th:style="${'font-weight: bold; color: blue;'}"
+              th:insert="~{::fmt2Default43(v=${r.vSubtotal})}"></td>
+          <td th:insert="~{::fmt2Default43(v=${r.vExperience})}"></td>
+          <td th:insert="~{::fmt2Default43(v=${r.vBossToStaff})}"></td>
+          <td th:insert="~{::fmt2Default43(v=${r.vStaffToStaff})}"></td>
+        </tr>
+      </tbody>
+
+    </table>
+  </main>
+
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <div th:replace="~{Include/layout :: scripts}"></div>
+  <script>
+    // ===== 주입/제거 유틸 =====
+    let __printStyleEl = null;
+    let mqListener = null;
+
+    function injectPrintStyle(css) {
+      removePrintStyle();
+      __printStyleEl = document.createElement('style');
+      __printStyleEl.setAttribute('data-print-style', 'kpi-summary');
+      __printStyleEl.type = 'text/css';
+      __printStyleEl.appendChild(document.createTextNode(css));
+      document.head.appendChild(__printStyleEl);
+    }
+
+    function removePrintStyle() {
+      if (mqListener && window.matchMedia) {
+        try { window.matchMedia('print').removeEventListener('change', mqListener); } catch (e) { }
+        mqListener = null;
+      }
+      if (__printStyleEl && __printStyleEl.parentNode) {
+        __printStyleEl.parentNode.removeChild(__printStyleEl);
+        __printStyleEl = null;
+      }
+    }
+
+    /**
+     * size: 'A4P'|'A4L'|'A3P'|'A3L'
+     * scale: 글자 크기 미세 조정(기본 1)
+     */
+    window.printAs = function (size = 'A4L', scale = 1) {
+      // 1) 기존 것 제거
+      removePrintStyle();
+
+      // 2) 규칙 생성
+      let pageDecl = 'A4 landscape', base = 11, margin = '8mm';
+      switch (size) {
+        case 'A4P': pageDecl = 'A4 portrait'; base = 11; margin = '10mm'; break;
+        case 'A4L': pageDecl = 'A4 landscape'; base = 10.5; margin = '8mm'; break;
+        case 'A3P': pageDecl = 'A3 portrait'; base = 11; margin = '10mm'; break;
+        case 'A3L': pageDecl = 'A3 landscape'; base = 10; margin = '8mm'; break;
+      }
+      base = Math.max(9.5, base * (scale || 1));
+
+      const css = `
+      @page{ size:${pageDecl}; margin:${margin} !important; }
+      @media print{
+        html,body{
+          margin:0 !important; padding:0 !important; height:auto !important;
+          font-size:${base}px; line-height:1.35;
+          -webkit-print-color-adjust:exact; print-color-adjust:exact;
+        }
+        /* ===== 화면 UI 숨김(필요 시 사이트 공통 네비 등 추가) ===== */
+        header, nav, aside,
+        .toolbar, .no-print, .wrapper,
+        #admin-nav, #user-nav, .nav_section,
+        .leftMenu, .lnb,
+        [role="navigation"], [data-role="sidebar"],
+        .demoheader, .layout-header, .top_wrap, .gnb {
+          display: none !important;
+        }
+
+        /* 인쇄영역 강제 리셋 */
+        #print-area{
+          position:static !important; margin:0 !important; padding:0 !important;
+          width:100% !important; max-width:none !important; overflow:visible !important;
+        }
+
+        /* 표/줄바꿈 제어 */
+        thead{ display:table-header-group }
+        tfoot{ display:table-footer-group }
+        table{ width:100% !important; border-collapse:collapse !important; page-break-inside:auto }
+        tr{ page-break-inside:auto; break-inside:auto }
+        th,td{ page-break-inside:avoid; break-inside:avoid; padding:4px 6px !important }
+
+        /* 제목(있다면) */
+        .print-title{
+          break-after:avoid-page; margin:0 0 6mm 0 !important;
+          font-size:${Math.round(base * 1.8)}px !important; font-weight:800
+        }
+
+        /* 모션 제거 */
+        #print-area *{ animation:none !important; transition:none !important; transform:none !important }
+        /* 크롬 첫/마지막 페이지 클리핑 방지 */
+        #print-area::before, #print-area::after{ content:""; display:block; height:0.1px; }
+      }`;
+
+      // 3) 규칙 주입
+      injectPrintStyle(css);
+
+      // 4) 인쇄 후 자동 정리
+      const cleanup = () => setTimeout(removePrintStyle, 50);
+      if (window.matchMedia) {
+        const mq = window.matchMedia('print');
+        mqListener = (e) => { if (!e.matches) cleanup(); };
+        mq.addEventListener?.('change', mqListener);
+      }
+      const prev = window.onafterprint;
+      window.onafterprint = () => { prev && prev(); cleanup(); };
+
+      // 5) 적용 후 프린트
+      setTimeout(() => window.print(), 0);
+    };
+
+(function(){
+  const root = document.documentElement;
+  const sticky = document.querySelector('.filter-sticky');
+  const BASE = 72;  // 62(header) + 10(padding)
+
+  function updateStickyOffset(){
+    const h = sticky ? Math.ceil(sticky.getBoundingClientRect().height) : 0;
+    // thead는 헤더+패딩+폼 높이만큼 내려간 지점에 달라붙어야 겹치지 않음
+    root.style.setProperty('--sticky-offset', `${BASE + h - 1}px`);
+  }
+
+  window.addEventListener('load', updateStickyOffset);
+  window.addEventListener('resize', updateStickyOffset);
+  document.addEventListener('change', (e)=>{
+    if (sticky && sticky.contains(e.target)) updateStickyOffset();
+  });
+
+  // 글꼴/이미지 로딩 지연 대응
+  setTimeout(updateStickyOffset, 0);
+  setTimeout(updateStickyOffset, 300);
+})();
+
+$('#search-btn').click(function(){
+  console.log('검색 버튼 클릭 - 스피너 표시');
+  OnlyshowSpinner();
+});
+  </script>
+  <script th:inline="javascript">
+(function () {
+  const btnSaveAll = document.getElementById('btn-save-all');
+  const table = document.getElementById('kpi-summary-table');
+
+  if (!btnSaveAll || !table) {
+    console.warn('save-all: 요소를 찾을 수 없습니다.', { btnSaveAll, table });
+    return;
+  }
+
+  // ✅ contextPath 를 포함한 최종 URL을 Thymeleaf가 생성
+  const saveUrl = /*[[@{/admin/kpi/saveScoreBulk}]]*/ '/admin/kpi/saveScoreBulk';
+
+  btnSaveAll.addEventListener('click', function () {
+    const rows = table.querySelectorAll('tbody tr');
+    const payload = [];
+
+    rows.forEach(tr => {
+      const year = tr.dataset.year;
+      const empId = tr.dataset.empId;
+      const totalScoreCell = tr.querySelector('.total-score');
+      if (!totalScoreCell) return;
+
+      const totalScoreText = (totalScoreCell.textContent || '').trim();
+      if (!year || !empId || !totalScoreText) return;
+      if (isNaN(totalScoreText)) return;
+
+      payload.push({
+        year: Number(year),
+        empId: empId,
+        totalScore: Number(totalScoreText)
+      });
+    });
+
+    if (payload.length === 0) {
+      alert('저장할 데이터가 없습니다.');
+      return;
+    }
+
+    if (!confirm(payload.length + '건의 총점을 일괄 저장하시겠습니까?')) {
+      return;
+    }
+
+    fetch(saveUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json;charset=UTF-8'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.result === 'OK') {
+        alert('일괄 저장이 완료되었습니다.\n('
+              + data.successCount + '/' + data.totalCount + ' 건)');
+      } else {
+        alert('저장에 실패했습니다.\n' + (data.message || '알 수 없는 오류'));
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('저장 중 오류가 발생했습니다.');
+    });
+  });
+})();
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const sortSelect = document.getElementById('scoreSortSelect');
+    const table = document.getElementById('kpi-summary-table');
+    if (!sortSelect || !table) return;
+
+    const tbody = table.tBodies[0];
+    if (!tbody) return;
+
+    // 🔎 총점 컬럼 index 찾기 (data-field="totalScore" 우선)
+    const headerRow = table.tHead ? table.tHead.rows[0] : null;
+    let scoreColIndex = -1;
+
+    if (headerRow) {
+      const ths = Array.from(headerRow.cells);
+      scoreColIndex = ths.findIndex(th =>
+        th.dataset.field === 'totalScore' ||
+        th.textContent.replace(/\s/g, '').includes('총점')
+      );
+    }
+
+    if (scoreColIndex === -1) {
+      console.warn('총점 컬럼을 찾지 못했습니다. data-field="totalScore"를 확인하세요.');
+      return;
+    }
+
+    // 🧷 현재 DOM 순서를 "기본 정렬" 기준으로 저장
+    const originalRows = Array.from(tbody.querySelectorAll('tr'));
+
+    sortSelect.addEventListener('change', function (e) {
+      const mode = e.target.value;  // "", "asc", "desc"
+
+      // 현재 tbody의 행들
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      // ✅ 기본 정렬로 되돌리기
+      if (!mode) {
+        originalRows.forEach(tr => tbody.appendChild(tr));
+        return;
+      }
+
+      // ✅ 총점 기준 정렬
+      rows.sort(function (rowA, rowB) {
+        const cellA = rowA.cells[scoreColIndex];
+        const cellB = rowB.cells[scoreColIndex];
+
+        const aText = cellA ? cellA.textContent.trim() : '0';
+        const bText = cellB ? cellB.textContent.trim() : '0';
+
+        // "97.5" / "97.5점" 모두 대응 – 숫자만 추출
+        const aVal = parseFloat(aText.replace(/[^0-9.\-]/g, '')) || 0;
+        const bVal = parseFloat(bText.replace(/[^0-9.\-]/g, '')) || 0;
+
+        if (mode === 'asc') {
+          return aVal - bVal;   // 낮은 점수 → 높은 점수
+        } else { // "desc"
+          return bVal - aVal;   // 높은 점수 → 낮은 점수
+        }
+      });
+
+      // 정렬된 순서대로 tbody에 재배치
+      rows.forEach(tr => tbody.appendChild(tr));
+    });
+  });
+</script>
+</body>
+
+</html>

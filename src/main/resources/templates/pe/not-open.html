@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>결과 공개 전</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <style>
+    .wrap {max-width:720px; margin:80px auto; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:28px; text-align:center;}
+    h2{margin:0 0 8px 0;}
+    .desc{color:#6b7280; margin-bottom:10px;}
+    .date{font-weight:600; margin-bottom:8px;}
+    .count{font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; color:#1f2937; margin-bottom:18px;}
+    .btn{display:inline-block; padding:10px 16px; border:1px solid #d1d5db; border-radius:8px; text-decoration:none; cursor:pointer;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h2>결과 페이지는 아직 공개 전입니다</h2>
+  <p class="desc" th:text="|요청하신 연도(${year})의 결과는 공개일 이후에 확인할 수 있습니다.|"></p>
+
+  <p class="date">
+    공개 예정일:
+    <span th:text="${openAtText}">미정</span>
+    <small th:text="${tz}" style="color:#6b7280; margin-left:4px;">KST (UTC+9)</small>
+  </p>
+
+  <!-- 카운트다운 -->
+  <p id="countdown" class="count" th:if="${openAtIso != null}">--일 --:--:-- 남음</p>
+
+  <!-- 돌아가기 버튼 (히스토리 우선, 실패 시 backUrl) -->
+  <button class="btn" type="button" id="go-back" th:data-back-url="${backUrl != null ? backUrl : '/'}">이전 페이지로</button>
+</div>
+
+<script th:inline="javascript">
+  (function(){
+    const btn = document.getElementById('go-back');
+    const fallback = btn?.dataset?.backUrl || '/';
+    btn?.addEventListener('click', function(){
+      if (document.referrer && history.length > 1) { history.back(); return; }
+      location.href = fallback;
+    });
+
+    /* 카운트다운 */
+    /*[[*/
+    const openAtIso = /*[[${openAtIso}]]*/ null;
+    /*]]*/
+    const cdEl = document.getElementById('countdown');
+    if (openAtIso && cdEl){
+      const target = new Date(openAtIso); // ISO8601 → 로컬 파싱
+      function tick(){
+        const now = new Date();
+        let diff = target - now;
+        if (diff <= 0){
+          cdEl.textContent = '잠시 후 새로고침하면 결과 페이지로 이동할 수 있어요.';
+          clearInterval(timer);
+          return;
+        }
+        const d = Math.floor(diff / (1000*60*60*24)); diff %= 1000*60*60*24;
+        const h = Math.floor(diff / (1000*60*60));    diff %= 1000*60*60;
+        const m = Math.floor(diff / (1000*60));       diff %= 1000*60;
+        const s = Math.floor(diff / 1000);
+        const pad = n => String(n).padStart(2,'0');
+        cdEl.textContent = `${d}일 ${pad(h)}:${pad(m)}:${pad(s)} 남음`;
+      }
+      tick();
+      const timer = setInterval(tick, 1000);
+    }
+  })();
+</script>
+</body>
+</html>

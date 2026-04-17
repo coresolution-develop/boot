@@ -1,0 +1,654 @@
+@charset "UTF-8";
+
+/* 2025 login page responsive design */
+/* Small devices (tablets) */
+/* =============================
+    SOSYGE PERSONNEL EVALUATION SYSTEM
+    2025 LOGIN PAGE STYLES
+    ============================= */
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: rgb(224, 224, 224);
+}
+
+.login-container {
+    background: linear-gradient(180deg, #34445f 0%, #1b407f 100%);
+    border-radius: 25px;
+    box-shadow: 0px 0px 43.6px 0px rgba(0, 0, 0, 0.15);
+    width: 600px;
+    height: 500px;
+    position: relative;
+}
+
+.login_wrap {
+    padding: 0 80px 0 80px;
+}
+
+.login_title {
+    color: #FFF;
+    font-size: 25px;
+    font-weight: 500;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    padding: 25px 0;
+}
+
+input[type="text"],
+input[type="password"] {
+    padding: 0 20px;
+    font-size: 13px;
+    border: 1px solid #e8e8e8;
+    border-radius: 5px;
+    color: #9F9F9F;
+    background-color: #fff;
+    height: 40px;
+}
+
+input[type="submit"],
+input[type="button"] {
+    background: rgba(255, 255, 255, 0.20);
+    color: white;
+    padding: 0 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1;
+    height: 40px;
+}
+
+.login_bottom {
+    width: 100%;
+    border-radius: 0 0px 25px 25px;
+    display: block;
+    position: absolute;
+    bottom: 0;
+    background: #fff;
+    height: 60px;
+    left: 0;
+}
+
+.logo_bottom {
+    left: 50%;
+    transform: translateX(-50%);
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    bottom: 20px;
+}
+
+.logo_bottom_img {
+    width: 130px;
+}
+
+.alignBox>.inputTxt>.bold {
+    color: #a86f6f;
+}
+
+.chk-area {
+    margin-bottom: 10px;
+}
+
+.inputTxt {
+    color: #e4e4e4;
+}
+
+.pw-find>.bold {
+    color: #e4e4e4;
+}
+
+@media screen and (max-width: 720px) {
+
+    /** Mobile */
+    :root,
+    html {
+        font-size: 6px;
+    }
+
+    body {
+        min-width: auto;
+        overflow: hidden;
+        background: linear-gradient(180deg, #34445f 0%, #1b407f 100%);
+    }
+
+    .login-container {
+        border-radius: 0;
+        height: auto;
+        width: 100%;
+        margin-top: -100px;
+        background: none;
+        box-shadow: none;
+    }
+
+    .text-wrap {
+        width: 100%;
+    }
+
+    .text-img {
+        width: 100%;
+    }
+
+    section {
+        background: #fbfbfb;
+        width: 100%;
+        display: block;
+        min-height: auto;
+    }
+    .inputTxt {
+        font-size: 1.8rem;
+    }
+    .login-bg {
+        background: url(../icon/ev/login_bg_m.png) no-repeat center / 768px;
+        height: 100%;
+        width: 100%;
+    }
+
+    .login_wrap {
+        padding: 0 15px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .login_bottom {
+        border-radius: 0;
+    }
+
+    .bottom_img {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+    }
+
+    .login_title {
+        font-size: 3.5rem;
+    }
+    .main {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        top: 0;
+    }
+
+    .login-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 107px;
+        width: 100%;
+        padding-top: 22px;
+    }
+
+    .login-content>.container {
+        height: 100%;
+        position: inherit;
+        padding: 0 65px;
+    }
+
+    .header-text {
+        font-size: 2.9rem;
+        color: #f5f5f5;
+        font-weight: 600;
+        letter-spacing: -1px;
+        position: relative;
+        top: 6px;
+    }
+
+    .login-area {
+        display: flex;
+        height: calc(100% - 219px);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0px;
+    }
+
+    .login-content,
+    .notice-content {
+        width: 100%;
+        height: calc(50% - 0.5px);
+        position: inherit;
+        padding: 0;
+    }
+
+    .container {
+        position: inherit;
+    }
+
+    .content {
+        width: 100%;
+        height: 100%;
+        position: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 0px;
+    }
+
+    .login-form {
+        width: 100%;
+        height: 100%;
+        position: inherit;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 0px;
+    }
+
+    .content {
+        height: 100%;
+        padding: 0;
+        display: flex;
+        flex-wrap: nowrap;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .login-header-top {
+        padding-bottom: 20px;
+        margin: 0;
+    }
+
+    .login-header-top>span,
+    .notice-header-top>span {
+        font-size: 3rem;
+        font-weight: 600;
+    }
+
+    .id-area,
+    .pwd-area {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: auto;
+        margin-bottom: 10px;
+    }
+
+    .id-area>input {
+        width: 100%;
+        height: 40px;
+        font-size: 2rem;
+        padding: 0 14px;
+        border: 1px solid #d1d1d1;
+        box-sizing: border-box;
+        border-radius: 5px;
+    }
+
+    .id-area>input::placeholder,
+    .pwd-area>input::placeholder {
+        font-size: 2.2rem;
+        color: #b1b1b1;
+    }
+
+    .pwd-area>input {
+        width: 100%;
+        height: 40px;
+        font-size: 2rem;
+        padding: 0 14px;
+        border: 1px solid #d1d1d1;
+        box-sizing: border-box;
+        border-radius: 5px;
+    }
+
+    .input-text {
+        width: 100%;
+        height: 34px;
+        border-radius: 5px;
+        border: 1px solid #d1d1d1;
+        box-sizing: border-box;
+        padding: 0 14px;
+        font-size: 1.8rem;
+        color: #333;
+    }
+
+    .input-text::placeholder {
+        font-size: 1.8rem;
+        color: #b1b1b1;
+    }
+
+    .login-text {
+        width: 100%;
+    }
+
+    .login-text>.bold {
+        font-size: 1.8rem;
+        letter-spacing: 0px;
+    }
+
+    .login-btn {
+        width: 100%;
+    }
+
+    .login-btn:disabled {
+        background-color: #a1a1a1;
+        cursor: not-allowed;
+    }
+
+    .login-btn:disabled:hover {
+        background-color: #a1a1a1;
+    }
+
+    .login-btn:hover {
+        background-color: #0031cc;
+    }
+
+    .auto-login {
+        display: flex;
+        align-items: center;
+        margin-top: 16px;
+        font-size: 1.6rem;
+        color: #666;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .auto-login input {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        cursor: pointer;
+    }
+
+    .auto-login label {
+        cursor: pointer;
+    }
+
+    .find-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 16px;
+        font-size: 1.6rem;
+        color: #0e366c;
+    }
+
+    .find-area>div {
+        cursor: pointer;
+        margin: 0 10px;
+    }
+
+    .find-area>div:hover {
+        text-decoration: underline;
+    }
+
+    .chk-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-top: 0;
+        width: 100%;
+        height: auto;
+    }
+
+    .chk-area>.label-pwd {
+        font-size: 1.6rem;
+        color: #666;
+        cursor: pointer;
+    }
+
+    .chk-area>.label-name {
+        font-size: 1.6rem;
+        color: #666;
+        cursor: pointer;
+    }
+
+    .pw-find {
+        margin-bottom: 10px;
+        text-align: left;
+        width: 100%;
+    }
+
+    .pw-find>.bold {
+        font-weight: 500;
+        color: #fff;
+        font-size: 1.6rem;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    #loginbtn {
+        color: #f5f5f5;
+        width: 100%;
+        border: none;
+        cursor: pointer;
+        font-size: 2.4rem;
+        font-weight: 500;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f5a418;
+        height: 34px;
+        ;
+        border-radius: 5px;
+    }
+
+    .center-line {
+        border-bottom: 1px solid #d8d8d8;
+        width: calc(100% - 100px);
+        height: 1px;
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+    }
+
+    .notice-content {
+        padding: 0;
+    }
+
+    .notice-content>.container {
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        position: inherit;
+    }
+
+    .notice-header-top {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        height: 100%;
+    }
+
+    .notice-bg {
+        /* 메모 이미지 원본 크기 넣기 (예시: 338×480) */
+        --memo-w: 444;
+        --memo-h: 388;
+        /* ← 실제 높이로 바꿔주세요 */
+
+        /* 가로폭은 반응형, 최대 원본 폭 이하 */
+        width: clamp(240px, 92vw, calc(var(--memo-w) * 1px));
+        margin: 0 auto;
+
+        /* 세로는 비율로 자동 계산 */
+        aspect-ratio: calc(var(--memo-w) / var(--memo-h));
+
+        /* 잘림 없이 전체 보이게 */
+        background: url(../icon/ev/memo.png) center / contain no-repeat;
+    }
+
+    .notice-bg>img {
+        width: 100%;
+        height: auto;
+        display: none;
+        padding-top: 10px;
+    }
+
+    .notice-main {
+        position: relative;
+        width: calc(100% - 18px);
+        height: calc(100% - 40px);
+        overflow-y: auto;
+        margin: 0 auto;
+        padding: 20px 0;
+        top: -162px;
+        left: 10px;
+        letter-spacing: -1px;
+        padding: 0;
+    }
+
+    .notice-header {
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .notice-date {
+        font-size: 1.0rem;
+        color: #999;
+        margin-bottom: 20px;
+    }
+
+    .notice-text {
+        font-size: 1.4rem;
+    }
+
+    .notice-text>div {
+        display: flex;
+        margin: 0px;
+        height: auto;
+    }
+
+    .notice-text>div>div {
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    .inner-text {
+        width: 90%;
+        display: flex;
+        align-items: center;
+        letter-spacing: -1.5px;
+        color: #222222;
+        font-size: 1.6rem;
+        height: 13px;
+    }
+
+    .inner-text>a {
+        color: #0e366c;
+        text-decoration: none;
+    }
+
+    .inner-text>a:hover {
+        text-decoration: underline;
+    }
+
+    .notice-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        top: -10px;
+    }
+
+    .manual {
+        background-color: #6c6c6c;
+        border: 1px solid #6c6c6c;
+        border-radius: 5px;
+        height: 34px;
+        width: 264px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #f5f5f5;
+        cursor: pointer;
+        font-size: 2rem;
+        font-weight: 500;
+    }
+
+
+    /* 0) 기존 충돌 규칙 무력화 */
+    .notice-main {
+        position: relative !important;
+        /* (max-width:1920px) 절대배치 덮어쓰기 */
+        top: auto !important;
+        left: auto !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        /* 내부 스크롤 제거 */
+        padding: 0 !important;
+        margin: 0 auto !important;
+    }
+
+    .notice-text>div {
+        height: auto !important;
+        /* 높이 130px 강제값 제거 */
+        overflow: visible !important;
+    }
+
+    .notice-bg>img {
+        display: none !important;
+    }
+
+    /* <img>는 숨기고 background만 사용 */
+
+    /* 1) 두 요소를 같은 셀에 겹치게: 배경 + 내용 */
+    .content.content2 {
+        display: grid !important;
+        justify-items: center;
+        /* 가운데 정렬 */
+        align-items: start;
+        /* 위에서부터 시작 */
+        row-gap: 0;
+    }
+
+    .content.content2>.notice-bg,
+    .content.content2>.notice-main {
+        grid-area: 2 / 1;
+        /* 같은 그리드 셀에 겹치기 */
+        top: -15px;
+    }
+
+    /* 2) 배경: 잘림 없이 줄어들기 + 요소 자체가 높이 결정 */
+    .notice-bg {
+        /* 메모 원본 비율 (예: 444×388). 실제 값으로 맞추면 정확 */
+        --memo-w: 280;
+        --memo-h: 236;
+
+        width: clamp(260px, 92vw, calc(var(--memo-w) * 1px)) !important;
+        aspect-ratio: calc(var(--memo-w) / var(--memo-h)) !important;
+        background: url(../icon/ev/memo.png) center / contain no-repeat !important;
+        z-index: 0 !important;
+    }
+
+    /* 3) 내용: 배경 안쪽에 맞게 패딩으로 위치 잡기 */
+    .notice-main {
+        /* 배경보다 조금 좁게(좌우 여백) */
+        width: calc(100% - 16%) !important;
+        /* 좌우 8% 여백 */
+        /* 메모 이미지의 “안쪽 여백”에 맞춰 내용 시작 위치를 비율로 밀기 */
+        padding: 15% 13% 0% 17% !important;
+        /* 상/우/하/좌 (필요시 비율만 조절) */
+        box-sizing: border-box;
+    }
+
+    /* 4) 타이틀/리스트는 그대로 흐르도록 */
+    .notice-header {
+        margin-bottom: 10px !important;
+    }
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    input[type="tel"],
+    select, textarea {
+        font-size: 2rem;            /* ← 이게 핵심 */
+        line-height: 1.4;
+    }
+}
+
+@media all and (min-width: 768px) and (max-width: 1023px) {
+    /** Tablet  */
+}
+
+@media all and (max-width: 1023px) {
+    /** Mobile & Tablet  */
+}

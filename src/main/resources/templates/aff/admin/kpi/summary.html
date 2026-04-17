@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+  <meta charset="UTF-8" />
+  <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+  <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hr.sosyge.net/pe/login"> <!-- 공유시 입력될 URL -->
+  <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png"> <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+  <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>다면평가 총괄(직원)</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+  <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+        .main-content {
+    padding: 10px;
+}
+        /* 화면 */
+        .main {
+            padding: 10px;
+        }
+
+        .tbl {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 13px;
+        }
+
+        .tbl th,
+        .tbl td {
+            border: 0.6pt solid #d6d6d6;
+            padding: 6px 8px;
+            text-align: center;
+        }
+
+        .tbl thead th {
+            background: #f2f4f7;
+        }
+
+        .left {
+            text-align: left;
+        }
+
+        .nowrap {
+            white-space: nowrap;
+        }
+
+        .point {
+            color: #d32f2f;
+            font-weight: 700;
+        }
+
+        /* 총점 강조 */
+
+        /* 인쇄: A4 가로 기본 */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 8mm;
+            }
+
+            html,
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .tbl th,
+            .tbl td {
+                padding: 4px 6px !important;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+
+            tr,
+            th,
+            td {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
+
+        /* 섹션 헤더 라인 높이 */
+        th.section {
+            background: #e9eef7;
+            font-weight: 800;
+        }
+        /* ===== 화면 공용 ===== */
+.main-content, .main { padding: 10px; }
+.tbl{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px; }
+.tbl th,.tbl td{ border:0.6pt solid #d6d6d6; padding:6px 8px; text-align:center; }
+.tbl thead th{ background:#f2f4f7; }
+.left{text-align:left;} .muted{color:#6b7280;} .nowrap{white-space:nowrap;}
+.point{ color:#d32f2f; font-weight:700; }
+
+/* ===== 프린트 Fallback (Ctrl+P 등 직접인쇄 대비) ===== */
+@media print {
+  html, body, main, .main, .main-content {
+    margin: 0 !important; padding: 0 !important;
+    width: 100% !important; max-width: none !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  #print-area {
+    position: static !important;
+    left:auto !important; top:auto !important; right:auto !important; bottom:auto !important;
+    margin:0 !important; width:100% !important; max-width:none !important;
+    padding:0 !important; box-sizing:border-box !important; transform:none !important;
+    overflow: visible !important;
+    background: #fff;
+  }
+  table { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto; break-inside: auto; }
+  thead { display: table-header-group; }
+  tfoot { display: table-footer-group; }
+  tr, th, td { page-break-inside: avoid; break-inside: avoid; }
+  .tbl th, .tbl td { padding: 8px 10px !important; font-size: 12px; }
+  .print-title { margin: 0 0 6mm 0 !important; font-size: 20px !important; font-weight: 800; text-align: left; break-after: avoid-page; }
+  #print-area * { animation: none !important; transition: none !important; transform: none !important; }
+  #print-area::before, #print-area::after{ content:""; display:block; height:0.1px; }
+  #print-header {
+    display: block !important;
+    margin-bottom: 6mm !important;
+    font-size: 24px !important;
+    text-align: left;
+  }
+}
+    /* 기본: 숨김 */
+.only-in-td { display: none !important; }
+
+/* td 내부에 있을 때만 표시 */
+td .only-in-td { display: inline !important; }   /* span이면 inline이 자연스러움 */
+
+/* 인쇄 때 숨길 게 있다면 같이 사용 */
+@media print {
+  td .only-in-td.no-print { display: none !important; }
+}
+.btn-animated:hover, .orange-btn:hover, .white-btn:hover, .custom:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+/* 헤더(62px) 바로 아래 10px padding을 덮는 흰 커버 */
+.sticky-pad-cover{
+  position: sticky;
+  top: 62px;       /* 헤더 높이 */
+  height: 10px;    /* 메인 padding */
+  background: #fff;
+  z-index: 150;    /* 헤더 아래, 폼 아래 */
+}
+/* 상단 폼 sticky */
+.filter-sticky{
+  position: sticky;
+  top: 72px;        /* 62(header) + 10(padding) */
+  z-index: 200;     /* thead 보다 위 */
+  background: #fff;
+  padding: 6px 8px;
+  margin: 0;        /* 폼 아래 틈 제거 */
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border-bottom: 1px solid rgba(0,0,0,.06); /* 경계선 */
+}
+
+/* 표 자체의 위쪽 경계 가시성 확보(틈 메우기) */
+.tbl{
+  border-collapse: collapse;
+  background:#fff;         /* 행 글자 비치는 것 차단 */
+}
+
+/* 프린트에서는 sticky/그림자 제거 */
+@media print{
+  .sticky-pad-cover{ display:none !important; }
+  .filter-sticky{ position: static !important; box-shadow:none !important; border-bottom:none !important; }
+  .tbl thead th{ position: static !important; box-shadow:none !important; }
+}
+/* 테이블 스크롤 컨테이너 */
+.tbl-wrap{
+  max-height: calc(100vh - 193px); /* 화면에서 헤더/필터 높이만큼 조절 */
+  overflow: auto;
+  background: #fff;
+  border: 0.6pt solid #d6d6d6;     /* 선택 */
+}
+
+/* 헤더 고정 */
+.tbl thead th{
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f2f4f7;
+
+  vertical-align: middle;      /* 핵심 */
+  line-height: 1.15;           /* 2줄에서도 안정 */
+  padding: 10px 8px;           /* 상단/하단 여백 확보 */
+  white-space: normal;         /* 2줄 허용 */
+  word-break: keep-all;        /* 한글 단어 중간 깨짐 방지 */
+}
+
+/* (옵션) 좌측 4칸도 같이 고정하고 싶으면 */
+.tbl th:nth-child(-n+4),
+.tbl td:nth-child(-n+4){
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #fff;
+}
+.tbl thead th:nth-child(-n+4){
+  z-index: 6;
+  background: #f2f4f7;
+}
+
+@media print{
+  .tbl-wrap{ max-height:none; overflow:visible; border:none; }
+  .tbl thead th{ position: static; }
+}
+/* thead 2줄 sticky: 줄마다 top을 다르게 */
+.tbl thead th{
+  position: sticky;
+  background: #f2f4f7;
+  background-clip: padding-box;
+  vertical-align: middle;
+  line-height: 1.15;
+  z-index: 5; /* 기본 */
+}
+
+/* 1번째 헤더 줄(직원정보/다면평가...) */
+.tbl thead tr:first-child th{
+  top: 0;
+  z-index: 30; /* 2번째 줄보다 위 */
+}
+
+/* 2번째 헤더 줄(부서명/사번/...) */
+.tbl thead tr:nth-child(2) th{
+  top: var(--thead-row1-h, 34px); /* 1번째 줄 높이만큼 내려붙기 */
+  z-index: 20;
+}
+
+/* (좌측 4칸 sticky도 쓰는 경우) 위쪽-왼쪽 셀 z-index 보강 */
+.tbl thead tr:first-child th:nth-child(-n+4){ z-index: 60; }
+.tbl thead tr:nth-child(2) th:nth-child(-n+4){ z-index: 50; }
+
+.tbl th, .tbl td { border: 1px solid #d6d6d6; } /* 0.6pt 제거 */
+
+.tbl thead tr:first-child th{
+  top: 0;
+  z-index: 30;
+}
+
+.tbl thead tr:nth-child(2) th{
+  top: calc(var(--thead-row1-h, 34px) - 1px); /* 핵심: -1px */
+  z-index: 20;
+}
+/* =========================
+   Layout / Sticky (page)
+========================= */
+
+/* 헤더(62px) 아래 padding 10px 덮는 커버 */
+.sticky-pad-cover{
+  position: sticky;
+  top: 62px;
+  height: 10px;
+  background: #fff;
+  z-index: 150;
+}
+
+/* 상단 필터 sticky */
+.filter-sticky{
+  position: sticky;
+  top: 72px;                 /* 62(header) + 10(padding) */
+  z-index: 200;              /* thead보다 위 */
+  background: #fff;
+  padding: 6px 8px;
+  margin: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+/* =========================
+   Table scroll container
+========================= */
+
+.tbl-wrap{
+  max-height: calc(100vh - 203px); /* 상황에 맞게 조절 */
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #d6d6d6;
+}
+
+/* 테이블 기본 */
+.tbl{
+  width: 100%;
+  border-collapse: separate; /* sticky + border 렌더링 안정 */
+  border-spacing: 0;
+  table-layout: fixed;
+  font-size: 13px;
+  background: #fff;
+}
+
+.tbl th, .tbl td{
+  border-right: 1px solid #d6d6d6;
+  border-bottom: 1px solid #d6d6d6;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+/* 좌측/상단 테두리 보강 */
+.tbl thead th{ border-top: 1px solid #d6d6d6; }
+.tbl tr > *:first-child{ border-left: 1px solid #d6d6d6; }
+
+/* =========================
+   THEAD 2-row sticky (inside .tbl-wrap)
+========================= */
+
+/* thead 공통 */
+.tbl thead th{
+  position: sticky;
+  background: #f2f4f7;
+  vertical-align: middle;
+  line-height: 1.15;
+  white-space: normal;
+  word-break: keep-all;
+
+  /* thead의 보더는 틈 원인이 되므로 제거하고 그림자로 선을 그림 */
+  border-top: 0 !important;
+  border-bottom: 0 !important;
+}
+
+/* 1번째 헤더 줄 */
+.tbl thead tr:first-child th{
+  top: 0;
+  z-index: 30;
+  padding: 10px 8px;
+  box-shadow:
+    inset 0 1px 0 #d6d6d6,   /* 상단 선 */
+    inset 0 -1px 0 #d6d6d6;  /* 1줄 아래 선 */
+}
+
+/* 2번째 헤더 줄 */
+.tbl thead tr:nth-child(2) th{
+  top: var(--thead-row1-h, 34px); /* JS로 자동 계산 */
+  z-index: 20;
+  padding: 8px 8px;
+  box-shadow:
+    inset 0 -1px 0 #d6d6d6;  /* thead와 tbody 경계선 */
+}
+
+/* (옵션) 좌측 4칸 고정 */
+.tbl th:nth-child(-n+4),
+.tbl td:nth-child(-n+4){
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 10;
+}
+
+/* 좌상단 영역 z-index 최상 */
+.tbl thead tr:first-child th:nth-child(-n+4){ z-index: 60; background:#f2f4f7; }
+.tbl thead tr:nth-child(2) th:nth-child(-n+4){ z-index: 50; background:#f2f4f7; }
+
+/* =========================
+   Print: sticky 해제
+========================= */
+@media print{
+  .sticky-pad-cover{ display:none !important; }
+  .filter-sticky{ position: static !important; box-shadow:none !important; border-bottom:none !important; }
+
+  .tbl-wrap{ max-height:none !important; overflow:visible !important; border:none !important; }
+  .tbl thead th{ position: static !important; box-shadow:none !important; }
+}
+    </style>
+</head>
+
+<body>
+
+<!-- 숫자 공통 출력: null -> '-', 정수면 소수점 없음, 소수면 최대 둘째 자리 -->
+<th:block th:fragment="fmt(v)">
+  <!-- 값이 있을 때: 항상 소수점 2자리 -->
+  <span class="nowrap only-in-td"
+        th:if="${ (v != null and !(v instanceof T(java.lang.String)))
+                 or (v instanceof T(java.lang.String) and !#strings.isEmpty(#strings.trim(v))) }"
+        th:with="
+          n=${ (v instanceof T(java.lang.String))
+                ? T(java.lang.Double).parseDouble(#strings.replace(#strings.trim(v),',',''))
+                : v }"
+        th:text="${ T(java.lang.String).format(T(java.util.Locale).US, '%.2f', n) }">
+  </span>
+
+  <!-- 값이 없을 때 -->
+  <span class="nowrap only-in-td no-print placeholder"
+        th:if="${ v == null or (v instanceof T(java.lang.String) and #strings.isEmpty(#strings.trim(v))) }">-</span>
+</th:block>
+
+  <div th:replace="~{Include/afflayout :: header}"></div>
+  <div th:replace="~{Include/afflayout :: nav_section}"></div>
+  <main id="print-area" class="main-content"
+  style="">
+    <!-- 헤더 62px 바로 아래, 메인 padding(10px)을 가리는 커버 -->
+  <div class="sticky-pad-cover" aria-hidden="true"></div>
+    <form method="get" th:action="@{/aff/admin/summary}" class="filter filter-sticky">
+  <div class="no-print" style="display:flex; gap:10px; align-items:center; margin:8px 0 12px;">
+    <div class="no-print">
+      <select class="custom" name="orgName" style="margin:0; width:150px;">
+        <option th:value="''" th:selected="${selectedOrgName == null or selectedOrgName == ''}">전체</option>
+        <option th:each="org : ${orgList}" th:value="${org}" th:text="${org}"
+                th:selected="${org == selectedOrgName}"></option>
+      </select>
+    </div>
+    <div class="no-print">
+      <select class="custom" name="year" id="yearSelect" style="margin:0; width:85px;">
+        <option th:each="y : ${#numbers.sequence(2024, 2025)}"
+                th:value="${y}" th:text="${y}"
+                th:selected="${y == selectedYear}"></option>
+      </select>
+      </div>
+      
+    <div class="toolbar no-print">
+      <button class="white-btn" id="search-btn" type="submit" style="font-size:12px;padding:11px 20px;">조회</button>
+    </div>
+    <div class="toolbar no-print" style="display:flex; gap:8px;">
+      <button class="orange-btn" type="button" style="font-size:12px;padding:11px 20px;" onclick="printAs('A4L')">A4 출력</button>
+      <button class="orange-btn" type="button" style="font-size:12px;padding:11px 20px;" onclick="printAs('A3L')">A3 출력</button>
+      <!-- <button class="white-btn" type="button"
+              style="font-size:12px;padding:11px 20px;"
+              onclick="saveStaffKpiResults2025()">
+        직원 점수 일괄저장
+      </button>
+      <button class="white-btn" type="button"
+              style="font-size:12px;padding:11px 20px;"
+              onclick="applyStaffGrades2025()">
+        직원 등급 산출
+      </button> -->
+    </div>
+  </div>
+</form>
+<div id="print-header" style="margin:8px 0 12px 0;">
+  <span style="font-weight: bold;"
+        th:text="${selectedYear + '년 다면평가 총괄(직원) : '}"></span>
+  <span th:text="${orgNameForTitle}"></span>
+</div>
+<div class="tbl-wrap">
+  <table class="tbl">
+    <colgroup>
+      <col style="width:10%"> <!-- 기관명 -->
+      <col style="width:10%"> <!-- 기관명2 -->
+      <col style="width:10%"> <!-- 부서명 -->
+      <col style="width:5%"> <!-- 사번 -->
+      <col style="width:10%"> <!-- 직책 -->
+      <col style="width:8%"> <!-- 성명 -->
+
+      <col style="width:10%"> <!-- 등급-->
+      <col style="width:10%"> <!-- 점수-->
+      <col style="width:10%"> <!-- 부서원→부서장 (C/AA) -->
+      <col style="width:10%"> <!-- 부서장→부서장 (A/AA) -->
+      <col style="width:10%"> <!-- 부서장→부서원 (B/AE) -->
+      <col style="width:10%"> <!-- 부서원→부서원 (D/AE) -->
+    </colgroup>
+
+    <thead>
+      <tr>
+        <th colspan="6" class="section">직원정보</th>
+        <th colspan="6" class="section">다면평가(100점 환산 평균)</th>
+      </tr>
+      <tr>
+        <th>기관명</th>
+        <th>기관명2</th>
+        <th>부서명</th>
+        <th>사번</th>
+        <th>직책</th>
+        <th>성명</th>
+
+        <th class="nowrap">등급</th>
+        <th class="nowrap">총점</th>
+        <th class="nowrap">부서원 &gt;부서장</th>
+        <th class="nowrap">부서장 &gt;부서장</th>
+        <th class="nowrap">부서장 &gt;부서원</th>
+        <th class="nowrap">부서원 &gt;부서원</th>
+      </tr>
+    </thead>
+
+    <tbody th:if="${rows != null}">
+      <tr th:each="r : ${rows}">
+        <td th:text="${r.orgName}"></td>
+        <td th:text="${r.orgName2}"></td>
+        <td th:text="${r.deptName}"></td>
+        <td th:text="${r.empId}"></td>
+        <td th:text="${r.position}"></td>
+        <td th:text="${r.empName}"></td>
+
+        <td th:text="${
+            r.totalAvg100 >= 95 ? 'A+' :
+            r.totalAvg100 >= 90 ? 'A'  :
+            r.totalAvg100 >= 85 ? 'B+' :
+            r.totalAvg100 >= 80 ? 'B'  :
+            r.totalAvg100 >= 75 ? 'C+' :
+            r.totalAvg100 >= 70 ? 'C'  :
+            r.totalAvg100 >= 65 ? 'D+' :
+            r.totalAvg100 >= 60 ? 'D'  : 'E'
+        }">등급</td>
+        <td class="point">
+          <span th:replace="~{::fmt(${r.totalAvg100})}"></span>
+        </td>
+        <td><span th:replace="~{::fmt(${r.staffToBoss100})}"></span></td>
+        <td><span th:replace="~{::fmt(${r.bossToBoss100})}"></span></td>
+        <td><span th:replace="~{::fmt(${r.bossToStaff100})}"></span></td>
+        <td><span th:replace="~{::fmt(${r.staffToStaff100})}"></span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+    </main>
+
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <div th:replace="~{Include/afflayout :: scripts}"></div>
+  <script>
+  // ===== 주입/제거 유틸 =====
+  let __printStyleEl = null;
+  let mqListener = null;
+
+  function injectPrintStyle(css) {
+    removePrintStyle();
+    __printStyleEl = document.createElement('style');
+    __printStyleEl.setAttribute('data-print-style', 'kpi-summary');
+    __printStyleEl.type = 'text/css';
+    __printStyleEl.appendChild(document.createTextNode(css));
+    document.head.appendChild(__printStyleEl);
+  }
+
+  function removePrintStyle() {
+    if (mqListener && window.matchMedia) {
+      try { window.matchMedia('print').removeEventListener('change', mqListener); } catch(e){}
+      mqListener = null;
+    }
+    if (__printStyleEl && __printStyleEl.parentNode) {
+      __printStyleEl.parentNode.removeChild(__printStyleEl);
+      __printStyleEl = null;
+    }
+  }
+
+  /**
+   * size: 'A4P'|'A4L'|'A3P'|'A3L'
+   * scale: 글자 크기 미세 조정(기본 1)
+   */
+  window.printAs = function (size = 'A4L', scale = 1) {
+    // 1) 기존 것 제거
+    removePrintStyle();
+
+    // 2) 규칙 생성
+    let pageDecl = 'A4 landscape', base = 11, margin = '8mm';
+    switch (size) {
+      case 'A4P': pageDecl = 'A4 portrait';  base = 11;   margin = '10mm'; break;
+      case 'A4L': pageDecl = 'A4 landscape'; base = 10.5; margin = '8mm';  break;
+      case 'A3P': pageDecl = 'A3 portrait';  base = 11;   margin = '10mm'; break;
+      case 'A3L': pageDecl = 'A3 landscape'; base = 10;   margin = '8mm';  break;
+    }
+    base = Math.max(9.5, base * (scale || 1));
+
+    const css = `
+      @page{ size:${pageDecl}; margin:${margin} !important; }
+      @media print{
+        html,body{
+          margin:0 !important; padding:0 !important; height:auto !important;
+          font-size:${base}px; line-height:1.35;
+          -webkit-print-color-adjust:exact; print-color-adjust:exact;
+        }
+        /* ===== 화면 UI 숨김(필요 시 사이트 공통 네비 등 추가) ===== */
+        header, nav, aside,
+        .toolbar, .no-print, .wrapper,
+        #admin-nav, #user-nav, .nav_section,
+        .leftMenu, .lnb,
+        [role="navigation"], [data-role="sidebar"],
+        .demoheader, .layout-header, .top_wrap, .gnb {
+          display: none !important;
+        }
+
+        /* 인쇄영역 강제 리셋 */
+        #print-area{
+          position:static !important; margin:0 !important; padding:0 !important;
+          width:100% !important; max-width:none !important; overflow:visible !important;
+        }
+
+        /* 표/줄바꿈 제어 */
+        thead{ display:table-header-group }
+        tfoot{ display:table-footer-group }
+        table{ width:100% !important; border-collapse:collapse !important; page-break-inside:auto }
+        tr{ page-break-inside:auto; break-inside:auto }
+        th,td{ page-break-inside:avoid; break-inside:avoid; padding:4px 6px !important }
+
+        /* 제목(있다면) */
+        .print-title{
+          break-after:avoid-page; margin:0 0 6mm 0 !important;
+          font-size:${Math.round(base*1.8)}px !important; font-weight:800
+        }
+
+        /* 모션 제거 */
+        #print-area *{ animation:none !important; transition:none !important; transform:none !important }
+        /* 크롬 첫/마지막 페이지 클리핑 방지 */
+        #print-area::before, #print-area::after{ content:""; display:block; height:0.1px; }
+      }`;
+
+    // 3) 규칙 주입
+    injectPrintStyle(css);
+
+    // 4) 인쇄 후 자동 정리
+    const cleanup = () => setTimeout(removePrintStyle, 50);
+    if (window.matchMedia) {
+      const mq = window.matchMedia('print');
+      mqListener = (e) => { if (!e.matches) cleanup(); };
+      mq.addEventListener?.('change', mqListener);
+    }
+    const prev = window.onafterprint;
+    window.onafterprint = () => { prev && prev(); cleanup(); };
+
+    // 5) 적용 후 프린트
+    setTimeout(() => window.print(), 0);
+  };
+
+(function(){
+  // const root = document.documentElement;
+  // const sticky = document.querySelector('.filter-sticky');
+  // const BASE = 72;  // 62(header) + 10(padding)
+
+  // function updateStickyOffset(){
+  //   const h = sticky ? Math.ceil(sticky.getBoundingClientRect().height) : 0;
+  //   // thead는 헤더+패딩+폼 높이만큼 내려간 지점에 달라붙어야 겹치지 않음
+  //   root.style.setProperty('--sticky-offset', `${BASE + h - 1}px`);
+  // }
+
+  // window.addEventListener('load', updateStickyOffset);
+  // window.addEventListener('resize', updateStickyOffset);
+  // document.addEventListener('change', (e)=>{
+  //   if (sticky && sticky.contains(e.target)) updateStickyOffset();
+  // });
+
+  // 글꼴/이미지 로딩 지연 대응
+  setTimeout(updateStickyOffset, 0);
+  setTimeout(updateStickyOffset, 300);
+
+   const wrap = document.querySelector('.tbl-wrap');
+  const row1 = document.querySelector('.tbl thead tr:first-child');
+  if (!wrap || !row1) return;
+  const h = Math.ceil(row1.getBoundingClientRect().height);
+  wrap.style.setProperty('--thead-row1-h', h + 'px');
+  window.addEventListener('resize', () => {
+    const hh = Math.ceil(row1.getBoundingClientRect().height);
+    wrap.style.setProperty('--thead-row1-h', hh + 'px');
+  });
+})();
+function getCurrentFilter() {
+    const yearEl = document.getElementById('yearSelect');
+    const orgEl  = document.querySelector('select[name="orgName"]');
+
+    return {
+      year: yearEl ? yearEl.value : '',
+      orgName: orgEl ? orgEl.value : ''
+    };
+  }
+
+  
+</script>
+</body>
+
+</html>

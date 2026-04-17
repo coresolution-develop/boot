@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+  <meta charset="UTF-8" />
+  <title>마이페이지 - 나의 KPI</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/demoinfocss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+  <style>
+    .kpi-cards{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:10px 0 16px; }
+    .kpi-card{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#fff; }
+    .kpi-card h4{ margin:0 0 6px; font-size:14px; color:#374151; }
+    .kpi-card .val{ font-size:22px; font-weight:800; }
+    @media (max-width: 980px){ .kpi-cards{ grid-template-columns:repeat(2,1fr); } }
+    @media (max-width: 560px){ .kpi-cards{ grid-template-columns:1fr; } }
+    .tbl{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px; }
+    .tbl th,.tbl td{ border:0.6pt solid #d6d6d6; padding:6px 8px; text-align:center; }
+    .tbl thead th{ background:#f2f4f7; position: sticky; top: 72px; z-index: 1; }
+    .point{ color:#d32f2f; font-weight:700; }
+
+    .btn-debug{padding:.4rem .7rem;border:1px solid #888;border-radius:.5rem;background:#111;color:#eee;font-size:.9rem;cursor:pointer}
+  .btn-debug:hover{background:#1b1b1b}
+  .kpi-debug{margin-top:12px;padding:12px;border:1px dashed #666;border-radius:12px;background:#0d0f12;color:#e5e7eb}
+  .kpi-debug.hidden{display:none}
+  .kd-header{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .kd-header .muted{opacity:.7}
+  .kd-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .kd-card{border:1px solid #2b3240;border-radius:10px;padding:10px;background:#12161c}
+  .kd-title{font-weight:700;margin-bottom:6px}
+  .kd-table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .kd-table th,.kd-table td{padding:6px 8px;border-bottom:1px solid #2b3240;text-align:left;vertical-align:top}
+  .kd-table th{white-space:nowrap;color:#b7c0d1}
+  .kd-table .sum-row th,.kd-table .sum-row td{font-weight:700;background:#0f1320}
+  .mismatch{color:#ff6b6b;font-weight:700}
+  .match{color:#9be49b;font-weight:700}
+  .kd-json{margin-top:8px;background:#0b0e14;padding:8px;border-radius:8px;max-height:220px;overflow:auto;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <div th:replace="~{Include/layout :: header}"></div>
+  <div th:replace="~{Include/layout :: nav_section2}"></div>
+
+  <main class="main-content" id="print-area">
+    <div class="sticky-pad-cover" aria-hidden="true"></div>
+
+    <!-- 필터 -->
+    <form method="get" th:action="@{/my/kpi}" class="filter filter-sticky no-print" style="display:flex; gap:8px; align-items:center;">
+      <div><b th:text="${orgName}">소속</b></div>
+      <select class="custom" name="year" style="width:90px">
+       <th:block th:each="y : ${#numbers.sequence(2024, T(java.time.Year).now().value)}">
+  <!-- 사용 예: 연도 셀렉트 -->
+  <option th:value="${y}" th:text="${y}"></option>
+</th:block>
+      </select>
+      <button class="white-btn" type="submit" style="font-size:12px;padding:10px 16px;">조회</button>
+      <button class="orange-btn" type="button" style="font-size:12px;padding:10px 16px;" onclick="printAs('A4L')">인쇄</button>
+      <button id="toggle-debug" type="button" class="btn-debug">DEBUG 보기</button>
+    </form>
+
+    <!-- 상단 요약 카드 -->
+    <section class="kpi-cards" th:if="${row != null}">
+      <div class="kpi-card">
+        <h4>총점</h4>
+        <div class="val point"
+            th:text="${row.totalCalc100 != null ? #numbers.formatDecimal(row.totalCalc100,1,1) : '-'}">-</div>
+        </div>
+      <div class="kpi-card">
+        <h4>I. 홍보공헌(계산)</h4>
+        <div class="val" th:text="${row.kpiICalc != null ? #numbers.formatDecimal(row.kpiICalc, 1, 1) : '-'}">-</div>
+      </div>
+      <div class="kpi-card">
+        <h4>II. 자원봉사(계산)</h4>
+        <div class="val" th:text="${row.kpiIICalc != null ? #numbers.formatDecimal(row.kpiIICalc, 1, 2) : '-'}">-</div>
+      </div>
+      <div class="kpi-card">
+        <h4>V. 다면평가(합)</h4>
+        <div class="val" th:text="${row.evalSum70 != null ? #numbers.formatDecimal(row.evalSum70,1,1) : '-'}">-</div>
+      </div>
+    </section>
+
+    <!-- 상세 표 -->
+    <table class="tbl" th:if="${row != null}">
+      <colgroup>
+        <col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:11%">
+        <col style="width:10%">
+        <col style="width:9%"><col style="width:9%"><col style="width:9%"><col style="width:8%"><col style="width:8%">
+        <col style="width:9%"><col style="width:8%"><col style="width:8%">
+        <col style="width:8%"><col style="width:8%"><col style="width:8%">
+        <col style="width:8%"><col style="width:8%">
+        <col style="width:7%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th colspan="4">내 정보</th>
+          <th>총점</th>
+          <th colspan="5">I. 홍보공헌</th>
+          <th colspan="3">II. 자원봉사</th>
+          <th colspan="3">III. 교육이수</th>
+          <th colspan="2">V. 다면평가</th>
+          <th>등급</th>
+        </tr>
+        <tr>
+          <th>부서</th><th>사번</th><th>직책</th><th>성명</th>
+          <th>획득총점</th>
+          <th>신환</th><th>장례</th><th>합계</th><th>개인지표</th><th>100점</th>
+          <th>참여횟수</th><th>개인지표</th><th>100점</th>
+          <th>이수율</th><th>개인지표</th><th>100점</th>
+          <th>부서장→부서원</th><th>부서원→부서원</th>
+          <th>평가</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td th:text="${row.deptName}">-</td>
+          <td th:text="${row.empId}">-</td>
+          <td th:text="${row.position}">-</td>
+          <td th:text="${row.empName}">-</td>
+
+          <td class="point" th:text="${row.totalCalc100 != null ? #numbers.formatDecimal(row.totalCalc100,1,1) : '-'}">-</td>
+
+          <td th:text="${row.newInConn   != null ? row.newInConn   : '0'}">0</td>
+          <td th:text="${row.funeralConn != null ? row.funeralConn : '0'}">0</td>
+          <td th:text="${row.bothConn    != null ? row.bothConn    : '0'}">0</td>
+          <td th:text="${row.kpiICalc    != null ? #numbers.formatDecimal(row.kpiICalc,1,1) : (row.kpiI!=null?row.kpiI:'-')}">-</td>
+          <td th:text="${row.scoreICalc  != null ? row.scoreICalc : (row.scoreI!=null?row.scoreI:'-')}">-</td>
+
+          <td th:text="${row.volCnt      != null ? row.volCnt : '0'}">0</td>
+          <td th:text="${row.kpiIICalc   != null ? #numbers.formatDecimal(row.kpiIICalc,1,2) : (row.kpiII!=null?row.kpiII:'-')}">-</td>
+          <td th:text="${row.scoreIICalc != null ? row.scoreIICalc : (row.scoreII!=null?row.scoreII:'-')}">-</td>
+
+          <td th:text="${row.eduRate     != null ? row.eduRate : '0%'}">0%</td>
+          <td th:text="${row.kpiIIICalc  != null ? #numbers.formatDecimal(row.kpiIIICalc,1,2) : (row.kpiIII!=null?row.kpiIII:'-')}">-</td>
+          <td th:text="${row.scoreIIICalc!= null ? row.scoreIIICalc : (row.scoreIII!=null?row.scoreIII:'-')}">-</td>
+
+          <td th:text="${row.bossToStaff35  != null ? #numbers.formatDecimal(row.bossToStaff35,1,1) : '-'}">-</td>
+          <td th:text="${row.staffToStaff35 != null ? #numbers.formatDecimal(row.staffToStaff35,1,1) : '-'}">-</td>
+
+          <td th:text="${row.evalGrade != null ? row.evalGrade : '-'}">-</td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- KPI 디버그 패널 -->
+<section id="kpi-debug-panel"
+  class="kpi-debug hidden"
+  th:if="${kpi != null}"
+  th:with="k=${kpi}"
+  th:attr="
+    data-b=${k.bFromClinicToTeam100 == null ? 0 : k.bFromClinicToTeam100},
+    data-d=${k.dInTeamToTeam100   == null ? 0 : k.dInTeamToTeam100},
+    data-e=${k.eBossToStaff100    == null ? 0 : k.eBossToStaff100},
+    data-f=${k.fStaffToBoss100    == null ? 0 : k.fStaffToBoss100},
+    data-g=${k.gStaffToStaff100   == null ? 0 : k.gStaffToStaff100},
+    data-pd=${k.preferD           == null ? 0 : k.preferD},
+    data-pf=${k.preferF           == null ? 0 : k.preferF},
+    data-pb=${k.preferB           == null ? 0 : k.preferB},
+    data-vi=${k.vExperience       == null ? 0 : k.vExperience},
+    data-vb=${k.vBossToStaff      == null ? 0 : k.vBossToStaff},
+    data-vs=${k.vStaffToStaff     == null ? 0 : k.vStaffToStaff},
+    data-es=${k.evalSum20         == null ? 0 : k.evalSum20},
+    data-k1=${k.kpiICalc          == null ? 0 : k.kpiICalc},
+    data-k2=${k.kpiIICalc         == null ? 0 : k.kpiIICalc},
+    data-k3=${k.kpiIIICalc        == null ? 0 : k.kpiIIICalc},
+    data-total=${k.totalCalc      == null ? 0 : k.totalCalc},
+    data-emp=|__${k.empId}__ ${k.empName}|
+  ">
+  <div class="kd-header">
+    <strong th:text="'[디버그] ' + ${k.empName} + ' (' + ${k.empId} + ')'">[디버그] 홍길동 (100001)</strong>
+    <span class="muted" th:text="${k.deptName}">○○부서</span>
+  </div>
+
+  <div class="kd-grid">
+    <div class="kd-card">
+      <div class="kd-title">다면평가 원시값(100점)</div>
+      <table class="kd-table">
+        <tbody>
+          <tr><th>B 진료→팀</th><td id="dbg-b"  th:text="${k.bFromClinicToTeam100}">-</td></tr>
+          <tr><th>D 팀내→팀</th><td id="dbg-d"  th:text="${k.dInTeamToTeam100}">-</td></tr>
+          <tr><th>E 부서장→부원</th><td id="dbg-e" th:text="${k.eBossToStaff100}">-</td></tr>
+          <tr><th>F 부원→부서장</th><td id="dbg-f" th:text="${k.fStaffToBoss100}">-</td></tr>
+          <tr><th>G 부원→부원</th><td id="dbg-g" th:text="${k.gStaffToStaff100}">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="kd-card">
+      <div class="kd-title">선택값(prefer) & 가중 반영</div>
+      <table class="kd-table">
+        <thead>
+          <tr>
+            <th>항목</th><th>선택값(100)</th><th>가중치</th><th>반영점수</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>D(경험)</td><td id="dbg-pd" th:text="${k.preferD}">-</td><td>×0.10</td><td id="dbg-vi" th:text="${k.vExperience}">-</td></tr>
+          <tr><td>F(상향)</td><td id="dbg-pf" th:text="${k.preferF}">-</td><td>×0.05</td><td id="dbg-vb" th:text="${k.vBossToStaff}">-</td></tr>
+          <tr><td>B(동료)</td><td id="dbg-pb" th:text="${k.preferB}">-</td><td>×0.05</td><td id="dbg-vs" th:text="${k.vStaffToStaff}">-</td></tr>
+          <tr class="sum-row"><th colspan="3">합계 evalSum20</th><th id="dbg-es" th:text="${k.evalSum20}">-</th></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="kd-card">
+      <div class="kd-title">최종 합산 검증</div>
+      <table class="kd-table">
+        <tbody>
+          <tr><th>I(10)</th><td id="dbg-k1" th:text="${k.kpiICalc}">-</td></tr>
+          <tr><th>II(12)</th><td id="dbg-k2" th:text="${k.kpiIICalc}">-</td></tr>
+          <tr><th>III(10환산)</th><td id="dbg-k3" th:text="${k.kpiIIICalc}">-</td></tr>
+          <tr><th>V(20)</th><td id="dbg-v"  th:text="${k.evalSum20}">-</td></tr>
+          <tr class="sum-row"><th>서버 totalCalc</th><td id="dbg-total" th:text="${k.totalCalc}">-</td></tr>
+          <tr class="sum-row"><th>프론트 재계산</th><td id="dbg-recalc">-</td></tr>
+          <tr><th>Δ 차이(recalc - server)</th><td id="dbg-delta">-</td></tr>
+        </tbody>
+      </table>
+      <pre class="kd-json" id="dbg-json"></pre>
+    </div>
+  </div>
+</section>
+
+  </main>
+
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <div th:replace="~{Include/layout :: scripts}"></div>
+  <script>
+(function(){
+  const $ = (sel, root=document)=>root.querySelector(sel);
+
+  const panel = $('#kpi-debug-panel');
+  const btn   = $('#toggle-debug');
+
+  // 쿼리스트링 ?debug=1 이면 자동 표시
+  const url = new URL(location.href);
+  const autoShow = url.searchParams.get('debug') === '1';
+
+  function toNum(v){
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function fmt(x, d=2){
+    if (x === null || x === undefined || isNaN(x)) return '-';
+    return Number(x).toFixed(d);
+  }
+
+  function recalcAndPaint(){
+    if (!panel) return;
+
+    // data-*에서 모두 읽기
+    const data = {
+      b:  toNum(panel.dataset.b),
+      d:  toNum(panel.dataset.d),
+      e:  toNum(panel.dataset.e),
+      f:  toNum(panel.dataset.f),
+      g:  toNum(panel.dataset.g),
+      pd: toNum(panel.dataset.pd),
+      pf: toNum(panel.dataset.pf),
+      pb: toNum(panel.dataset.pb),
+      vi: toNum(panel.dataset.vi),
+      vb: toNum(panel.dataset.vb),
+      vs: toNum(panel.dataset.vs),
+      es: toNum(panel.dataset.es),
+      k1: toNum(panel.dataset.k1),
+      k2: toNum(panel.dataset.k2),
+      k3: toNum(panel.dataset.k3),
+      total: toNum(panel.dataset.total),
+      emp: panel.dataset.emp || ''
+    };
+
+    // 프론트 재계산
+    const vExperience   = toNum(data.pd) * 0.10;
+    const vBossToStaff  = toNum(data.pf) * 0.05;
+    const vStaffToStaff = toNum(data.pb) * 0.05;
+    const evalSum20     = vExperience + vBossToStaff + vStaffToStaff;
+    const totalRecalc   = (toNum(data.k1) || 0)
+                        + (toNum(data.k2) || 0)
+                        + (toNum(data.k3) || 0)
+                        + evalSum20;
+
+    // DOM 채우기(혹시 템플릿에서 비어온 경우 대비)
+    $('#dbg-vi') && ($('#dbg-vi').textContent = fmt(vExperience,2));
+    $('#dbg-vb') && ($('#dbg-vb').textContent = fmt(vBossToStaff,2));
+    $('#dbg-vs') && ($('#dbg-vs').textContent = fmt(vStaffToStaff,2));
+    $('#dbg-es') && ($('#dbg-es').textContent = fmt(evalSum20,2));
+
+    $('#dbg-recalc') && ($('#dbg-recalc').textContent = fmt(totalRecalc,1));
+    $('#dbg-total')  && ($('#dbg-total').textContent  = fmt(data.total,1));
+
+    const clientRounded = +totalRecalc.toFixed(1);
+    const serverRounded = +toNum(panel.dataset.total).toFixed(1);
+    const delta = +(clientRounded - serverRounded).toFixed(2);
+    const deltaEl = $('#dbg-delta');
+    if (deltaEl){
+        deltaEl.textContent = (delta>0?'+':'') + delta.toFixed(2);
+        deltaEl.classList.toggle('mismatch', Math.abs(delta) > 0.05);
+        deltaEl.classList.toggle('match', Math.abs(delta) <= 0.05);
+    }
+    // JSON 원본(빠르게 눈검사)
+    const dump = {
+      emp: data.emp,
+      raw100: { B:data.b, D:data.d, E:data.e, F:data.f, G:data.g },
+      prefer: { D:data.pd, F:data.pf, B:data.pb },
+      weighted: {
+        vExperience: fmt(vExperience,2),
+        vBossToStaff: fmt(vBossToStaff,2),
+        vStaffToStaff: fmt(vStaffToStaff,2),
+        evalSum20: fmt(evalSum20,2)
+      },
+      server: {
+        I:data.k1, II:data.k2, III:data.k3, V:data.es, total:data.total
+      },
+      client: { totalRecalc: +totalRecalc.toFixed(1), delta }
+    };
+    const jsonEl = $('#dbg-json');
+    if (jsonEl) jsonEl.textContent = JSON.stringify(dump, null, 2);
+
+    // 필수값 유무 경고(모두 0/NULL이면 점수 안 들어온 케이스)
+    const noMulti =
+      !data.b && !data.d && !data.e && !data.f && !data.g &&
+      !data.pd && !data.pf && !data.pb;
+    if (noMulti){
+      jsonEl && (jsonEl.textContent += "\n\n⚠ 다면평가 원점수가 비어있습니다. (B/D/E/F/G 없음)");
+    }
+  }
+
+  btn?.addEventListener('click', ()=>{
+    panel.classList.toggle('hidden');
+    if (!panel.classList.contains('hidden')){
+      recalcAndPaint();
+    }
+  });
+
+  if (autoShow){
+    panel.classList.remove('hidden');
+    recalcAndPaint();
+  }
+})();
+</script>
+</body>
+</html>

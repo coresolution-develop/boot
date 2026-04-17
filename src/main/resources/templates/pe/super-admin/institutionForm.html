@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${mode == 'new'} ? '기관 등록' : '기관 수정'">기관 등록/수정 | 슈퍼 어드민</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <style>
+    .main-inner { max-width:600px; margin:0 auto; padding:24px 20px; }
+    .page-title  { font-size:22px; font-weight:700; color:#1e293b; margin-bottom:24px; }
+
+    .form-card { background:#fff; border:1px solid #e5e9ef; border-radius:12px;
+                 padding:28px 32px; box-shadow:0 2px 8px rgba(0,0,0,.04); }
+
+    .form-group { margin-bottom:18px; }
+    .form-label { display:block; font-size:13px; font-weight:600; color:#374151;
+                  margin-bottom:6px; }
+    .form-control { width:100%; padding:9px 12px; border:1px solid #d1d5db;
+                    border-radius:7px; font-size:14px; box-sizing:border-box;
+                    transition:border-color .15s; }
+    .form-control:focus { outline:none; border-color:#3b82f6;
+                          box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+    .form-hint { font-size:12px; color:#64748b; margin-top:4px; }
+
+    .form-check { display:flex; align-items:center; gap:8px; }
+    .form-check input { width:16px; height:16px; cursor:pointer; }
+
+    .btn-row  { display:flex; gap:10px; margin-top:24px; }
+    .btn-submit { background:#1b304a; color:#fff; border:none; padding:10px 22px;
+                  border-radius:7px; font-size:14px; font-weight:600; cursor:pointer; }
+    .btn-submit:hover { filter:brightness(1.15); }
+    .btn-cancel { background:#fff; border:1px solid #d1d5db; color:#374151;
+                  padding:10px 22px; border-radius:7px; font-size:14px;
+                  font-weight:600; cursor:pointer; text-decoration:none;
+                  display:inline-flex; align-items:center; }
+    .btn-cancel:hover { background:#f8fafc; }
+  </style>
+</head>
+<body>
+<div th:replace="~{Include/layout :: header}"></div>
+<div th:replace="~{Include/layout :: nav_section}"></div>
+
+<div class="main-content">
+<div class="main-inner">
+
+  <h1 class="page-title"
+      th:text="${mode == 'new'} ? '🏥 기관 등록' : '✏️ 기관 수정'"></h1>
+
+  <div class="form-card">
+    <!-- 신규 등록 -->
+    <form th:if="${mode == 'new'}"
+          th:action="@{/admin/institutions}" method="post">
+
+      <div class="form-group">
+        <label class="form-label">기관명 <span style="color:#ef4444">*</span></label>
+        <input type="text" name="name" class="form-control"
+               placeholder="예: 효사랑전주요양병원" required>
+        <p class="form-hint">users 테이블의 c_name 값과 정확히 일치해야 합니다.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">기관 코드 <span style="color:#ef4444">*</span></label>
+        <input type="text" name="code" class="form-control"
+               placeholder="예: HYOSJ" required
+               pattern="[A-Za-z0-9_]+"
+               title="영문·숫자·언더스코어만 허용">
+        <p class="form-hint">영문 대문자·숫자·언더스코어(_)로 구성, 중복 불가</p>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-submit">등록</button>
+        <a th:href="@{/admin/institutions}" class="btn-cancel">취소</a>
+      </div>
+    </form>
+
+    <!-- 수정 -->
+    <form th:unless="${mode == 'new'}"
+          th:action="@{/admin/institutions/{id}(id=${institution.id})}" method="post">
+
+      <div class="form-group">
+        <label class="form-label">기관명 <span style="color:#ef4444">*</span></label>
+        <input type="text" name="name" class="form-control"
+               th:value="${institution.name}" required>
+        <p class="form-hint">변경 시 users 테이블의 c_name 값도 함께 수정해야 합니다.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">기관 코드 <span style="color:#ef4444">*</span></label>
+        <input type="text" name="code" class="form-control"
+               th:value="${institution.code}" required
+               pattern="[A-Za-z0-9_]+"
+               title="영문·숫자·언더스코어만 허용">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">상태</label>
+        <div class="form-check">
+          <input type="checkbox" name="isActive" id="isActive" value="true"
+                 th:checked="${institution.isActive}">
+          <label for="isActive" style="font-size:13px; color:#374151;">활성</label>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn-submit">저장</button>
+        <a th:href="@{/admin/institutions}" class="btn-cancel">취소</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+</div>
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<div th:replace="~{Include/layout :: scripts}"></div>
+</body>
+</html>

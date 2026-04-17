@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel Data Preview</title>
+    <style>
+        table, td, tr, th {
+            border:1px solid #ddd;
+            border-collapse: collapse;
+        }
+    </style>
+    <!-- 필요에 따라 수정 -->
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- 공통 레이아웃 프래그먼트 -->
+    <div th:replace="Include/afflayout :: header"></div>
+    <div th:replace="Include/afflayout :: nav_section"></div>
+
+    <div class="main-content">
+        <h2>Uploaded Excel Data Preview</h2>
+        <form th:action="@{/aff/excel/subconfirm(year=${year})}" method="post">
+            <input type="hidden" name="year" th:value="${year}" />
+            <table>
+                <thead>
+                    <tr>
+                        <th>부서명</th>
+                        <th>부서코드</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${subList}">
+                        <td th:text="${s.subName}">부서명</td>
+                        <td th:text="${s.subCode}">부서코드</td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" id="submitBtn" value="Upload to Database">
+        </form>
+
+        <div id="spinner-overlay" style="display: none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>잠시만 기다려주세요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공통 스크립트 프래그먼트 -->
+    <div th:replace="Include/afflayout :: scripts"></div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function spinner() {
+            const overlay = document.getElementById('spinner-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+        $('#submitBtn').on('click', spinner);
+        /*]]>*/
+    </script>
+</body>
+</html>

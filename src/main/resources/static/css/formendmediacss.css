@@ -1,0 +1,133 @@
+@charset "UTF-8";
+
+@media all and (max-width: 460px) {
+	:root, html {
+	    font-size: 6px;
+	}
+	.section {
+	    padding-top: 327px;
+	    margin: 0;
+	}
+	.container {
+		padding: 0 6px;
+	}
+	.target_info {
+		background: inherit;
+		height: 120px;
+	    display: flex;
+	    flex-wrap: wrap;
+	    flex-direction: column;
+	    justify-content: space-around;
+	}
+	
+	.target_text div {
+		margin-right: 0;
+		
+	}
+	.target_text span {
+	    font-size: 2.13rem;
+	}
+	.notice-area {
+		justify-content: center;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+	.btn-area {
+		height: 60px;
+	    padding: 0 6px;
+	    background: #fff;
+	    display: flex;
+	    align-items: center;
+	}
+	.notice-area > div {
+		width: 100%;
+	}
+	.notice-area > .flex {
+	    background-color: #efefef;
+	    height: 60px;
+	    padding: 0 6px 0;
+	}
+	
+	.check_img {
+		width: 30px;
+	}
+	.target_area {
+	    top: 241px;
+	}
+	.target_text {
+		margin: 0;
+	    display: flex;
+	    flex-direction: column;
+	    flex-wrap: nowrap;
+	    justify-content: space-evenly;
+	    height: 100%;
+	}
+	.target_text span {
+		font-size: 2.13rem;
+	}
+	.info_area {
+		margin: 0;
+		top: 242px;
+	}
+	.area {
+		margin: 0px;
+		margin-bottom: 20px;
+		padding: 0;
+	}
+	.target {
+		margin: 0 20px;
+	}
+	.fixed {
+		position: fixed;
+		top: 62px;
+	}
+	.target_box table {
+	    height: 127px;
+	}
+	.label {
+	    margin-right: 6px;
+	}
+	.radioimg {
+	    width: 10px;
+	    height: 10px;
+	    background: url(../icon/ev/checkbox_off.png) no-repeat center /10px;
+	}
+	.radio:checked+.radioimg {
+	    background: url(../icon/ev/checkbox_on.png) no-repeat center /10px;
+	}
+	.text p {
+		margin-bottom: 2px;
+	}
+	.text-area-tr2 > td {
+	    height: 65px;
+	}
+	.text-area-tr2 textarea {
+	    height: 65px;
+	}
+	.footer > div {
+	    margin: 0 auto;
+	}
+	.inputTxt {
+	    margin: 0px 2px;
+	}
+	.modal_body {
+		width: 90%;
+	}
+	.menu_msg2 {
+	    font-size: 2.6rem;
+	}
+	.question-text {
+		padding-left: 0;
+	}
+	.end {
+		width: 100%;
+		height: 42px;
+	}
+	.modal_body {
+		width: 90%;
+	}
+	.text-wrap {
+		font-size: 1.6rem;
+	}
+}

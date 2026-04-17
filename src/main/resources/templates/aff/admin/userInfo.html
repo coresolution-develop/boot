@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login"> <!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">
+    <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+        .bg-425c7b {
+            background: #425c7b;
+            color: #fff;
+        }
+
+        .bg-586f8b {
+            background: #586f8b;
+            color: #fff;
+        }
+
+        .bg-d9e9e9 {
+            background: #d9e9e9;
+        }
+
+        /* 
+.tr-bottom::before {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-bottom: 1px solid #cccccc;
+} */
+        main {
+            background: #f7f7f7;
+            margin-left: 240px;
+        }
+
+        .pd {
+            border-top: 11px solid #f7f7f7;
+            position: fixed;
+            top: 62px;
+            width: 100%;
+            z-index: 999;
+        }
+
+        td,
+        th {
+            /* 
+	border: 1px solid #d7d7d7; */
+            height: 45px;
+            text-align: center;
+            /*
+	border-right: 1px solid #d7d7d7; 
+	border-bottom: 1px solid #d7d7d7; */
+            font-size: 12pt;
+        }
+
+        tbody td {
+            border: 1px solid #d7d7d7;
+            background: #fff;
+        }
+
+        .lasttd {
+            /* 
+	border-right:1px solid #d7d7d7;
+	border-bottom:1px solid #d7d7d7; */
+        }
+
+        .scroll-container {
+            padding: 10px;
+        }
+
+        .scrolltable {
+            width: 100%;
+            border: 2px solid #cccccc;
+            color: #222222;
+        }
+
+        .sticky-top {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 72px;
+            z-index: 2;
+            /* 높은 z-index 값을 설정 */
+        }
+
+        .sticky-top::before {
+            content: "";
+            position: absolute;
+            top: 1px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-bottom: 1px solid #d7d7d7;
+            border-right: 1px solid #d7d7d7;
+        }
+
+        .sticky-top:nth-child(1)::before {
+            border-right: 1px solid #cccccc;
+        }
+
+        .sticky-top:nth-child(2)::before {
+            border-left: 1px solid #cccccc;
+        }
+
+        .sticky-middle {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 117px;
+            z-index: 2;
+        }
+
+        .sticky-middle::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-top: 1px solid #d7d7d7;
+            border-right: 1px solid #d7d7d7;
+        }
+
+        .sticky-middle:nth-child(4)::before {
+            border-right: 1px solid #cccccc;
+        }
+
+        .sticky-bottom {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 162px;
+            z-index: 2;
+            color: #222222;
+        }
+
+        .sticky-bottom::before {
+            content: "";
+            position: absolute;
+            top: 0px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-top: 2px solid #d7d7d7;
+            border-right: 1px solid #d7d7d7;
+            border-bottom: 2px solid #cccccc;
+        }
+
+        .sticky-bottom:nth-child(2)::before {
+            border-left: 1px solid #cccccc;
+        }
+
+        tbody th,
+        tbody td {
+            position: relative;
+            /* 상대 위치 설정 */
+            z-index: 1;
+            /* 낮은 z-index 값을 설정 */
+        }
+
+        tbody td::before {
+            border-right: 1px solid #d7d7d7;
+            border-bottom: 1px solid #d7d7d7;
+        }
+
+        .scrolltable>thead {
+            color: #fff;
+        }
+
+        .scrolltable td:nth-child(4) {
+            border-right: 2px solid #ccc;
+        }
+
+        .nav__link {
+            display: flex;
+            align-items: center;
+            height: 64px;
+            padding-left: 25px;
+            border-left: 4px solid #2f425a;
+            cursor: pointer;
+        }
+
+        .active {
+            border-left: 4px solid #00bec2;
+            background: #293a4f;
+            color: #fff;
+            padding-left: 30px;
+
+        }
+
+        .bg-gray {
+            background: #eaeaea;
+        }
+
+        .infotable {
+            width: 100%;
+            border: 2px solid #cccccc;
+        }
+
+        .infotable>thead>tr>th {
+            background: #425c7b;
+            color: #fff;
+            border: 1px solid #d7d7d7;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .pointer {
+            cursor: pointer;
+        }
+
+        .info-sticky-top::before {
+            content: "";
+            border-bottom: 2px solid #ccc;
+        }
+
+        .link-btn {
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .btn-css {
+            width: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+            height: 90%;
+            border-radius: 5px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
+            -webkit-transition: all 0.15s ease-in-out;
+            -moz-transition: all 0.15s ease-in-out;
+            -ms-transition: all 0.15s ease-in-out;
+            -o-transition: all 0.15s ease-in-out;
+            transition: all 0.15s ease-in-out;
+            background: #fafafa;
+        }
+
+        .btn-css:hover {
+            -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            -moz-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            -ms-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            -o-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+        }
+
+        section {
+            display: flex;
+            margin-top: 62px;
+            flex-direction: column;
+        }
+
+        .nav_section {
+            width: 240px;
+            background: #2f425a;
+            color: #c3c3c3;
+            position: fixed;
+            height: 100%;
+        }
+
+        .icon-image {
+            margin-right: 10px;
+        }
+
+        .page {
+            margin-bottom: 10px;
+            background: #fff;
+            padding: 24px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 16px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        .card {
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            background: #fff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: 1px solid #d0d7de;
+            color: #444;
+            background: #f6f8fa;
+        }
+
+        .list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .meta {
+            color: #6a737d;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: 1px solid #d0d7de;
+            background: #fafbfc;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #1b304a;
+            color: #fff;
+            border-color: #1b304a;
+        }
+
+        .btn-danger {
+            border-color: #e57373;
+            color: #b71c1c;
+            background: #ffebee;
+        }
+
+        .muted {
+            color: #6a737d;
+        }
+
+        h3 {
+            margin: 0 0 10px 0;
+        }
+
+        h4 {
+            margin: 0 0 8px 0;
+        }
+
+        .counts {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{Include/afflayout :: header}"></div>
+    <div th:replace="~{Include/afflayout :: nav_section}"></div>
+
+    <main class="main-content">
+
+    <!-- (A) 직원 화면과 동일: 최종 대상 (ORG / AGC / SUB) -->
+    <section class="page">
+    <h2 th:text="|${userInfo.id} ${userInfo.name} 최종 평가 대상|"></h2>
+
+    <div class="grid grid-cols-2 gap-24">
+        <!-- 기관 평가(ORG) -->
+        <div>
+            <h3>
+                <span th:text="${scopeLabels['ORG']}">기관 평가</span>
+                <small th:text="${#lists.size(orgAll)}">0</small>
+            </h3>
+            <ul>
+                <li th:each="u : ${orgAll}">
+                    <span th:text="${u.name}">이름</span>
+                <span th:text="${u.id}">사번</span>
+                    <small th:text="${u.subName}">부서</small>
+                    <small th:text="${u.teamName}">팀</small>
+                    <small th:text="${u.position}">직급</small>
+                </li>
+                <li th:if="${#lists.isEmpty(orgAll)}"><em>없음</em></li>
+            </ul>
+            <hr/>
+        </div>
+
+        <!-- 소속 평가(AGC) -->
+        <div>
+            <h3>
+                <span th:text="${scopeLabels['AGC']}">소속 평가</span>
+                <small th:text="${#lists.size(agcAll)}">0</small>
+            </h3>
+            <ul>
+                <li th:each="u : ${agcAll}">
+                    <span th:text="${u.name}">이름</span>
+                <span th:text="${u.id}">사번</span>
+                    <small th:text="${u.subName}">부서</small>
+                    <small th:text="${u.teamName}">팀</small>
+                    <small th:text="${u.position}">직급</small>
+                </li>
+                <li th:if="${#lists.isEmpty(agcAll)}"><em>없음</em></li>
+            </ul>
+            <hr/>
+        </div>
+
+        <!-- 🔴 부서장 평가(SHEAD_TO_*) -->
+    <div>
+        <h3>
+            <span th:text="${scopeLabels['SUB_HEAD']}">부서장 평가</span>
+            <small th:text="${#lists.size(subHeadAll)}">0</small>
+        </h3>
+        <ul>
+            <li th:each="u : ${subHeadAll}">
+                <span th:text="${u.name}">이름</span>
+                <span th:text="${u.id}">사번</span>
+                <small th:text="${u.subName}">부서</small>
+                <small th:text="${u.teamName}">팀</small>
+                <small th:text="${u.position}">직급</small>
+            </li>
+            <li th:if="${#lists.isEmpty(subHeadAll)}"><em>없음</em></li>
+        </ul>
+        <hr/>
+    </div>
+       <!-- 부서 평가(SUB: 부서원/동료) -->
+    <div>
+        <h3>
+            <span th:text="${scopeLabels['SUB']}">부서 평가</span>
+            <small th:text="${#lists.size(subAll)}">0</small>
+        </h3>
+        <ul>
+            <li th:each="u : ${subAll}">
+                <span th:text="${u.name}">이름</span>
+                <span th:text="${u.id}">사번</span>
+                <small th:text="${u.subName}">부서</small>
+                <small th:text="${u.teamName}">팀</small>
+                <small th:text="${u.position}">직급</small>
+            </li>
+            <li th:if="${#lists.isEmpty(subAll)}"><em>없음</em></li>
+        </ul>
+        <hr/>
+    </div>
+    </div>
+</section>
+
+    <!-- (B) 커스텀 추가 대상 (삭제 가능) -->
+    <section class="page">
+    <h2>커스텀 추가 대상</h2>
+
+    <div th:if="${typeLabels != null}"
+         th:each="e : ${typeLabels.entrySet()}">
+        <h4 th:text="${e.value}">그룹명</h4>
+
+        <ul>
+            <!-- 값이 있으면 렌더 -->
+            <li th:each="u : ${customGrouped[e.key]}"
+                th:if="${customGrouped[e.key] != null and !#lists.isEmpty(customGrouped[e.key])}">
+                <span th:text="${u.name}">이름</span>
+                <small th:text="${u.subName}">부서</small>
+                <small th:text="${u.teamName}">팀</small>
+                <small th:text="${u.position}">직급</small>
+
+                <!-- 삭제(비활성화) -->
+                <form th:action="@{|/aff/admin/userInfo/${userInfo.idx}/custom/remove|}"
+                      method="post" style="display:inline">
+                    <input type="hidden" name="year" th:value="${year}"/>
+                    <input type="hidden" name="targetId" th:value="${u.id}"/>
+                    <input type="hidden" name="reason" value="관리자 수동 삭제"/>
+                    <button type="submit" class="btn btn-outline-danger btn-sm"
+                            onclick="return confirm('이 대상을 커스텀 추가 목록에서 삭제하시겠습니까?')">
+                        삭제
+                    </button>
+                </form>
+            </li>
+
+            <!-- 값이 없으면 '없음' -->
+            <li th:if="${customGrouped[e.key] == null or #lists.isEmpty(customGrouped[e.key])}">
+                <em>없음</em>
+            </li>
+        </ul>
+        <hr/>
+    </div>
+</section>
+
+</main>
+
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script th:src="@{/js/admin/admin.js}"></script>
+    <div th:replace="~{Include/afflayout :: scripts}"></div>
+</body>
+
+</html>

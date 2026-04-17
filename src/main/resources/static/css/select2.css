@@ -1,0 +1,49 @@
+/* 기본 선택 영역 (단일/다중) */
+.select2-container--default .select2-selection--single,
+.select2-container--default .select2-selection--multiple {
+  border: 1px solid #ddd !important;
+  border-radius: 4px; /* 필요 시 유지/수정 */
+  box-shadow: none !important;
+}
+
+/* 호버/포커스/열림 상태도 동일하게 */
+.select2-container--default .select2-selection--single:hover,
+.select2-container--default .select2-selection--multiple:hover,
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default .select2-selection--multiple:focus,
+.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--multiple {
+  border-color: #ddd !important;
+  outline: 0;
+  box-shadow: none !important;
+}
+
+/* 드롭다운 패널 테두리 */
+.select2-container--default .select2-dropdown {
+  border: 1px solid #ddd !important;
+  box-shadow: none !important;
+}
+
+/* 드롭다운 내부 검색창 테두리 */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  border: 1px solid #ddd !important;
+  outline: 0;
+  box-shadow: none !important;
+}
+
+/* 비활성화 상태도 동일한 테두리 */
+.select2-container--default.select2-container--disabled .select2-selection--single,
+.select2-container--default.select2-container--disabled .select2-selection--multiple {
+  border: 1px solid #ddd !important;
+}
+
+/* 단일/다중 공통: 표시 텍스트 영역 패딩 */
+.select2-container--default .select2-selection--single .select2-selection__rendered,
+.select2-container--default .select2-selection--multiple .select2-selection__rendered {
+  padding: 0 34px 0 8px !important; /* 우 20, 좌 8 */
+}
+
+/* (옵션) 화살표가 글자랑 겹치면 폭을 고정 */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  width: 34px /* 오른쪽 패딩 20px과 맞춤 */
+}

@@ -1,0 +1,149 @@
+<!-- templates/admin/release.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+    <meta charset="utf-8">
+    <title>평가 오픈/마감 관리</title>
+
+  <link rel="stylesheet" th:href="@{/css/css.css}" />
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}" />
+  <link rel="stylesheet" th:href="@{/css/admin.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoinfocss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoformcss.css}" />
+  <link rel="stylesheet" th:href="@{/css/formmediacss.css}" />
+  <link rel="stylesheet" th:href="@{/css/demoform2css.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/formcss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}" />
+</head>
+
+<body>
+    <div th:replace="~{Include/afflayout :: header}"></div>
+    <div th:replace="~{Include/afflayout :: nav_section}"></div>
+    <div class="main-content">
+
+        <h2>평가 오픈/마감 설정</h2>
+
+        <section class="form">
+            <div>
+                <label>연도</label><input id="f-year" type="number" value="2025">
+                <label>유형</label>
+                <select id="f-type">
+                    <option>AA</option>
+                    <option>AB</option>
+                    <option>AC</option>
+                    <option selected>AD</option>
+                    <option>AE</option>
+                </select>
+                <label>관계</label>
+                <select id="f-ev">
+                    <option>A</option>
+                    <option selected>B</option>
+                    <option>C</option>
+                    <option>D</option>
+                    <option>E</option>
+                    <option>F</option>
+                </select>
+                <label>병원</label><input id="f-cname" placeholder="전역이면 공란">
+                <label>부서</label><input id="f-sub" placeholder="병원단위면 공란">
+            </div>
+            <div>
+                <label>오픈</label><input id="f-open" type="datetime-local">
+                <label>마감</label><input id="f-close" type="datetime-local">
+                <label>활성</label><input id="f-enabled" type="checkbox" checked>
+                <button id="btn-upsert">저장/업서트</button>
+            </div>
+        </section>
+
+        <section>
+            <h3>설정 목록</h3>
+            <table class="tbl">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>연도</th>
+                        <th>유형</th>
+                        <th>관계</th>
+                        <th>병원</th>
+                        <th>부서</th>
+                        <th>오픈</th>
+                        <th>마감</th>
+                        <th>활성</th>
+                        <th>액션</th>
+                    </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+            </table>
+        </section>
+    </div>
+
+	<div th:replace="~{Include/afflayout :: scripts}"></div>
+    <script>
+        async function load() {
+            const res = await fetch('/aff/admin/evalrelease/list?size=200');
+            const json = await res.json();
+            const tbody = document.getElementById('rows'); tbody.innerHTML = '';
+            (json.rows || []).forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+          <td>${r.id}</td><td>${r.evalYear}</td><td>${r.dataType}</td><td>${r.dataEv}</td>
+          <td>${r.cName || ''}</td><td>${r.subCode || ''}</td>
+          <td>${r.openAt?.replace('T', ' ') || ''}</td>
+          <td>${r.closeAt?.replace('T', ' ') || ''}</td>
+          <td>${r.enabled ? 'Y' : 'N'}</td>
+          <td>
+            <button data-id="${r.id}" class="toggle">${r.enabled ? '비활성' : '활성'}</button>
+            <button data-id="${r.id}" class="del">삭제</button>
+          </td>`;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('button.toggle').forEach(b => {
+                b.onclick = async () => {
+                    const id = b.dataset.id;
+                    const enabled = b.textContent === '활성';
+                    const res = await fetch(`/aff/admin/evalrelease/toggle/${id}?enabled=${enabled}`, { method: 'POST' });
+                    await res.json(); load();
+                };
+            });
+            tbody.querySelectorAll('button.del').forEach(b => {
+                b.onclick = async () => {
+                    const id = b.dataset.id;
+                    if (!confirm('삭제하시겠습니까?')) return;
+                    const res = await fetch(`/aff/admin/evalrelease/delete/${id}`, { method: 'POST' });
+                    await res.json(); load();
+                };
+            });
+        }
+
+        document.getElementById('btn-upsert').onclick = async () => {
+            // 수정 (해결: 로컬 그대로)
+            const toLocalDateTime = (v) => v ? (v.length === 16 ? v + ':00' : v) : null;
+
+            const body = {
+            evalYear: +document.getElementById('f-year').value,
+            dataType: document.getElementById('f-type').value,
+            dataEv:   document.getElementById('f-ev').value,
+            cName:   (document.getElementById('f-cname').value || '').trim(),
+            subCode: (document.getElementById('f-sub').value || '').trim(),
+            openAt:  toLocalDateTime(document.getElementById('f-open').value),
+            closeAt: toLocalDateTime(document.getElementById('f-close').value),
+            enabled: document.getElementById('f-enabled').checked
+            };
+            const res = await fetch('/aff/admin/evalrelease/upsert', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            const j = await res.json();
+            if (j.result === 'ok') { alert('저장되었습니다'); load(); }
+            else alert('저장 실패');
+        };
+
+        load();
+    </script>
+</body>
+
+</html>

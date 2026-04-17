@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ctx-path" th:content="@{/}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>로그인</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/demoformcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demologincss.css}">
+    <link rel="stylesheet" th:href="@{/css/loginmediacss.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/logincss2025.css}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style id="notice-modal-styles">
+    .notice-modal{ position: fixed !important; inset: 0 !important; display: none; align-items: center; justify-content: center; z-index: 99999 !important; }
+    .notice-modal.show{ display: flex !important; }
+    .notice-backdrop{ position: absolute; inset: 0; background: rgba(0,0,0,.45); }
+    .notice-dialog{ position: relative; width: min(760px, 94vw); max-height: 90vh; overflow: hidden; background: #fff; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.3); z-index: 1; }
+    .notice-body--scroll{ max-height: 65vh; overflow:auto; padding:16px 20px; }
+    .notice-close{ position:absolute; right:10px; top:8px; width:36px; height:36px; border:none; background:transparent; font-size:28px; line-height:36px; cursor:pointer; color:#64748b; }
+    /* ===== Notice Modal ===== */
+    .notice-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:9999; }
+    .notice-modal.show{ display:flex; }
+    .notice-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.45); }
+
+    .notice-dialog{
+    position:relative; z-index:1; width:min(680px, 92vw); max-height:88vh;
+    background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.2);
+    display:flex; flex-direction:column; overflow:hidden;
+    font-size:14px;
+    }
+    .notice-close{
+    position:absolute; right:10px; top:8px; width:36px; height:36px;
+    border:none; background:transparent; font-size:28px; line-height:36px; cursor:pointer; color:#64748b;
+    }
+    .notice-head{ padding:16px 20px 8px 20px; border-bottom:1px solid #e5e7eb; }
+    .notice-head h3{ margin:0; font-size:18px; color:#0f172a; }
+
+    .notice-body{ padding:14px 20px; overflow:auto; }
+    .notice-slides{ position:relative; }
+    .notice-slide{ display:none; }
+    .notice-slide.active{ display:block; animation:noticeFade .18s ease-out; }
+
+    .notice-title{ display:flex; align-items:center; gap:8px; margin-bottom:8px; font-weight:700; color:#0e366c; }
+    .notice-title img{ width:14px; height:14px; opacity:.9; }
+    .notice-desc{ white-space:pre-wrap; word-break:break-word; color:#111827; line-height:1.5; }
+
+    .notice-foot{ border-top:1px solid #e5e7eb; padding:10px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .notice-dots{ display:flex; gap:6px; }
+    .notice-dots button{
+    width:8px; height:8px; border-radius:50%; border:none; background:#d1d5db; cursor:pointer;
+    }
+    .notice-dots button.active{ background:#0e366c; }
+
+    .notice-actions{ display:flex; align-items:center; gap:10px; margin-left:auto; }
+    .notice-hide-today{ display:flex; align-items:center; gap:6px; color:#374151; font-size:12px; }
+    .notice-nav{ display:flex; gap:6px; }
+    .notice-nav .btn-prev,
+    .notice-nav .btn-next,
+    .notice-nav .btn-ok{
+    padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb; background:#f9fafb; cursor:pointer;
+    font-size:12px;
+    }
+    .notice-nav .btn-ok{ background:#0e366c; color:#fff; border-color:#0e366c; }
+    /* 전체 리스트 전용 */
+    .notice-body--scroll{ max-height: 65vh; overflow:auto; padding:14px 20px; }
+    .notice-list{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px; height: 500px; }
+    .notice-item{ padding:12px 12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; }
+    .notice-title{ display:flex; align-items:center; gap:8px; font-weight:700; color:#0e366c; margin-bottom:6px; }
+    .notice-title img{ width:14px; height:14px; opacity:.9; }
+    .notice-desc{ white-space:pre-wrap; word-break:break-word; color:#111827; line-height:1.5; }
+
+    /* 긴 본문 줄임(옵션) — 한 번에 다 보여주려면 삭제 */
+    .notice-item[data-clamp="on"] .notice-desc{
+    display:-webkit-box; -webkit-line-clamp:6; -webkit-box-orient:vertical; overflow:hidden;
+    }
+    @keyframes noticeFade{
+    from{ opacity:0; transform:translateY(4px); }
+    to{ opacity:1; transform:translateY(0); }
+    }
+
+    /* 모바일 대응(옵션) */
+    @media (max-width: 640px){
+    .notice-dialog{ width:94vw; max-height:92vh; }
+    .notice-head h3{ font-size:16px; }
+    }
+    /* ===== Redesigned Notice Modal ===== */
+
+    /* 다이얼로그 여백/그림자 약간 강화 */
+    .notice-dialog{
+    width:min(760px, 94vw);
+    border-radius:16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.28);
+    }
+
+    /* FOOT: 버튼 크기/정렬 통일 */
+    .notice-foot{
+    padding:12px 16px;
+    gap:12px;
+    }
+    .notice-nav .btn-ok{
+    padding:10px 16px;
+    font-weight:600;
+    border-radius:10px;
+    }
+
+    /* ===== Memo Card ===== */
+    .memo{
+    position: relative;
+    padding: 26px 18px 18px;
+    background: transparent;
+    isolation:isolate;
+    }
+
+    /* 종이 겹친 효과 */
+    .memo::before, .memo::after{
+    content:"";
+    position:absolute; inset:auto 12px -8px 12px;
+    height:16px; border-radius:10px;
+    background:#e9eef6; z-index:-2;
+    box-shadow: 0 2px 0 rgba(0,0,0,.04) inset;
+    transform: skewX(-1deg);
+    }
+    .memo::after{ inset:auto 20px -16px 20px; background:#f3f6fb; z-index:-3; }
+
+    /* 테이프 */
+    .memo__tape{
+    position:absolute; left:50%; top:10px; transform:translate(-50%,-50%);
+    width:132px; height:22px; border-radius:4px;
+    background: linear-gradient(180deg,#b7d2ee,#9fc2e6);
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    opacity:.95;
+    }
+
+    /* 헤더 */
+    .memo__head{
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:10px; padding:0 6px;
+    }
+    .memo__head .badge{
+    width:14px; height:14px; border-radius:3px; background:#0e366c;
+    box-shadow:0 0 0 2px #e8eef7;
+    }
+    .memo__title{
+    margin:0; font-size:16px; font-weight:700; color:#0e366c; letter-spacing:-.2px;
+    }
+
+    /* 종이 */
+    .memo__paper{
+    background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.06);
+    padding:16px 16px;
+    }
+
+    /* 본문 텍스트 */
+    .memo__body{
+    color:#101828; font-size:14px; line-height:1.6;
+    }
+    .memo__body p strong{ color:#ff7a00; }
+
+    /* 기본 리스트(● 커스텀) */
+    .memo__body ul{ list-style:none; padding:0; margin:10px 0 0; }
+    .memo__body ul > li{
+    position:relative; padding-left:14px; margin:6px 0;
+    }
+    .memo__body ul > li::before{
+    content:""; position:absolute; left:0; top:.7em;
+    width:6px; height:6px; border-radius:50%; background:#113c74;
+    }
+
+    /* 2열 정렬 리스트 (좌:항목, 우:기간) – li 내부에 <span>과 <em>를 쓰면 정렬됨 */
+    .memo__body ul.cols > li{
+    display:grid; grid-template-columns: 1fr auto; align-items:center;
+    gap:10px; padding-left:14px;
+    }
+    .memo__body ul.cols > li span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .memo__body ul.cols > li em{
+    font-style:normal; color:#475467; font-size:13px; white-space:nowrap;
+    }
+
+    /* 작은 화면 최적화 */
+    @media (max-width:560px){
+    .memo__paper{ padding:14px 12px; }
+    .memo__title{ font-size:15px; }
+    .memo__body{ font-size:13.5px; }
+    .memo__body ul.cols > li{ grid-template-columns: 1fr; }
+    }
+    /* === Modal Overlay: 항상 화면 위에 고정 === */
+    .notice-modal{
+    position: fixed !important;
+    inset: 0 !important;
+    display: none;                 /* 닫힘 기본 */
+    align-items: center;
+    justify-content: center;
+    z-index: 99999 !important;     /* 최상단 */
+    }
+    .notice-modal.show{ display: flex !important; }
+
+    .notice-backdrop{
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.45);
+    }
+
+    .notice-dialog{
+    position: relative;
+    width: min(760px, 94vw);
+    max-height: 90vh;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    z-index: 1;
+    }
+
+    .notice-body--scroll{ max-height: 65vh; overflow:auto; padding:16px 20px; }
+    .notice-close{
+    position:absolute; right:10px; top:8px;
+    width:36px; height:36px; border:none; background:transparent;
+    font-size:28px; line-height:36px; cursor:pointer; color:#64748b;
+    }
+
+    /* =============================
+   Notice modal — polish only
+   ============================= */
+
+    /* 다이얼로그 간격/층위 미세조정 */
+    .notice-dialog{
+    border-radius: 18px;
+    box-shadow: 0 28px 80px rgba(0,0,0,.32);
+    }
+    .notice-head{
+    padding: 14px 18px 10px;
+    }
+    .notice-head h3{
+    font-size: 17px;
+    font-weight: 700;
+    color:#0f172a;
+    }
+    .notice-close{ transition: transform .12s ease, color .12s ease; }
+    .notice-close:hover{ transform: scale(1.06); color:#334155; }
+
+    /* 내용 영역 스크롤 감도/스크롤바 */
+    .notice-body--scroll{
+    padding: 18px 22px;
+    max-height: 66vh;
+    overscroll-behavior: contain;
+    }
+    .notice-body--scroll::-webkit-scrollbar{ height:8px; width:8px; }
+    .notice-body--scroll::-webkit-scrollbar-thumb{
+    background: #cbd5e1; border-radius: 999px;
+    }
+    .notice-body--scroll::-webkit-scrollbar-track{ background: transparent; }
+
+    /* memo 카드 살짝 더 또렷하게 */
+    .memo{ padding: 28px 16px 18px; }
+    .memo__paper{
+    border-radius: 14px;
+    border-color:#e6e9ef;
+    box-shadow: 0 8px 22px rgba(16,24,40,.06);
+    }
+    .memo__head .badge{
+    width: 12px; height: 12px; border-radius: 3px;
+    background:#123a73; box-shadow:0 0 0 2px #e8eef7;
+    }
+    .memo__title{ color:#123a73; }
+
+    /* =============================
+    UL.cols (좌 텍스트 / 우 날짜) 개선
+    - 점(bullet) 간격
+    - 비어있는 좌측(span)이면 '이어쓰기'로 보이기
+    - 모바일에서 1열로 자연스럽게 전환
+    ============================= */
+
+    .memo__body ul.cols{
+    display:block; /* li 자체 그리드로 제어 */
+    margin-top: 12px;
+    }
+
+    .memo__body ul.cols > li{
+    display:grid;
+    grid-template-columns: 1fr auto;   /* 좌 텍스트 / 우 날짜 */
+    align-items:center;
+    gap: 18px;
+    line-height: 1.7;
+    margin: 6px 0;
+    position: relative;
+    padding-left: 16px;                 /* 커스텀 bullet 여유 */
+    }
+
+    /* ● 커스텀 bullet (좌측 span이 비어있을 땐 숨김) */
+    .memo__body ul.cols > li::before{
+    content:"";
+    position:absolute; left:0; top: .78em;
+    width:6px; height:6px; border-radius:50%;
+    background:#123a73;
+    }
+
+    /* 좌측 텍스트 */
+    .memo__body ul.cols > li > span{
+    min-width: 0;
+    overflow:hidden; text-overflow: ellipsis; white-space: nowrap;
+    color:#0f172a;
+    }
+
+    /* 우측 기간(em) */
+    .memo__body ul.cols > li > em{
+    font-style: normal;
+    color:#475467;
+    font-size: 13px;
+    white-space: nowrap;
+    }
+
+    /* ----- 이어쓰기 줄 (span이 비어있을 때) ----- */
+    /* 최신 크롬/사파리/엣지 지원 :has() */
+    .memo__body ul.cols > li:has(> span:empty){
+    /* grid-template-columns: 1fr;     한 칸만 사용 */
+    /* padding-left: 0;                bullet 공간 제거 */
+    /* justify-items: end;             오른쪽 정렬 */
+    }
+    .memo__body ul.cols > li:has(> span:empty)::before{ display:none; }
+    .memo__body ul.cols > li:has(> span:empty) > em{
+    /* color:#6b7280;                  보조 톤 */
+    }
+
+    /* ----- 선택: 점선 리더(dotted leader) (양쪽 텍스트가 있을 때만) ----- */
+    /* 깔끔한 환경에서만 쓰고 싶으면 주석 해제
+    */
+    .memo__body ul.cols > li:not(:has(> span:empty)) > span{
+        position: relative;
+        padding-right: 8px;
+    }
+    .memo__body ul.cols > li:not(:has(> span:empty)) > span::after{
+    content:"";
+    position:absolute; left:100%; right:-8px; top: 55%;
+    height:1px;
+    background:
+        radial-gradient(currentColor 1px, transparent 1px) repeat-x left center/6px 1px;
+    opacity:.35;
+    }
+
+    /* 모바일: 1열 전환 + 여백 조정 */
+    @media (max-width: 560px){
+        .notice-dialog{ width: 94vw; }
+        .notice-body--scroll{ padding:14px 14px; max-height: 72vh; }
+        .memo__paper{ padding: 14px 12px; }
+        .memo__body ul.cols > li{
+            grid-template-columns: 1fr;   /* 한 줄씩 */
+            gap: 6px;
+        }
+        .memo__body ul.cols > li:not(:has(> span:empty)) > span {
+            font-size: 2.2rem;
+        }
+        .memo__body ul.cols > li > em{ 
+            justify-self: start; 
+            font-size: 2.1rem;
+        }
+    }
+    
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login_wrap">
+            <h2 align="center" class="login_title" th:text="${currentEvalYear} + '년 효사랑 & 가족사랑 직원근무평가'">직원근무평가</h2>
+            <form th:action="@{/loginAction}" method="post" id="login_form" onsubmit="console.log('폼 onsubmit 이벤트!');">
+                <div class="id-area">
+                    <input class="input-text id" type="text" name="id" id="id" placeholder="사번" title="사번입력" th:value="${savedId}">
+                </div>
+                <div class="pwd-area">
+                    <input class="input-text name" type="text" name="name" id="pwd" placeholder="이름" title="이름입력" value="">
+                </div>
+                <div class="login-text">
+                    <span class="bold">개인 비밀번호를 설정 하신 후 로그인 시 아래의 사번/비밀번호 체크 후 사번과 비밀번호를 입력부탁드립니다.</span>
+                </div>
+                <div class="chk-area">
+                    <label class="label label-name">
+                        <span class="alignBox">
+                            <input class="radio" type="radio" id="chk_name" name="loginType" value="byName" th:checked="${savedLoginType == 'byName'}"/>
+                            <span class="radioimg"></span>
+                            <span class="inputTxt normal">사번 / 이름 <span class="bold" >(비밀번호 설정 전)</span></span>
+                        </span>
+                    </label>
+                    <label class="label label-pwd">
+                        <span class="alignBox">
+                            <input type="radio" class="radio" id="chk_no" name="loginType" value="byPwd" th:checked="${savedLoginType == 'byPwd'}" />
+                            <span class="radioimg"></span>
+                            <span class="inputTxt normal">사번 / 비밀번호 <span class="bold">(비밀번호 설정 후)</span></span>
+                        </span>
+                    </label>
+                </div>
+                <!-- <div style="text-align: left; font-size: 10pt; color: #000000; margin-bottom: 26px; font-size: 1.4rem;">
+                    
+                </div> -->
+                <div class="pw-find">
+                    <span class="bold" th:onclick="|location.href='@{/pwdfind}'|">비밀번호 찾기 ></span>
+                </div>
+                <div class="login-btn">
+                    <button type="submit" id="loginbtn" >로그인</button>
+                </div>
+            </form>
+            
+        </div>
+
+        <div class="bottom_img">
+            <div class="login_bottom" alt="하단백그라운드"></div>
+            <div class="logo_bottom">
+                <img th:src="@{/img/core_logo.png}" class="logo_bottom_img" alt="하단로고">
+            </div>
+        </div>
+    </div>
+            <div class="modal normal">
+                <div class="modal_body">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg">text</div>
+                        <div class="modal_footer">
+                            <div class="btn modal_btn" id="modalOkBtn" onclick="closePopup()">
+                                확인
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal2 normal">
+                <div class="modal_body2">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg2">text</div>
+                        <div class="modal_footer2">
+                            <div class="btn modal_btn2" onclick="closePopup2()">
+                                확인
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal3 normal">
+                <div class="modal_body3">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg3">text</div>
+                        <div class="modal_footer3">
+                            <div class="btn modal_btn2" onclick="modal_insert()">
+                                확인
+                            </div>
+                            <div class="btn pink_btn2" onclick="closePopup3()">
+                                취소
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal4 normal">
+                <div class="modal_body4">
+                    <div>
+                        <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                        <div class="menu_msg4">text</div>
+                        <div class="modal_footer4">
+                            <div class="btn modal_btn2" onclick="modal_insert()">
+                                확인
+                            </div>
+                            <div class="btn pink_btn2" onclick="closePopup4()">
+                                취소
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script th:src="@{/js/login/login.js}"></script>
+<!-- ✅ 모달은 항상 바디 끝에 둔다 -->
+<div class="notice-modal" id="noticeModal" aria-hidden="true">
+  <div class="notice-backdrop" data-close="1"></div>
+  <div class="notice-dialog" role="dialog" aria-modal="true" aria-labelledby="noticeModalTitle">
+    <button type="button" class="notice-close" aria-label="닫기" data-close="1">×</button>
+
+    <header class="notice-head">
+      <h3 id="noticeModalTitle">공지사항</h3>
+    </header>
+
+    <section class="notice-body notice-body--scroll">
+      <!-- 네가 렌더링한 memo 카드들 그대로 -->
+      <!-- 예: <ol class="notice-list"> <li class="notice-item"><div class="memo">...</div></li> ... -->
+      <!-- th:each 사용 중이면 기존 코드 그대로 옮기면 됨 -->
+      <ol class="notice-list" th:if="${!#lists.isEmpty(noticeV2List)}">
+        <li class="notice-item" th:each="n : ${noticeV2List}">
+          <div class="memo">
+            <div class="memo__tape"></div>
+            <header class="memo__head">
+              <span class="badge"></span>
+              <h4 class="memo__title" th:text="${n.title}">Notice</h4>
+            </header>
+            <div class="memo__paper">
+              <div class="memo__body" th:utext="${n.bodyMd}"></div>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <footer class="notice-foot">
+      <label class="notice-hide-today">
+        <input type="checkbox" id="noticeHideToday"> 오늘 하루 보지 않기
+      </label>
+      <div class="notice-nav">
+        <button type="button" class="btn-ok" id="noticeOk" data-close="1">확인</button>
+      </div>
+    </footer>
+  </div>
+</div>
+<!-- ✅ 반드시 </body> 바로 위에 둔다 -->
+</body>
+<!-- body 맨 끝, 모달 뒤 -->
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const $modal = document.getElementById('noticeModal');
+  const $ok    = document.getElementById('noticeOk');
+  const $hide  = document.getElementById('noticeHideToday');
+  if(!$modal){ console.warn('[notice] modal not found'); return; }
+
+  // ✅ 서버에서 최신 공지 버전을 내려주면 #noticeVersion 사용
+  const versionTag = document.getElementById('noticeVersion')?.dataset?.tag
+                  || 'v' + (new Date()).toISOString().slice(0,10);
+  const key = 'noticeDismissed_' + versionTag;
+
+  function open(){
+    $modal.classList.add('show');
+    $modal.setAttribute('aria-hidden','false');
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    setTimeout(()=>{ $ok?.focus(); }, 0);
+    window.addEventListener('keydown', onKey);
+  }
+  function close(){
+    $modal.classList.remove('show');
+    $modal.setAttribute('aria-hidden','true');
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+    window.removeEventListener('keydown', onKey);
+    if($hide?.checked){ try{ localStorage.setItem(key, '1'); }catch(e){} }
+  }
+  function onKey(e){ if(e.key === 'Escape') close(); }
+
+  // 이벤트
+  $ok?.addEventListener('click', close);
+  $modal.addEventListener('click', (e)=>{ if(e.target?.dataset?.close) close(); });
+
+  // ✅ 열기 조건: 항목이 있거나(또는 empty 표시) + 강제 파라미터 or 오늘 숨김 아님
+  const params = new URLSearchParams(location.search);
+  const force  = params.get('notice') === '1';
+  const hidden = localStorage.getItem(key) === '1';
+  const hasAny = !!$modal.querySelector('.notice-list, .notice-empty');
+
+  console.debug('[notice] force=',force,'hidden=',hidden,'hasAny=',hasAny,'key=',key);
+
+  if(hasAny && (force || !hidden)) open();
+});
+</script>
+</html>

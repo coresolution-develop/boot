@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel Data Preview</title>
+    <style>
+        table, td, tr, th {
+            border:1px solid #ddd;
+            border-collapse: collapse;
+        }
+    </style>
+    <!-- 필요에 따라 수정 -->
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- 공통 레이아웃 프래그먼트 -->
+    <div th:replace="Include/afflayout :: header"></div>
+    <div th:replace="Include/afflayout :: nav_section"></div>
+
+    <div class="main-content">
+        <h2>문제은행 미리보기 ([[${year}]])</h2>
+<p>모드: [[${mode}]] / 건너뜀: [[${skipped}]]</p>
+
+        <div th:if="${parseErrors}">
+        <h4>검증 오류</h4>
+        <ul>
+            <li th:each="e : ${parseErrors}" th:text="${e}"></li>
+        </ul>
+        </div>
+
+        <table class="table">
+        <thead>
+            <tr><th>#</th><th>문제(d1)</th><th>유형(d2)</th><th>구분(d3)</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="r, it : ${rows}">
+            <td th:text="${it.count}"></td>
+            <td th:text="${r.d1}"></td>
+            <td th:text="${r.d2}"></td>
+            <td th:text="${r.d3}"></td>
+            </tr>
+        </tbody>
+        </table>
+
+        <form th:action="@{/aff/admin/evaltemplate/confirmUpload}" method="post">
+        <button type="submit" class="btn btn-primary"
+                th:disabled="${parseErrors != null and !parseErrors.isEmpty()}">
+            위 내용으로 확정 저장
+        </button>
+        <a th:href="@{|/aff/admin/target?year=${year}|}" class="btn">취소</a>
+        </form>
+
+        <div id="spinner-overlay" style="display: none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>잠시만 기다려주세요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공통 스크립트 프래그먼트 -->
+    <div th:replace="Include/afflayout :: scripts"></div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function spinner() {
+            const overlay = document.getElementById('spinner-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+        $('#submitBtn').on('click', spinner);
+        /*]]>*/
+    </script>
+</body>
+</html>

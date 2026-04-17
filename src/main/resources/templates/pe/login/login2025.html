@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="login-container">
+        <form th:action="@{/loginAction}" method="post" id="login_form" onsubmit="console.log('폼 onsubmit 이벤트!');">
+            <section>
+                <div class="text-wrap">
+                    <div class="text-img">
+                        <img class="pc-img" th:src="@{/icon/ev/login_bg2.png}">
+                        <img class="mob-img" th:src="@{/icon/ev/login_bg_m_3.png}">
+                    </div>
+                    <div class="main">
+                        
+                        <div class="login-header">
+                            <span class="header-text">2025년 효사랑 & 가족사랑 직원근무평가</span>
+                        </div>
+                        <div class="login-area">
+                            <div class="login-content">
+                                <div class="container">
+                                    <div class="content">
+                                        <div class="login-header-top">
+                                            <span>Login</span>
+                                        </div>
+                                        <div class="id-area">
+                                            <input class="input-text id" type="text" name="id" id="id" placeholder="사번" title="사번입력" autofocus="autofocus" th:value="${savedId}">
+                                        </div>
+                                        <div class="pwd-area">
+                                            <input class="input-text name" type="text" name="name" id="pwd" placeholder="이름" title="이름입력" value="">
+                                        </div>
+                                        <div class="login-text">
+                                            <span class="bold">개인 비밀번호를 설정 하신 후 로그인 시 아래의 사번/비밀번호 체크 후 사번과 비밀번호를 입력부탁드립니다.</span>
+                                        </div>
+                                        <div class="chk-area">
+                                            <label class="label label-name">
+                                                <span class="alignBox">
+                                                    <input class="radio" type="radio" id="chk_name" name="loginType" value="byName" th:checked="${savedLoginType == 'byName'}"/>
+                                                    <span class="radioimg"></span>
+                                                    <span class="inputTxt normal">사번 / 이름 <span class="bold" >(비밀번호 설정 전)</span></span>
+                                                </span>
+                                            </label>
+                                            <label class="label label-pwd">
+                                                <span class="alignBox">
+                                                    <input type="radio" class="radio" id="chk_no" name="loginType" value="byPwd" th:checked="${savedLoginType == 'byPwd'}" />
+                                                    <span class="radioimg"></span>
+                                                    <span class="inputTxt normal">사번 / 비밀번호 <span class="bold">(비밀번호 설정 후)</span></span>
+                                                </span>
+                                            </label>
+                                        </div>
+                                        <!-- <div style="text-align: left; font-size: 10pt; color: #000000; margin-bottom: 26px; font-size: 1.4rem;">
+                                            
+                                        </div> -->
+                                        <div class="pw-find">
+                                            <span class="bold" th:onclick="|location.href='@{/pwdfind}'|">비밀번호 찾기 ></span>
+                                        </div>
+                                        <div class="login-btn">
+                                            <button type="submit" id="loginbtn" >로그인</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="center-line"></div>
+                            <div class="notice-content">
+                                <div class="container">
+                                    <div class="content content2">
+                                        <div class="notice-header-top">
+                                            <span>Notice</span>
+                                        </div>
+                                        <div class="notice-bg">
+                                            <img th:src="@{/icon/ev/memo.png}">
+                                        </div>
+                                            <div class="notice-main">
+                                                <div class="notice-header bold">
+                                                    <span>인사평가 일정을 확인해 주시기바랍니다.</span>
+                                                </div>
+                                                <div class="notice-text normal">
+                                                    <div th:each="n : ${notice}">
+                                                        <div class="notice-inner">
+                                                        
+                                                        <!-- d3(상세)가 비어 있으면 block, 아니면 기본 스타일 -->
+                                                        <div class="inner-text"
+                                                            th:style="${#strings.isEmpty(n.d3)} 
+                                                                        ? 'display:block; width:100%; align-items:center;' 
+                                                                        : ''">
+                                                            
+                                                            <!-- d2(제목)가 있으면 점선 아이콘 표시 -->
+                                                            <img th:if="!${#strings.isEmpty(n.d2)}"
+                                                                th:src="@{/icon/ev/dotted.png}"
+                                                                th:style="${not #strings.isEmpty(n.d3)} 
+                                                                        ? 'line-height:12px; margin:0 9px 0 4px;' 
+                                                                        : ''" />
+
+                                                            
+                                                            <!-- 제목 출력 -->
+                                                            <span th:text="${n.d2}">공지제목</span>
+                                                        </div>
+                                                        
+                                                        <!-- d3(상세)가 있으면 white-space:pre; 영역 보여주기 -->
+                                                        <div th:if="${not #strings.isEmpty(n.d3)}"
+                                                            style="width: 143px; display: flex; align-items: center; height: 16px;">
+                                                            <span th:style="'margin:0'"
+                                                                th:text="${n.d3}">상세내용</span>
+                                                        </div>
+                                                        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <div class="notice-btn">
+                                            <div class="manual" id="manual">인사평가 시스템 메뉴얼 보기</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="logo-area">
+                            <img th:src="@{/img/core_logo.png}">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </div>
+</body>
+</html>

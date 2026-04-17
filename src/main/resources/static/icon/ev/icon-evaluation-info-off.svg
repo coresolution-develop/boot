@@ -1,0 +1,9 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+xmlns="http://www.w3.org/2000/svg" stroke="#A7B3BE" stroke-width="1.8"
+stroke-linecap="round" stroke-linejoin="round" aria-label="평가정보">
+  <path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+  <path d="M14 3v5h5"/>
+  <path d="M9 18v-4"/>
+  <path d="M12 18v-6"/>
+  <path d="M15 18v-3"/>
+</svg>

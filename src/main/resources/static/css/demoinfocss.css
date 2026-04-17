@@ -1,0 +1,252 @@
+@charset "UTF-8";
+:root, html {
+	font-size: 10px;
+	--footer--width: 100%;
+}
+body, .target_area {
+	min-height: 100vh;
+}
+
+
+table{
+	border:1px solid #d7d7d7; 
+	width: 100%;
+	background-color: #ffffff;
+	color: #222222;
+} 
+td {
+	border:1px solid #cccccc;
+	padding: 5px;
+    text-align: center;
+    font-size: 1.6rem;
+}
+.pc{
+	display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-content: space-between;
+    width: auto;
+    padding: 0 20%;
+}
+
+.td1{
+	width: 6%;
+}
+.td2{
+	width: 15%;
+}
+.td3{
+	width: 11%;
+}
+.td4{
+	width: 13.5%;
+}
+.td6 {
+	width: 10%;
+}
+.td5 {
+	width: 9%;
+}
+.td7 {
+	width: 13%;
+}
+.td8 {
+	width: 15%;
+}
+.td1, .td2, .td3, .td4, .td5, .td6, .td7, .td8 {
+    background-color: #1b304a;
+    color: #fff;
+    border: 1px solid #1b304a;
+    padding: 15px 10px 15px 10px;
+    font-size: 1.4rem;
+}
+.main {
+	background-color: #f7f7f7;
+}
+
+.logo {
+	background-color: #1b304a;
+	position: fixed;
+	width: 100%;
+	z-index: 1001;
+}
+.info{
+	background-color : #2f425a;
+	color: #fff;
+	height: 145px;
+	padding: 28px;
+	width: 100%;
+}
+.info-container {
+    margin: 0 15%;
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: column;
+	padding: 0 15px;
+}
+.info_name {
+	font-size: 3rem;
+	margin-bottom: 7px;
+}
+.info_id {
+	font-size: 2rem;
+	
+}
+.info_hs {
+	color: #c7c7c7;
+	margin-bottom: 4px;
+	font-size: 1.6rem;
+}
+.info_date {
+	color: #c7c7c7;
+	font-size: 1.6rem;
+}
+.target-text {
+	background-color: #efefef;
+}
+.targettb_A tr:first-child, .targettb_B tr:first-child,
+.targettb_C tr:first-child, .targettb_D tr:first-child{
+	background-color: #1b304a;
+	border: 1px solid #1b304a;
+	color: #fff;
+}
+.targettb_A tr:first-child td, .targettb_B tr:first-child td,
+.targettb_C tr:first-child td, .targettb_D tr:first-child td {
+	border: 1px solid #1b304a;
+	padding: 15px 10px 15px 10px;
+}
+.form_go {
+	padding: 5px 10px;
+}
+.target_section {
+	padding: 20px;
+}
+:root{
+  --header-h: 62px;   /* 실제 헤더 높이로 조정 */
+  --nav-h: 60px;      /* 실제 네비 높이로 조정 */
+}
+.target_info {
+	background-color: #efefef;
+	width: 100%;
+	position: sticky;
+	top: var(--header-h);
+	z-index: 1000;
+}
+.fixed {
+	position: fixed;
+	top: 62px;
+    border-bottom: 1px solid #dddddd;
+}
+.target_text {
+	padding-left: 20px;
+	padding-right: 20px;
+	height: 60px;
+	margin: 0 15% 0 15%
+	/* justify-content: space-between; */
+}
+.target_text .notice {
+	display: flex;
+	width: 40vw;
+}
+.target_text img{
+	width: 20px;
+	margin-right: 5px;
+}
+.target_text span{
+	font-size: 1.6rem;
+}
+.target_header {
+	padding-top: 35px;
+}
+.target_header img{
+	width: 20px;
+	margin-right: 5px;
+}
+.target_header span {
+	font-size: 1.6rem;
+} 
+.target_area {
+	display: flex;
+	justify-content: center;
+}
+.target_container {
+	margin:0 15% 0 15%;
+	background: #fbfbfb;
+	width: 100%;
+    padding: 0 20px 100px;
+}
+
+
+.nav-btn {
+	border: 1pt solid #777777;
+	color: #777777;
+	padding: 5px 20px 5px 20px;
+	border-radius: 5px;
+	background: #f2f2f2;
+	cursor: pointer;
+}
+ 
+.act {
+	border: 1pt solid #2d4f7a;
+	color: #003981;
+	padding: 5px 20px 5px 20px;
+	border-radius: 5px;
+	background: #f2f2f2;
+	font-weight: 600;/* 
+	transform: rotate(108deg);
+    box-shadow: 1px 8px 8px rgba(48, 48, 48, 0.17); */
+}
+
+.quick {
+	width: 420px;
+	text-align: right;
+}
+
+.quick a {
+	height: 33px;
+}
+
+.quick .anv-btn {
+	margin-left: 5px;
+}
+.quick .anv-btn:first-child {
+	margin-left: 0;
+}
+
+.line2 {
+	border-bottom: 2px solid #1b304a;
+	margin: 10px 0 10px 0;
+}
+
+.score-text {
+	color: #003981;
+	font-weight: bold;
+    word-spacing: -5px;
+}
+.modify-btn {
+	cursor:pointer;
+	padding: 7px;
+	margin: 5px;
+	border: 1px solid #f89d00;
+	border-radius: 3px;
+	color: #f89d00;
+    word-spacing: -5px
+}
+.form-btn {
+	color: #fff;
+	background-color:#f89d00;    
+	cursor: pointer;
+    padding: 7px;
+    margin: 5px;
+    border: 1px solid #f89d00;
+    border-radius: 3px;
+    word-spacing: -5px;
+}
+
+
+/* 부드러운 스크롤 */
+html { scroll-behavior: smooth; }
+
+/* 섹션 상단이 고정바에 가리지 않도록 보정 */
+.target_section { scroll-margin-top: var(--scroll-offset, 0px); }

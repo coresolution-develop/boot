@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Excel Data Preview</title>
+    <style>
+        table, td, tr, th {
+            border:1px solid #ddd;
+            border-collapse: collapse;
+        }
+    </style>
+    <!-- 필요에 따라 수정 -->
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <!-- 공통 레이아웃 프래그먼트 -->
+    <div th:replace="Include/afflayout :: header"></div>
+    <div th:replace="Include/afflayout :: nav_section"></div>
+
+    <div class="main-content">
+        <h2>업로드된 사용자 데이터 미리보기</h2>
+        <form th:action="@{/aff/excel/confirmUpload(year=${year})}" method="post">
+            <input type="hidden" name="year" th:value="${year}" />
+            <table>
+        <thead>
+          <tr>
+            <th>기관명</th>
+            <th>소속기관</th>
+            <th>부서코드</th>
+            <th>평가제외(Y/N)</th>
+            <th>사번(ID)</th>
+            <th>이름</th>
+            <th>직책</th>
+            <th>입사일</th>
+            <th>퇴사일</th>
+            <th>핸드폰</th>
+            <th>역할</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="u,iterStat : ${userList}">
+            <td th:text="${u.cName}">기관명</td>
+            <td th:text="${u.cName2}">소속기관</td>
+            <td th:text="${u.subCode}">부서코드</td>
+            <td th:text="${u.delYn}">Y/N</td>
+            <td th:text="${u.id}">사번</td>
+            <td th:text="${u.name}">이름</td>
+            <td th:text="${u.position}">직책</td>
+            <td th:text="${#dates.format(u.createAt, 'yyyy-MM-dd HH:mm:ss')}">입사일</td>
+            <td th:text="${#dates.format(u.deleteAt, 'yyyy-MM-dd HH:mm:ss')}">퇴사일</td>
+            <td th:text="${u.phone}">핸드폰</td>
+            <td>
+                <span th:each="r,stat : ${roleList[iterStat.index].roles}">
+                <span th:text="${r}">ROLE</span><span th:if="${!stat.last}">, </span>
+                </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="submit" id="submitBtn">업로드 확정</button>
+        </form>
+
+        <div id="spinner-overlay" style="display: none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>잠시만 기다려주세요</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 공통 스크립트 프래그먼트 -->
+    <div th:replace="Include/afflayout :: scripts"></div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function spinner() {
+            const overlay = document.getElementById('spinner-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+        $('#submitBtn').on('click', spinner);
+        /*]]>*/
+    </script>
+</body>
+</html>

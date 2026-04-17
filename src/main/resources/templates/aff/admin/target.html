@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login"> <!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">
+    <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+        .bg-425c7b {
+            background: #425c7b;
+            color: #fff;
+        }
+
+        .bg-586f8b {
+            background: #586f8b;
+            color: #fff;
+        }
+
+        .bg-d9e9e9 {
+            background: #d9e9e9;
+        }
+
+        /* 
+    .tr-bottom::before {
+    content: "";
+    position: absolute;
+    top: 1px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    border-bottom: 1px solid #cccccc;
+    } */
+        main {
+            width: 100%;
+            background: #f7f7f7;
+            margin-left: 240px;
+        }
+
+        .pd {
+            border-top: 11px solid #f7f7f7;
+            position: fixed;
+            top: 62px;
+            width: 100%;
+            z-index: 999;
+        }
+
+        td,
+        th {
+            border: 1px solid #d7d7d7;
+            height: 45px;
+            font-size: 12pt;
+            text-align: center;
+        }
+
+        tbody td {
+            border: 1px solid #d7d7d7;
+            background: #fff;
+        }
+
+        .lasttd {
+            /* 
+    border-right:1px solid #d7d7d7;
+    border-bottom:1px solid #d7d7d7; */
+        }
+
+        .scroll-container {
+            padding: 10px;
+        }
+
+        .scrolltable {
+            width: 100%;
+            border: 2px solid #cccccc;
+            color: #222222;
+        }
+
+        .sticky-top {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 72px;
+            z-index: 2;
+            /* 높은 z-index 값을 설정 */
+        }
+
+        .sticky-top::before {
+            content: "";
+            position: absolute;
+            top: 1px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-bottom: 1px solid #d7d7d7;
+            border-right: 1px solid #d7d7d7;
+        }
+
+        .sticky-top:nth-child(1)::before {
+            border-right: 1px solid #cccccc;
+        }
+
+        .sticky-top:nth-child(2)::before {
+            border-left: 1px solid #cccccc;
+        }
+
+        .sticky-middle {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 117px;
+            z-index: 2;
+        }
+
+        .sticky-middle::before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-top: 1px solid #d7d7d7;
+            border-right: 1px solid #d7d7d7;
+        }
+
+        .sticky-middle:nth-child(4)::before {
+            border-right: 1px solid #cccccc;
+        }
+
+        .sticky-bottom {
+            position: -webkit-sticky;
+            position: sticky;
+            top: 162px;
+            z-index: 2;
+            color: #222222;
+        }
+
+        .sticky-bottom::before {
+            content: "";
+            position: absolute;
+            top: 0px;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            border-top: 2px solid #d7d7d7;
+            border-right: 1px solid #d7d7d7;
+            border-bottom: 2px solid #cccccc;
+        }
+
+        .sticky-bottom:nth-child(2)::before {
+            border-left: 1px solid #cccccc;
+        }
+
+        tbody th,
+        tbody td {
+            position: relative;
+            /* 상대 위치 설정 */
+            z-index: 1;
+            /* 낮은 z-index 값을 설정 */
+        }
+
+        tbody td::before {
+            border-right: 1px solid #d7d7d7;
+            border-bottom: 1px solid #d7d7d7;
+        }
+
+        .scrolltable>thead {
+            color: #fff;
+        }
+
+        .scrolltable td:nth-child(4) {
+            border-right: 2px solid #ccc;
+        }
+
+        .nav__link {
+            display: flex;
+            align-items: center;
+            height: 64px;
+            padding-left: 25px;
+            border-left: 4px solid #2f425a;
+            cursor: pointer;
+        }
+
+        .active {
+            border-left: 4px solid #00bec2;
+            background: #293a4f;
+            color: #fff;
+            padding-left: 30px;
+
+        }
+
+        .bg-gray {
+            background: #eaeaea;
+        }
+
+        .infotable {
+            width: 100%;
+            border: 2px solid #cccccc;
+        }
+
+        .infotable>thead>tr>th {
+            background: #425c7b;
+            color: #fff;
+            border: 1px solid #d7d7d7;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .pointer {
+            cursor: pointer;
+        }
+
+        .info-sticky-top::before {
+            content: "";
+            border-bottom: 2px solid #ccc;
+        }
+
+        .link-btn {
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .btn-css {
+            width: 90%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid #ddd;
+            height: 90%;
+            border-radius: 5px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.24);
+            -webkit-transition: all 0.15s ease-in-out;
+            -moz-transition: all 0.15s ease-in-out;
+            -ms-transition: all 0.15s ease-in-out;
+            -o-transition: all 0.15s ease-in-out;
+            transition: all 0.15s ease-in-out;
+            background: #fafafa;
+        }
+
+        .btn-css:hover {
+            -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            -moz-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            -ms-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            -o-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+        }
+
+        section {
+            display: flex;
+            margin-top: 62px;
+        }
+
+        .icon-image {
+            margin-right: 10px;
+        }
+        .toolbar{display:flex;gap:12px;align-items:center;margin-bottom:16px;}
+        .badges{display:flex;gap:8px;}
+        .badge{padding:2px 8px;border-radius:999px;font-size:12px;background:#eef;}
+        .badge.default{background:#eef;}
+        .badge.custom{background:#efe;}
+        .source-tag{padding:2px 6px;border-radius:6px;font-size:11px}
+        .source-tag.DEFAULT{background:#e8f0ff}
+        .source-tag.CUSTOM{background:#e6ffec}
+        .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+        table{width:100%;border-collapse:collapse}
+        th,td{border-bottom:1px solid #e5e5e5;padding:8px 10px;text-align:left}
+        .actions button{border:1px solid #ddd;background:#fff;padding:4px 8px;cursor:pointer}
+        .add-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+        .muted{color:#888}
+        .pill{border:1px solid #ddd;border-radius:999px;padding:2px 8px;font-size:12px}
+        .tabs{margin-top:12px}
+        .tabs details{margin-top:6px}
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{Include/afflayout :: header}"></div>
+    <div th:replace="~{Include/afflayout :: nav_section}"></div>
+    <div class="main-content">
+        <h1>직원별 평가 대상 자동 설정</h1>
+        <form th:action="@{/aff/admin/target/initDefaults}" method="post">
+            <input type="hidden" name="year" th:value="${year}" />
+            <button type="submit" class="btn btn-secondary white-btn" id="submitBtn">
+                기본 대상(DB)에 저장 및 초기화
+            </button>
+            <div th:if="${message}" class="alert">
+                <span th:text="${message}"></span>
+            </div>
+        </form>
+    </div>
+
+        <div id="spinner-overlay" style="display: none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>잠시만 기다려주세요</p>
+            </div>
+        </div>
+    <!-- 스크립트 -->
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script th:src="@{/js/admin/admin.js}"></script>
+    <script th:replace="~{Include/afflayout :: scripts}"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        function spinner() {
+            const overlay = document.getElementById('spinner-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            }
+        }
+        $('#submitBtn').on('click', spinner);
+        /*]]>*/
+    </script>
+</body>
+
+</html>

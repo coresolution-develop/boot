@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>코어솔루션 인사평가 시스템</title>
+
+	<link rel="stylesheet" th:href="@{/css/css.css}" />
+	<link rel="stylesheet" th:href="@{/css/alertcss.css}" />
+	<link rel="stylesheet" th:href="@{/css/demoheadercss.css}" />
+	<link rel="stylesheet" th:href="@{/css/leftMenu.css}" />
+	<link rel="stylesheet" th:href="@{/css/admin.css}" />
+	<link rel="stylesheet" th:href="@{/css/demoinfocss.css}" />
+	<link rel="stylesheet" th:href="@{/css/demoformcss.css}" />
+	<link rel="stylesheet" th:href="@{/css/formmediacss.css}" />
+	<link rel="stylesheet" th:href="@{/css/demoform2css.css}" />
+    <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+    <link rel="stylesheet" th:href="@{/css/formcss2025.css}">
+	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+	<link rel="shortcut icon" th:href="@{/favicon/favicon.ico}" />
+	<style>
+	.main-content {
+		padding: 0;
+	}
+	</style>
+</head>
+
+<body>
+	<!-- 공통 레이아웃 조각 -->
+	<div th:replace="~{Include/afflayout :: header}"></div>
+	<div th:replace="~{Include/afflayout :: nav_section2}"></div>
+
+	<main class="main-content">
+		<!-- 상단 정보 -->
+		<section class="info">
+			<div class="info-container">
+				<div class="info_name">
+					<span class="normal" th:text="${userInfo.name}">이름</span>
+					<span class="light info_id" th:text="| (사원번호 : ${userInfo.id})|">(사원번호)</span>
+				</div>
+				<div class="info_hs light">
+					<span th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|">회사/부서/직급</span>
+				</div>
+				<div class="info_date light">
+					<span th:text="|입사일자 : ${#dates.format(userInfo.createAt,'yyyy-MM-dd')}|">입사일자</span>
+				</div>
+			</div>
+		</section>
+
+		<!-- 안내 -->
+		<section class="target_info" id="targetInfo">
+			<div class="target_text flex">
+				<img th:src="@{/icon/ev/ok.png}" alt="ok" />
+				<span class="bold">평가대상자를 확인 후 평가를 진행해주세요!</span>
+			</div>
+		</section>
+
+		<!-- 평가 대상 박스 -->
+		<section class="target_area">
+			<div class="target">
+				<div class="target_box">
+					<table>
+						<tr class="target_box_header">
+							<td colspan="4">평가대상자</td>
+						</tr>
+						<tr class="target_box_1">
+							<td>부서명</td>
+							<td>사원번호</td>
+							<td>직급</td>
+							<td>성명</td>
+						</tr>
+						<tr class="target_box_2">
+							<td th:text="${target.subName}">부서</td>
+							<td th:text="${target.id}">사번</td>
+							<td th:text="${target.position}">직급</td>
+							<td th:text="${target.name}">성명</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+
+			<!-- 질문 영역 -->
+			<form id="frm" onsubmit="return false;">
+				<input type="hidden" id="score" name="score" value="" />
+
+				<section class="section">
+					<div class="container">
+						<div class="section-content">
+							<div class="scrollbase"><!-- ✅ questions 널가드 -->
+								<!-- 그룹별 객관식 -->
+<th:block th:if="${grouped != null and groupOrder != null}">
+								<!-- 디버그: 들어온 데이터 요약 -->
+<!-- <div style="padding:8px;border:1px dashed #aaa;margin:8px 0;font-size:12px;color:#444;">
+  Q count: <span th:text="${questions != null ? #lists.size(questions) : 0}">0</span> /
+  Grouped size: <span th:text="${grouped != null ? #maps.size(grouped) : 0}">0</span> /
+  Essay size: <span th:text="${essay != null ? #lists.size(essay) : 0}">0</span><br>
+  Group keys: 
+  <span th:text="${grouped != null ? #strings.arrayJoin(grouped.keySet().toArray(), ', ') : 'none'}">none</span><br>
+  Order: 
+  <span th:text="${groupOrder != null ? #strings.arrayJoin(groupOrder.toArray(), ', ') : 'none'}">none</span>
+</div> -->
+  <section th:each="g : ${groupOrder}" th:with="qs=${grouped.get(g)}">
+	<th:block th:if="${qs != null and !qs.isEmpty()}">
+      <div class="bold area_header" th:text="${g}"></div>
+
+      <div class="question-area" th:each="q : ${qs}">
+        <p class="question bold"
+           th:with="n=${seq.incrementAndGet()}"
+           th:text="|${n}. ${q.d1}|"></p>
+
+        <div class="answer">
+          <label class="label" th:each="label : ${ {'매우우수','우수','보통','미흡','매우미흡'} }">
+            <span class="alignBox">
+              <input class="radio" type="radio" th:name="|r${q.idx}|" th:value="${label}">
+              <span class="radioimg"></span>
+              <span class="inputTxt" th:text="${label}"></span>
+            </span>
+          </label>
+        </div>
+
+        <div class="q-1"><div class="q-2"></div></div>
+      </div>
+    </th:block>
+  </section>
+</th:block>
+
+<!-- 주관식 -->
+<th:block th:if="${essay != null and !#lists.isEmpty(essay)}">
+  <div class="area-content">
+    <div class="bold area_header text-target">주관식</div>
+    <table class="text-area-table" th:each="q : ${essay}">
+      <tr class="text-area-tr1">
+        <td><p class="question question-text bold" th:text="${q.d1}">종합평가</p></td>
+      </tr>
+      <tr class="text-area-tr2">
+        <td><textarea th:id="|t${q.idx}|" th:name="|t${q.idx}|" rows="5"></textarea></td>
+      </tr>
+    </table>
+  </div>
+</th:block>
+
+
+
+								<!-- 완료 버튼 -->
+								<div class="end_area flex flex-center">
+									<button class="end" id="end" type="button">평가완료</button>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- 스피너 -->
+				<div id="spinner-overlay" style="display:none;">
+					<div class="spinner-container">
+						<div class="spinner"></div>
+						<p>잠시만 기다려주세요</p>
+					</div>
+				</div>
+
+				<!-- 모달들 (간단화) -->
+				<div class="modal normal" id="modal-info">
+					<div class="modal_body">
+						<div>
+							<img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
+							<div class="menu_msg" id="modal-info-text">text</div>
+							<div class="modal_footer">
+								<div class="btn modal_btn" id="modal-info-close">확인</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="modal normal" id="modal-confirm">
+					<div class="modal_body">
+						<div>
+							<img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
+							<div class="menu_msg" id="modal-confirm-text">text</div>
+							<div class="modal_footer">
+								<div class="btn modal_btn2" id="modal-confirm-ok">확인</div>
+								<div class="btn pink_btn2" id="modal-confirm-cancel">취소</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</form>
+		</section>
+
+	</main>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script th:replace="~{Include/afflayout :: scripts}"></script>
+
+	<!-- 타임리프 JS 인라인: 서버 값 안전 주입 -->
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		window.__PE_CONFIG = {
+			DATA_TYPE: /*[[${dataType}]]*/ 'AC',
+			DATA_EV:    /*[[${dataEv}]]*/ 'C',
+			YEAR:       /*[[${year}]]*/ '2025',
+			EVALUATOR:  /*[[${evaluatorId}]]*/ '00000000',
+			TARGET_ID:  /*[[${target.id}]]*/ '000000',
+			TARGET_NAME: /*[[${target.name}]]*/ '홍길동',
+			ACTION_URL: /*[[@{/aff/api/formAction/{eval}/{target}/{ev}/{type}(eval=${evaluatorId},target=${target.id},ev=${dataEv},type=${dataType})}]]*/ '/aff/api/formAction',
+			INFO_URL:   /*[[@{/aff/info/{eval}(eval=${evaluatorId})}]]*/ '/info',
+			END_URL:    /*[[@{/aff/FormEnd/{eval}/{target}(eval=${evaluatorId},target=${target.id})}]]*/ '/aff/FormEnd'
+		};
+		/*]]>*/
+	</script>
+	<!-- 외부 파일 로드 (테스트 중 캐시 방지용 v 파라미터) -->
+	<script th:src="@{/js/aff/user/form.js(v=${#dates.createNow().time})}" defer></script>
+</body>
+
+</html>

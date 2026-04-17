@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>직원명부 업로드 미리보기</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .preview-table { border-collapse: collapse; width: 100%; font-size: 13px; }
+        .preview-table th, .preview-table td {
+            border: 1px solid #ddd; padding: 5px 8px; white-space: nowrap;
+        }
+        .preview-table th { background: #f4f4f4; }
+        tr.row-error   { background: #fff0f0; }
+        tr.row-warning { background: #fffbe6; }
+        .badge-error   { background:#e74c3c; color:#fff; border-radius:4px; padding:1px 6px; font-size:11px; }
+        .badge-warn    { background:#f39c12; color:#fff; border-radius:4px; padding:1px 6px; font-size:11px; }
+        .summary-box   { padding:12px 16px; border-radius:6px; margin-bottom:14px; }
+        .summary-error { background:#fde8e8; border-left:4px solid #e74c3c; }
+        .summary-warn  { background:#fef9e7; border-left:4px solid #f39c12; }
+        .summary-ok    { background:#e8f8f0; border-left:4px solid #27ae60; }
+        .year-badge    { display:inline-block; background:#2c6fad; color:#fff;
+                         padding:3px 12px; border-radius:4px; font-size:15px; margin-left:8px; }
+    </style>
+</head>
+<body>
+    <div th:replace="Include/layout :: header"></div>
+    <div th:replace="Include/layout :: nav_section"></div>
+
+    <div class="main-content">
+        <h2>
+            직원명부 업로드 미리보기
+            <span class="year-badge" th:text="${year} + '년도'">2026년도</span>
+        </h2>
+
+        <!-- ① 검증 요약 -->
+        <div th:if="${hasBlockingErrors}" class="summary-box summary-error">
+            <strong>⛔ 차단 오류 <span th:text="${blockingCount}">0</span>건</strong> —
+            아래 빨간 행을 수정 후 다시 업로드해 주세요.
+            <span th:if="${warningCount > 0}">
+                경고 <span th:text="${warningCount}">0</span>건도 함께 확인하세요.
+            </span>
+        </div>
+        <div th:if="${!hasBlockingErrors and warningCount > 0}" class="summary-box summary-warn">
+            <strong>⚠ 경고 <span th:text="${warningCount}">0</span>건</strong> —
+            내용을 확인 후 업로드를 진행하거나 수정해 주세요.
+        </div>
+        <div th:if="${!hasBlockingErrors and warningCount == 0 and #lists.size(userList) > 0}"
+             class="summary-box summary-ok">
+            <strong>✅ 검증 통과</strong> —
+            총 <strong th:text="${#lists.size(userList)}">0</strong>명을 업로드할 수 있습니다.
+        </div>
+
+        <!-- 자동 등록 예정 부서 안내 -->
+        <div th:if="${not #maps.isEmpty(autoRegisterDepts)}"
+             style="background:#e8f4fd; border-left:4px solid #2980b9; padding:10px 14px;
+                    border-radius:4px; margin-bottom:12px;">
+            <strong>🏥 자동 등록 예정 부서 <span th:text="${#maps.size(autoRegisterDepts)}">0</span>개</strong>
+            — 확정 시 아래 부서가 자동으로 등록됩니다.
+            <ul style="margin:6px 0 0 16px; font-size:13px;">
+                <li th:each="entry : ${autoRegisterDepts}">
+                    <b th:text="${entry.key}">CODE</b> : <span th:text="${entry.value}">부서명</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ② 오류 목록 (있을 때만) -->
+        <div th:if="${not #lists.isEmpty(parseErrors)}" style="margin-bottom:16px;">
+            <details open>
+                <summary style="cursor:pointer; font-weight:bold; margin-bottom:6px;">
+                    오류/경고 목록 (<span th:text="${#lists.size(parseErrors)}">0</span>건)
+                </summary>
+                <table class="preview-table" style="max-width:700px;">
+                    <thead>
+                        <tr>
+                            <th>행</th><th>필드</th><th>내용</th><th>구분</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="e : ${parseErrors}">
+                            <td th:text="${e.rowNum}">0</td>
+                            <td th:text="${e.field}">-</td>
+                            <td th:text="${e.message}">-</td>
+                            <td>
+                                <span th:if="${e.blocking}"  class="badge-error">오류</span>
+                                <span th:unless="${e.blocking}" class="badge-warn">경고</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+        </div>
+
+        <!-- ③ 미리보기 테이블 -->
+        <div style="overflow-x:auto;">
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>기관명</th><th>소속기관</th><th>부서코드</th>
+                        <th>평가제외</th><th>사번</th><th>이름</th><th>직책</th>
+                        <th>입사일</th><th>퇴사일</th><th>핸드폰</th><th>역할</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="u,iterStat : ${userList}"
+                        th:with="rowErrors=${parseErrors.?[rowNum == iterStat.index + 3]}"
+                        th:classappend="${#lists.isEmpty(rowErrors)} ? '' :
+                            (${rowErrors.?[blocking]}.isEmpty() ? 'row-warning' : 'row-error')">
+                        <td th:text="${iterStat.index + 3}">3</td>
+                        <td th:text="${u.cName}">-</td>
+                        <td th:text="${u.cName2}">-</td>
+                        <td th:text="${u.subCode}">-</td>
+                        <td th:text="${u.delYn}">N</td>
+                        <td th:text="${u.id}">-</td>
+                        <td th:text="${u.name}">-</td>
+                        <td th:text="${u.position}">-</td>
+                        <td th:text="${u.createAt != null ? #dates.format(u.createAt,'yyyy-MM-dd') : ''}">-</td>
+                        <td th:text="${u.deleteAt != null ? #dates.format(u.deleteAt,'yyyy-MM-dd') : ''}">-</td>
+                        <td th:text="${u.phone}">-</td>
+                        <td>
+                            <span th:each="r,stat : ${roleList[iterStat.index].roles}">
+                                <span th:text="${r}">ROLE</span><span th:if="${!stat.last}">, </span>
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ④ 확정 버튼 — 차단 오류 있으면 비활성 -->
+        <div style="margin-top:16px;">
+            <form th:action="@{/excel/confirmUpload(year=${year})}" method="post"
+                  th:if="${!hasBlockingErrors}">
+                <input type="hidden" name="year" th:value="${year}" />
+                <button type="submit" id="submitBtn" class="btn">
+                    ✅ <span th:text="${year}">2026</span>년도 업로드 확정
+                    (<span th:text="${#lists.size(userList)}">0</span>명)
+                </button>
+            </form>
+            <div th:if="${hasBlockingErrors}"
+                 style="color:#e74c3c; font-weight:bold; margin-top:8px;">
+                ⛔ 오류를 해결한 후 다시 업로드해 주세요.
+            </div>
+        </div>
+
+        <div id="spinner-overlay" style="display:none;">
+            <div class="spinner-container">
+                <div class="spinner"></div>
+                <p>잠시만 기다려주세요</p>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="Include/layout :: scripts"></div>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        $('#submitBtn').on('click', function () {
+            document.getElementById('spinner-overlay').style.display = 'flex';
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

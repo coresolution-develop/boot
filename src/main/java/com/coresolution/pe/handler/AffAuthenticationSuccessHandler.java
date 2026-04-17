@@ -1,0 +1,118 @@
+package com.coresolution.pe.handler;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.stereotype.Component;
+
+import com.coresolution.pe.entity.UserPE;
+import com.coresolution.pe.service.AffUserService;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component("affSuccessHandler")
+public class AffAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
+    private final SecurityContextRepository securityContextRepository;
+    private final AffUserService affPeService; // 필요 없으면 제거 가능
+    @Value("${app.current.eval-year}")
+    private int currentEvalYear;
+
+    public AffAuthenticationSuccessHandler(SecurityContextRepository securityContextRepository,
+            AffUserService affPeService) {
+        this.securityContextRepository = securityContextRepository;
+        this.affPeService = affPeService;
+    }
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request,
+            HttpServletResponse response,
+            Authentication authentication) throws IOException {
+
+        final String ctx = request.getContextPath(); // 보통 ""
+        final String cookiePath = (ctx == null || ctx.isEmpty()) ? "/aff" : ctx + "/aff";
+
+        // ── 1) 입력값 쿠키 저장(aff 네임스페이스)
+        String idsaved = request.getParameter("id");
+        String loginType = request.getParameter("loginType");
+        if (idsaved != null && !idsaved.isBlank()) {
+            Cookie idCookie = new Cookie("aff_savedId",
+                    URLEncoder.encode(idsaved, StandardCharsets.UTF_8));
+            idCookie.setPath(cookiePath);
+            idCookie.setMaxAge(60 * 60 * 24 * 30);
+            response.addCookie(idCookie);
+        }
+        Cookie typeCookie = new Cookie("aff_savedLoginType",
+                (loginType == null || loginType.isBlank()) ? "byName" : loginType);
+        typeCookie.setPath(cookiePath);
+        typeCookie.setMaxAge(60 * 60 * 24 * 30);
+        response.addCookie(typeCookie);
+
+        // ── 2) 현재 사용자 사번
+        String userId = (authentication.getPrincipal() instanceof User u)
+                ? u.getUsername()
+                : authentication.getName();
+
+        // ── 3) 비밀번호 미설정 여부 확인 (DB)
+        UserPE user = affPeService.findUserInfoById(userId, currentEvalYear); // idx, pwd 필요
+        boolean mustSetPwd = (user == null) || user.getPwd() == null || user.getPwd().isBlank();
+
+        // (옵션) Provider에서 details 플래그가 심어졌다면 함께 고려
+        Object details = authentication.getDetails();
+        if (!mustSetPwd && details instanceof Map<?, ?> map) {
+            Object flag = map.get("mustSetPwd");
+            if (flag instanceof Boolean b && b)
+                mustSetPwd = true;
+        }
+
+        // ── 4) 반드시 SecurityContext 저장(세션 생성 보장)
+        request.getSession(true);
+        securityContextRepository.saveContext(SecurityContextHolder.getContext(), request, response);
+
+        // ── 5) 목적지 결정
+        String target;
+        if (mustSetPwd) {
+            String idxStr = (user != null && user.getIdx() > 0)
+                    ? String.valueOf(user.getIdx())
+                    : "me";
+            target = ctx + "/aff/pwd/" + idxStr;
+        } else if (hasRole(authentication.getAuthorities(), "ROLE_ADMIN")) {
+            target = ctx + "/aff/admin/userList";
+        } else {
+            Integer idx = affPeService.findIdx(userId); // DB 보정용
+            String idxStr = (idx != null && idx > 0) ? String.valueOf(idx) : "me";
+            target = ctx + "/aff/Info/" + idxStr;
+        }
+
+        // ── 6) AJAX면 JSON, 아니면 redirect
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        if (isAjax) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"ok\":true,\"redirect\":\"" + target + "\"}");
+            return;
+        }
+        redirectStrategy.sendRedirect(request, response, target);
+    }
+
+    private boolean hasRole(Collection<? extends GrantedAuthority> authorities, String role) {
+        return authorities.stream().anyMatch(a -> role.equals(a.getAuthority()));
+    }
+}

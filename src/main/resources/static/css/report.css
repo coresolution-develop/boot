@@ -1,0 +1,697 @@
+
+.print-only{ display:none; font-size:18px; text-align:center; }
+/* =========================
+   Base / Cards / Typography
+   ========================= */
+.card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+}
+
+.card-body{
+  border:1px solid #e5e7eb;
+  border-radius:8px;
+  padding:16px;
+  background:#fff;
+  font-size:12px;
+}
+
+.section{ margin:12px 0 6px; }
+.center{ text-align:center; }
+.left{ text-align:left; }
+.right{ text-align:right; }
+.strong{ font-weight:700; }
+.muted{ color:#6b7280; }
+
+/* =========================
+   Filters / Form Area
+   ========================= */
+.filter, .form-area{
+  display:flex; gap:10px; align-items:center;
+  margin:8px 0 12px;
+}
+.filter label{ display:flex; gap:6px; align-items:center; }
+.filter .hint{ color:#6b7280; margin-left:6px; }
+
+/* =========================
+   Comment Summary (fallback)
+   ========================= */
+.comment-summary{
+  white-space:pre-wrap;
+  word-wrap:break-word;
+  overflow-wrap:break-word;
+  max-width:100%;
+  background:#f9f9f9;
+  padding:10px;
+  border-radius:6px;
+  border:1px solid #ddd;
+  font-family:'Noto Sans KR', sans-serif;
+}
+
+/* =========================
+   Tables
+   ========================= */
+.table-wrap{ overflow:auto; }
+
+.tbl{
+  width:100%;
+  border-collapse:collapse;
+  table-layout:fixed;
+  font-size:13.5px;
+  line-height:1.45;
+}
+.tbl th, .tbl td{
+  border:0.6pt solid #d6d6d6;
+  padding:6px 8px;
+  vertical-align:middle;
+  word-break:keep-all;
+  white-space:normal;
+  font-size:12px;
+}
+.tbl thead th{
+  background:#f2f4f7;
+  font-weight:700;
+  color:#111827;
+  /* position:sticky; top:0; z-index:1; */
+}
+.tbl .num, .tbl .hnum{ text-align:center; }
+.tbl td:last-child{ text-align:left; }
+
+.tbl tfoot th, .tbl tfoot td{
+  background:#f8fafc;
+  font-weight:700;
+}
+
+.meta{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13.5px;
+  margin:20px 0 20px;
+}
+.meta th, .meta td{
+  border:0.6pt solid #d6d6d6;
+  padding:6px 8px;
+  text-align:center;
+  font-size:12px;
+}
+.meta th{ background:#f2f4f7; font-weight:700; }
+
+.tbl-essay td{ text-align:left; white-space:pre-wrap; }
+.tbl-essay .num{ text-align:center; }
+.col1 {
+  width: 72px;
+}
+.col2 {
+  width: 64px;
+}
+.col3 {
+  width: 64px;
+}
+.col4 {
+  width: 54px;
+}
+.col5 {
+  width: 54px;
+}
+.col6 {
+  width: 54px;
+}
+.col7 {
+  width: 64px;
+}
+.col8 {
+  width: 64px;
+}
+.col9 {
+  width: 54px;
+}
+/* =========================
+   Legend / Stackbar
+   ========================= */
+.legend{
+  margin:10px 0 4px;
+  display:flex; flex-direction:column;
+  gap:8px; font-size:13px; color:#374151;
+}
+.legend-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.legend-row b{ margin-right:8px; }
+
+.stackbar{
+  height:16px; width:100%; display:flex;
+  border-radius:8px; overflow:hidden;
+  border:1px solid #e5e7eb;
+}
+.seg{ height:100%; }
+.seg5{ background:#0ea5e9; } /* 매우우수 */
+.seg4{ background:#22c55e; } /* 우수 */
+.seg3{ background:#f59e0b; } /* 보통 */
+.seg2{ background:#ef4444; } /* 미흡 */
+.seg1{ background:#9ca3af; } /* 매우미흡 */
+
+/* =========================
+   Report Card
+   ========================= */
+.report-card{
+  --rc-bg:#ffffff; --rc-fg:#2b3340; --rc-muted:#8a94a6;
+  --rc-border:#eef2f6; --rc-accent:#3ba1ff; --rc-soft:#eaf5ff;
+  background:var(--rc-bg); color:var(--rc-fg); border:1px solid var(--rc-border);
+  padding:18px 18px 16px; box-shadow:0 8px 20px rgba(27,39,58,.05);
+}
+.report-card h4{ margin:0 0 12px; font-size:18px; line-height:1.35; letter-spacing:.2px; font-weight:700; }
+
+.summary-box{
+  background:var(--rc-soft); border-left:4px solid var(--rc-accent); border-right: 4px solid var(--rc-accent);
+  padding:14px 16px; border-radius:12px; line-height:1.65;
+  white-space:pre-wrap; word-break:keep-all; overflow-wrap:anywhere; margin-bottom:14px;
+}
+
+pre.comment-summary{
+  background:#fbfdff; border:1px dashed var(--rc-border); padding:14px 16px;
+  border-radius:12px; line-height:1.65; margin:0 0 14px; max-height:340px; overflow:auto;
+}
+
+.badge{
+  display:inline-block; font-weight:700; letter-spacing:.3px;
+  color:#0b3a63; background:linear-gradient(90deg,#e9f3ff,#f3faff);
+  border:1px solid #d9eaff; padding:6px 10px; border-radius:999px;
+  margin-bottom:10px; box-shadow:0 6px 16px rgba(139,174,255,.14); font-size:12px;
+}
+
+.report-section{ margin-top:10px; width: 100%;}
+.text-muted{ color:var(--rc-muted); font-size:14px; }
+
+/* 불릿 (간결 버전) */
+.report-card .bullets{ margin:6px 0 0 0; padding-left:0; }
+.bullets{ margin:6px 0 0 0; padding-left:0; }
+.report-card .bullets li{
+  position:relative; padding-left:24px; margin:4px 0; line-height:1.55;
+}
+.bullets li{
+  position:relative; padding-left:24px; margin:4px 0; line-height:1.55;
+}
+.report-card .bullets li::before{
+  content:""; position:absolute; left:10px; top:.7em; width:6px; height:6px; border-radius:50%;
+  background:#9ecbff; transform:translateY(-50%);
+}
+.bullets li::before{
+  content:""; position:absolute; left:10px; top:.7em; width:6px; height:6px; border-radius:50%;
+  background:#9ecbff; transform:translateY(-50%);
+}
+
+.report-card{ margin-bottom:20px; }
+.report-card.reveal{ opacity:0; }
+.report-card.reveal.reveal-in{ opacity:1; transform:none; transition:opacity .28s ease, transform .28s ease; }
+.report-card.reveal .bullets li{ opacity:0; transform:translateY(6px); }
+.report-card.reveal.reveal-in .bullets li{ opacity:1; transform:none; transition:opacity .24s ease, transform .24s ease; font-size:11px; }
+.report-card.reveal-in .bullets li:nth-child(1){ transition-delay:.04s; }
+.report-card.reveal-in .bullets li:nth-child(2){ transition-delay:.10s; }
+.report-card.reveal-in .bullets li:nth-child(3){ transition-delay:.16s; }
+
+.bullets li{ opacity:1; transform:none; transition:opacity .24s ease, transform .24s ease; font-size:11px; }
+.bullets li:nth-child(1){ transition-delay:.04s; }
+.bullets li:nth-child(2){ transition-delay:.10s; }
+.bullets li:nth-child(3){ transition-delay:.16s; }
+
+.legend-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  margin-top: 8px;
+  flex-direction: row;
+  justify-content: center;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, .15);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3);
+}
+.report-details {
+  display: flex;
+}
+@media (prefers-reduced-motion:reduce){
+  .report-card.reveal, .report-card.reveal.reveal-in,
+  .report-card .bullets li, .report-card.reveal-in .bullets li{ transition:none !important; }
+}
+/* 데스크톱 유지 */
+@media (min-width: 1025px){
+  /* 기존 스타일 유지. 필요 시 아래 한 줄로 모바일용 변경 무력화 */
+  .tbl tbody tr{ display: table-row; }
+}
+@media (max-width: 1024px){
+  .search-form .custom:first-child{
+    width: 70px;
+    padding: 8px;
+  }
+  .white-btn {
+    width: 40px;
+    height: 40px;
+    padding: 5px !important;
+  }
+  .orange-btn {
+    padding: 5px 5px !important;
+    height: 40px;
+    width: 40px;
+  }
+  .btn-animated {
+    padding: 4px !important;
+    width: 100%;
+    height: 40px;
+  }
+  .meta th, .meta td {
+    font-size: 1.6rem;
+  }
+  .tbl th, .tbl td {
+    font-size: 12px;
+  }
+  .ai-button {
+    width: 100%;
+  }
+
+
+  .table-wrap{ overflow: visible; }
+  .tbl colgroup, .tbl thead{ display:none; }
+
+  /* rowspan 셀(평가영역)은 모바일에서 숨김 */
+  .tbl td.area-cell{ display:none !important; }
+
+  /* 한 행을 카드처럼 */
+  .tbl tbody tr{
+    display: grid;
+    /* 숫자 8칸(문항번호~응답) 자리 만들기 */
+    grid-template-columns: 12.5% 12.5% 12.5% 12.5% 12.5% 12.5% 12.5% 12.5%;
+    /* border: 1px solid #e5e7eb; */
+    /* border-radius: 12px; */
+    margin: 10px 5px;
+    overflow: hidden;
+    /* background: #fff; */
+  }
+  .tbl tbody tr > td{
+    border: 0;
+    padding: 7px 6px;
+    font-size: 1.2rem;   /* 가독성 */
+  }
+
+  /* 질문 텍스트를 카드 상단으로 (전체 폭) */
+  .tbl td.c-q{
+    grid-column: 1 / -1;     /* 가로 전체 */
+    order: -1;               /* 맨 위로 */
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    line-height: 1.55;
+  }
+
+  /* 숫자 칸을 고정 위치에 놓기 (rowspan 영향 없음) */
+  .tbl td.c-no   { grid-column: 1; text-align:center; }
+  .tbl td.c-5    { grid-column: 2; text-align:center; }
+  .tbl td.c-4    { grid-column: 3; text-align:center; }
+  .tbl td.c-3    { grid-column: 4; text-align:center; }
+  .tbl td.c-2    { grid-column: 5; text-align:center; }
+  .tbl td.c-1    { grid-column: 6; text-align:center; }
+  .tbl td.c-avg  { grid-column: 7; text-align:center; }
+  .tbl td.c-resp { grid-column: 8; text-align:center; }
+
+  /* 각 칸 위에 작은 라벨(문항번호/매우우수/…) 자동 출력 */
+  .tbl td[data-label]::before{
+    content: attr(data-label);
+    /* content: ''; */
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+
+  /* c-q(문항 텍스트)만 data-label 숨기기 */
+  .tbl td.c-q[data-label]::before{
+    content: none !important;   /* 라벨 비표시 */
+    display: none !important;
+  }
+}
+
+/* ── 모바일/태블릿에서 차트 카드 레이아웃 복원 ───────────────────────── */
+@media (max-width: 1024px){
+  /* 1) 1열 스택으로 전환 */
+  .chart-grid{
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* 2) 분포 차트 고정 높이 축소(필요 시 숫자 조절) */
+  .chart-grid .card:nth-child(2) .chart-fixed{
+    height: 260px !important;   /* 260~320px 사이에서 취향대로 */
+    min-height: 0 !important;
+  }
+
+  /* 3) 범례는 가운데, 줄바꿈 허용 */
+  #distLegend,
+  .legend-vertical{
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 0 !important;
+  }
+
+  /* 4) 우측 요약 패널은 일반 카드처럼 전체폭 사용 */
+  .area-summaries{
+    padding: 12px 10px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin-top: 6px !important;
+  }
+
+  /* 5) 레이더도 정사각 비율 유지하되 컨테이너 폭에 맞춤 */
+  .radar-wrap{ width:100% !important; max-width:none !important; }
+  .summary-box {
+    font-size: 1.6rem;
+  }
+}
+
+/* 아주 좁은 화면(아이폰 SE 등) 보정 */
+@media (max-width: 400px){
+  .chart-grid .card:nth-child(2) .chart-fixed{ height: 250px !important; }
+}
+@media (min-width:768px){
+  .report-card{ padding:22px 22px 18px; }
+  .report-card h4{ font-size:14px; }
+  .summary-box, pre.comment-summary{ font-size:13px; }
+  
+
+}
+
+/* =========================
+   Buttons / Loading
+   ========================= */
+.btn-animated{
+  background:linear-gradient(90deg,#5b8cff,#8a5bff,#ff5bd1,#8a5bff,#5b8cff);
+  background-size:200% 100%; color:#fff; border:none;
+  transition:transform .15s ease, box-shadow .15s ease;
+  animation:slide 6s linear infinite alternate;
+}
+@keyframes slide{ from{background-position:0% 50%;} to{background-position:100% 50%;} }
+.btn-animated:hover,.orange-btn:hover,.white-btn:hover,.custom:hover{ transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.12); }
+.btn-animated:active{ transform:translateY(0); box-shadow:none; }
+
+.orange-btn .btn-label{ display:inline-block; white-space:break-spaces !important; word-spacing:.18em; letter-spacing:.01em; }
+.orange-btn.is-loading{ visibility:visible !important; opacity:.85; }
+.orange-btn.is-loading .btn-label{ visibility:visible; opacity:.75; }
+.orange-btn.is-loading::after{
+  content:""; position:absolute; inset:0; margin:auto; width:18px; height:18px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.5); border-top-color:#fff; animation:spin .8s linear infinite; pointer-events:none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* =========================
+   Topbar Progress
+   ========================= */
+#topbar-progress{
+  position:fixed; left:0; top:0; height:3px; width:0;
+  background:linear-gradient(90deg,#3ba1ff,#9bd3ff);
+  box-shadow:0 0 8px rgba(59,161,255,.45);
+  z-index:10001; transition:width .25s ease;
+}
+#topbar-progress.active{ width:80%; }
+#topbar-progress.done{ width:100%; transition:width .35s ease; }
+#topbar-progress.no-anim { transition: none !important; }
+
+/* =========================
+   Toast
+   ========================= */
+.toast{
+  position:fixed; top:72px; left:50%; transform:translateX(-50%) translateY(-10px);
+  background:#ffffff; color:#1f2937; border:1px solid #e5e7eb;
+  padding:10px 14px; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,.08);
+  opacity:0; z-index:10002;
+  font-size: 12px;
+  font-weight: 500;
+}
+.toast.show{ opacity:1; transform:translateX(-50%) translateY(0); transition:all .28s ease; }
+
+/* =========================
+   Gauge (평균 vs 내점수)
+   ========================= */
+.barbox{ margin:10px 0 20px; }
+.bar{ position:relative; height:22px; border-radius:6px; background:#f2f2f2; overflow:visible; }
+.bar .fill{ position:absolute; left:0; top:0; bottom:0; background:#e1ecff; border-radius:6px; }
+.bar .marker{
+  position:absolute; top:-34px; transform:translateX(-50%);
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:42px; height:28px; padding:0 8px;
+  border:1px solid #b8cbed; border-radius:8px; background:#e1ecff;
+  font-size:13px; font-weight:700; line-height:1; box-shadow:0 1px 0 rgba(0,0,0,.05);
+  z-index:2; white-space:nowrap;
+}
+.bar .marker::after{
+  content:""; position:absolute; left:50%; bottom:-6px; transform:translateX(-50%);
+  border:6px solid transparent; border-top-color:#b8cbed;
+}
+.bar .marker::before{
+  content:""; position:absolute; left:50%; bottom:-5px; transform:translateX(-50%);
+  border:6px solid transparent; border-top-color:#e1ecff;
+}
+.bar .marker.is-edge-left{ left:2% !important; transform:translateX(0); }
+.bar .marker.is-edge-right{ left:98% !important; transform:translateX(-100%); }
+/* 게이지 블록은 항상: 제목 -> 막대 -> 스케일 순서 */
+.gauge { display: flex; flex-direction: column; gap: 6px; }
+.gauge > h5 { order: 0; margin: 15px 0 0; }
+.gauge .barbox { order: 1; }
+.gauge .scale  { order: 2; }
+.barbox .scale{
+  width:100%;
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;              /* 0 | 85 | 100 */
+  align-items:center;
+  margin-top:6px;
+  font-size:9px; color:#777;
+}
+
+.barbox .scale span{ text-align:center; }
+.barbox .scale span:first-child{ text-align:left; }
+.barbox .scale span:last-child{  text-align:right; }
+/* =========================
+   Radar / Legend
+   ========================= */
+.radar-wrap { position:relative; }
+.legend{ display:flex; align-items:center; gap:8px; flex-wrap:nowrap; 
+    align-items: flex-start;flex-direction: row;}
+.legend .chip{ display:inline-block; 
+  padding:2px 8px; border-radius:10px; 
+  /* border:1px solid #ccc;  */
+  font-size:12px; margin-right:6px; white-space:nowrap; }
+.chip-me{ background:#fde2e2; }
+.chip-ev{ background:#e1ecff; }
+
+/* =========================
+   Charts — 단일 소스 (distChart 전용)
+   ========================= */
+.chart-grid{ display:grid; grid-template-columns:400px 1fr; gap:16px; align-items:start; 
+    margin-bottom: 10px;}
+.chart-grid .card{ display:flex; flex-direction:column; min-height:0; }
+
+/* 분포 차트 카드(두 번째)의 래퍼를 고정 높이로 */
+.chart-grid .card:nth-child(2) .chart-fixed{
+  position:relative;
+  height: 450px;      /* 화면 기본 */
+  min-height:0;
+  margin-top:6px;
+}
+
+/* 캔버스는 래퍼를 100% 채움 (이 규칙만 유지) */
+.chart-grid .card:nth-child(2) .chart-fixed > canvas,
+#distChart{
+  display:block;
+  width:100%;
+  height:100%;   /* auto 금지 */
+  box-sizing:border-box;
+}
+.tooltip { position: fixed; z-index: 9999; pointer-events: none; background: rgba(0,0,0,.8); color: #fff; padding: 6px 8px; border-radius: 6px; font-size: 12px; line-height: 1.2; transform: translate(-50%, -120%); white-space: nowrap; }
+
+/* 레전드 칩 기본 */
+.legend .chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  /* border:1px solid #d9e1ee; */
+  font-size:12px;
+  line-height:1;
+  background:#fff;                 /* 기본 배경(각 칩에서 덮어씀) */
+}
+
+/* 칩 앞의 색 점 */
+.legend .chip::before{
+  content:"";
+  width:9px; height:9px;
+  border-radius:50%;
+  background:var(--dot, #999);     /* 각 칩의 --dot 컬러를 사용 */
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow:inset 0 0 0 2px #fff; /* 점을 또렷하게 */
+}
+
+/* 개별 칩 색 (레이더의 선/면 컬러에 맞춰 조정) */
+.chip-me{
+  --dot:rgba(255,99,132,1);                   /* 내점수 점 색 */
+  background:#fde2e2;
+  border-color:#f2b9b9;
+}
+.chip-ev{
+  --dot:rgba(99,127,255,1);                   /* 평가구간별 평균 점 색 */
+  background:#e1ecff;
+  border-color:#bcd3ff;
+}
+/* 평균 숫자: .fill에 data-label로 주입한 값 표시 */
+.bar { position: relative; }
+.bar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: #fde2e2; }
+.bar .fill::after{
+  content: attr(data-label) "점";
+  position: absolute; right: 8px; top: 50%;
+  transform: translateY(-50%);
+  font-weight: 700; font-size: 12px; color: #0b3a63;
+  opacity: .9;
+}
+/* 평균 위치 핀 */
+.avg-pin{
+  position:absolute; top:50%; transform:translate(-50%,-50%);
+  width:8px; height:8px; border-radius:50%;
+  background:#93c5fd; border:1px solid #60a5fa;
+  pointer-events:auto; /* 핀에도 툴팁 적용 가능 */
+}
+/* ===== A4 인쇄: 카드 3행 고정 + 본문 높이 통일 + 넘침 차단 (정리본) ===== */
+@media print {
+  /* 페이지/리셋(기존 no-print, html/body 설정 유지) */
+  @page { size: A4 portrait; margin: 23mm 10mm 6mm 10mm; }
+  html, body {
+    margin: 0; padding: 0; background: #fff;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .wrapper, #admin-nav, #user-nav, .nav_section, .filter, .toolbar,
+  .no-print, .leftMenu, .lnb, [role="navigation"], [data-role="sidebar"],
+  #topbar-progress, .toast { display: none; }
+  .main-content { margin: 0; padding: 0; background-color: #fff; }
+  .print-title{ display:block !important; margin:0 0 6mm 0; text-align:center; font-size:18px; font-weight:800; }
+  /* 기본 */
+  .print-block,
+  #ai-report,
+  #ai-report.card {
+    break-inside: avoid;          /* 표준 */
+    page-break-inside: avoid;     /* 레거시 */
+    -webkit-column-break-inside: avoid; /* WebKit 보정 */
+  }
+
+  .summary-box {
+    background: #fff;
+  }
+  .badge {
+    background: #fff;
+    box-shadow: none;
+  }
+  /* 조절 변수 */
+  :root {
+    --card-vis: 260px;   /* 카드 본문(시각화) 영역 높이 */
+    --radar-max: 260px;  /* 레이더 최대 가로/세로 */
+  }
+
+  /* 인쇄 영역 폭 */
+  #print-area,
+  #report-wrapper { width: 100%; max-width: 190mm; margin: 0; }
+
+  /* 표/차트 레이아웃 폭(가운데 정렬 X) */
+  .chart-grid,
+  .summary-area { width: 100%; margin: 0; }
+  .chart-grid {
+    margin-bottom: 10px;
+  }
+  /* 두 컬럼 그리드 */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: calc(50% - 6px) calc(50% - 6px); /* gap 12px 기준 */
+    gap: 12px;
+    align-items: stretch;     /* 같은 행 카드 높이 동일 */
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  /* 공통: 카드 레이아웃만 grid로 */
+  .chart-grid > .card {
+    display: grid;
+  }
+
+  /* 왼쪽 카드(레이더)는 높이 고정 X, 내용대로 */
+  .chart-grid > .card:nth-child(1) {
+    grid-template-rows: auto auto auto;  /* 제목 / 레이더 / 게이지 */
+  }
+
+  /* 오른쪽 카드(분포 차트)는 가운데만 고정 높이 */
+  .chart-grid > .card:nth-child(2) {
+    grid-template-rows: auto var(--card-vis) auto;
+  }
+
+  /* ---------- 왼쪽 카드: 레이더 + 게이지 ---------- */
+  .chart-grid .card:nth-child(1) .radar-wrap {
+    grid-row: 2;
+    width: 100%;
+    max-width: var(--radar-max); max-height: var(--radar-max);
+    aspect-ratio: 1 / 1;
+    place-self: center;     /* 중앙 정렬 */
+  }
+  #radar { width: 100%; display: block; height: auto; }
+
+  .chart-grid .card:nth-child(1) .gauge {
+    grid-row: 3;
+    margin-top: 6px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .gauge .barbox { margin: 0; }
+  .gauge .barbox .scale {
+    width: 100%;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; /* 0 | 50 | 100 */
+  }
+
+  /* ---------- 오른쪽 카드: 분포 차트 + 범례 ---------- */
+  .chart-grid .card:nth-child(2) .chart-fixed {
+    grid-row: 2;
+    width: 100%; height: 260px; min-height: 0;
+    position: relative;
+  }
+  .chart-grid .card:nth-child(2) .chart-fixed > canvas,
+  #distChart {
+    width: 100%;
+    height:auto;
+    display: block; 
+    box-sizing: border-box;
+  }
+
+  #distLegend {
+    grid-row: 3;
+    margin-top: 6px;
+    display: flex; justify-content: center; flex-wrap: wrap; gap: 8px;
+    max-width: 100%; overflow: hidden;
+    font-size: 10.5px;
+  }
+
+  /* 인라인 width/height로 부모 넘침 방지(필수) */
+  canvas[width],
+  canvas[height] {
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+  .report-card { padding: 0; border: none; box-shadow: none; }
+  /* 여백 살짝 */
+  #report-wrapper { margin-bottom: 10px; }
+  .legend .chip{ border-color:#c9d4e6; }
+  .legend .chip::before{ box-shadow:none; }
+}

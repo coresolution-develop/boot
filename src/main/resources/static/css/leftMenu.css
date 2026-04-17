@@ -1,0 +1,392 @@
+@charset "UTF-8";
+@import url('https://hangeul.pstatic.net/hangeul_static/css/nanum-square-neo.css');
+
+/* ══════════════════════════════════════════════
+   1. CSS 변수 & 레이아웃 기본값
+══════════════════════════════════════════════ */
+:root {
+  --nav-w: 240px;
+  --nav-bg:          #131c2e;
+  --nav-bg-hover:    #1e2e47;
+  --nav-bg-active:   #1b3558;
+  --nav-accent:      #3b82f6;
+  --nav-accent-dim:  rgba(59,130,246,.15);
+  --nav-border:      rgba(255,255,255,.06);
+  --nav-text:        #94a3b8;
+  --nav-text-hover:  #e2e8f0;
+  --nav-text-active: #ffffff;
+  --nav-sub-bg:      rgba(0,0,0,.18);
+  --nav-radius:      8px;
+  --nav-transition:  .18s ease;
+}
+
+/* ══════════════════════════════════════════════
+   2. 레이아웃 컨테이너
+══════════════════════════════════════════════ */
+.nav_section {
+  width: var(--nav-w);
+  background: var(--nav-bg);
+  position: fixed;
+  /* height 를 100vh 기준으로 정확히 제한 */
+  height: calc(100vh - 62px);
+  top: 62px;
+  font-size: 14px;
+  transition: width .28s cubic-bezier(.4,0,.2,1);
+  /* flexbox 로 [연도선택 고정] + [메뉴 스크롤] 구조 */
+  display: flex;
+  flex-direction: column;
+  /* 플라이아웃이 잘리지 않도록 x 방향만 visible */
+  overflow-x: visible;
+  overflow-y: hidden;          /* 전체 컨테이너 스크롤 방지 */
+  z-index: 1000;
+  box-shadow: 2px 0 12px rgba(0,0,0,.35);
+}
+
+.main-content {
+  margin-left: var(--nav-w);
+  margin-top: 62px;
+  background: #f1f5f9;
+  min-height: calc(100vh - 62px);
+  padding: 16px;
+  transition: margin-left .28s cubic-bezier(.4,0,.2,1);
+  height: calc(100vh - 62px);
+  overflow-y: auto;
+}
+
+.main-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* ══════════════════════════════════════════════
+   3. 메뉴 목록 스크롤 영역
+══════════════════════════════════════════════ */
+/* 연도 선택기: 고정 높이, 축소 금지 */
+.nav_section > .select {
+  flex-shrink: 0;
+}
+
+/* 메뉴 ul: 남은 공간을 모두 차지하고 세로 스크롤 */
+.nav_section > ul {
+  flex: 1 1 0;
+  min-height: 0;             /* flex item 이 부모를 넘지 않도록 필수 */
+  list-style: none;
+  padding: 8px 0 16px;
+  margin: 0;
+  overflow-y: auto;
+  overflow-x: visible;       /* 플라이아웃이 가로로 나올 수 있도록 */
+}
+
+.nav_section > ul::-webkit-scrollbar { width: 4px; }
+.nav_section > ul::-webkit-scrollbar-track { background: transparent; }
+.nav_section > ul::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,.15);
+  border-radius: 4px;
+}
+.nav_section > ul::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,.28);
+}
+
+/* ══════════════════════════════════════════════
+   4. 메뉴 아이템 공통
+══════════════════════════════════════════════ */
+.nav_link,
+.nav_sub_link {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--nav-text);
+  transition: background var(--nav-transition), color var(--nav-transition);
+  position: relative;
+  user-select: none;
+}
+
+/* 최상위 메뉴 */
+.nav_link {
+  padding: 11px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+/* 하위 메뉴 */
+.nav_sub_link {
+  padding: 9px 16px 9px 44px;
+  font-size: 12.5px;
+  font-weight: 400;
+  background: var(--nav-sub-bg);
+  border-left: 3px solid transparent;
+}
+
+/* 호버 */
+.nav_link:hover {
+  background: var(--nav-bg-hover);
+  color: var(--nav-text-hover);
+}
+.nav_sub_link:hover {
+  background: rgba(59,130,246,.08);
+  color: var(--nav-text-hover);
+  border-left-color: rgba(59,130,246,.35);
+}
+
+/* 아이콘 */
+.nav_link .icon-image,
+.nav_sub_link .icon-image {
+  height: 18px;
+  width: 18px;
+  margin-right: 10px;
+  flex-shrink: 0;
+  opacity: .75;
+  transition: opacity var(--nav-transition);
+}
+.nav_link:hover .icon-image,
+.nav_sub_link:hover .icon-image { opacity: 1; }
+
+/* ══════════════════════════════════════════════
+   5. 활성(Active) 상태
+══════════════════════════════════════════════ */
+.nav_link.active {
+  background: var(--nav-bg-active);
+  color: var(--nav-text-active);
+}
+.nav_link.active .icon-image { opacity: 1; }
+
+/* 활성 강조 막대 */
+.nav_link.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 6px; bottom: 6px;
+  width: 3px;
+  background: var(--nav-accent);
+  border-radius: 0 3px 3px 0;
+}
+
+.nav_sub_link.active {
+  background: var(--nav-accent-dim);
+  color: var(--nav-text-active);
+  border-left-color: var(--nav-accent);
+  font-weight: 600;
+}
+.nav_sub_link.active .icon-image { opacity: 1; }
+
+/* ══════════════════════════════════════════════
+   6. 그룹 섹션 레이블
+══════════════════════════════════════════════ */
+.nav-section-label {
+  padding: 14px 16px 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: rgba(148,163,184,.5);
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+/* 구분선 */
+.nav-divider {
+  height: 1px;
+  background: var(--nav-border);
+  margin: 6px 12px;
+}
+
+/* ══════════════════════════════════════════════
+   7. 연도 선택 셀렉트
+══════════════════════════════════════════════ */
+.select {
+  display: block;              /* inline-block → block (flex 자식으로 full-width) */
+  width: 100%;
+  position: relative;
+  z-index: 1001;
+  background: rgba(255,255,255,.05);
+  border-bottom: 1px solid var(--nav-border);
+}
+.select .selected {
+  display: flex;
+  align-items: center;
+  padding: 13px 14px;
+  cursor: pointer;
+  transition: background var(--nav-transition);
+}
+.select .selected:hover { background: rgba(255,255,255,.06); }
+.select .selected::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background: url("../icon/ev/icon-calendar.svg") center/16px no-repeat;
+  margin-right: 8px;
+  opacity: .6;
+  flex-shrink: 0;
+}
+.select .selected .selected-value {
+  flex: 1;
+  color: #e2e8f0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+.select .selected .arrow {
+  width: 16px;
+  height: 16px;
+  background: url("../icon/arrow(down).png") center/10px no-repeat;
+  opacity: .6;
+  transition: transform var(--nav-transition);
+}
+.select.active .arrow { transform: rotate(180deg); }
+
+.select ul,
+.select .selected .selected-value,
+.select ul li {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.select ul {
+  width: 200px;
+  position: absolute;
+  display: none;
+  left: 0;
+  top: 100%;
+  margin-top: 2px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: #1e2e47;
+  color: #94a3b8;
+  cursor: pointer;
+  z-index: 2000;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.select.active { padding: 0 !important; }
+.select.active ul { display: block; }
+.select ul li {
+  padding: 10px 14px;
+  font-size: 13px;
+  transition: background var(--nav-transition), color var(--nav-transition);
+}
+.select ul li:hover { background: rgba(59,130,246,.2); color: #e2e8f0; }
+.select ul li:first-child { border-radius: 8px 8px 0 0; }
+.select ul li:last-child  { border-radius: 0 0 8px 8px; }
+
+/* ══════════════════════════════════════════════
+   8. 접힘(Collapsed) 상태
+══════════════════════════════════════════════ */
+html[data-collapsed="true"] .nav_section span { display: none; }
+html[data-collapsed="true"] .nav_section .nav-section-label { display: none; }
+html[data-collapsed="true"] .nav_section .nav-divider { margin: 6px 8px; }
+
+html[data-collapsed="true"] .nav_section .nav_link,
+html[data-collapsed="true"] .nav_section .nav_sub_link {
+  justify-content: center;
+  padding: 14px 0;
+}
+html[data-collapsed="true"] .nav_section .icon-image { margin-right: 0; }
+html[data-collapsed="true"] .nav_section .nav_sub_link[data-group] { display: none !important; }
+
+/* 접힘 — 연도 셀렉트 */
+html[data-collapsed="true"] .select { width: 70px; }
+html[data-collapsed="true"] .select .selected { padding: 13px 6px; justify-content: center; }
+html[data-collapsed="true"] .select .selected::before { margin-right: 0; }
+html[data-collapsed="true"] .select .selected .arrow { display: none; }
+html[data-collapsed="true"] .select .selected .selected-value {
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  letter-spacing: 0;
+  overflow: visible;
+  text-overflow: clip;
+}
+html[data-collapsed="true"] .select.active ul { left: 70px; top: 0; border-radius: 0 8px 8px 8px; }
+
+/* ══════════════════════════════════════════════
+   9. 첫 페인트 전환 제거
+══════════════════════════════════════════════ */
+html[data-first-paint] .nav_section,
+html[data-first-paint] .main-content { transition: none !important; }
+
+/* ══════════════════════════════════════════════
+   10. 하위 메뉴 표기 규칙
+══════════════════════════════════════════════ */
+.nav_sub_link[data-group] { display: none; }
+.nav_sub_link[data-group].is-visible { display: flex; }
+
+/* ══════════════════════════════════════════════
+   11. 플라이아웃 (접힘 상태 hover 메뉴)
+══════════════════════════════════════════════ */
+#nav-flyout {
+  position: fixed;
+  top: 0; left: 0;
+  width: 220px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: #1e2e47;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+  display: none;
+  z-index: 1002;
+  padding: 6px 0;
+}
+#nav-flyout .flyout-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--nav-text);
+  cursor: pointer;
+  transition: background var(--nav-transition), color var(--nav-transition);
+}
+#nav-flyout .flyout-item:hover {
+  background: rgba(59,130,246,.15);
+  color: var(--nav-text-hover);
+}
+#nav-flyout .flyout-item img.icon-image { height: 18px; margin-right: 10px; }
+#nav-flyout .flyout-item.active {
+  background: var(--nav-accent-dim);
+  color: var(--nav-text-active);
+  border-left: 3px solid var(--nav-accent);
+  padding-left: 11px;
+}
+
+/* ══════════════════════════════════════════════
+   12. 사이드바 토글 버튼
+══════════════════════════════════════════════ */
+.sidebar-toggle {
+  position: absolute;
+  top: 0; right: -36px;
+  width: 32px; height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  z-index: 999;
+  background: var(--nav-bg);
+  border-radius: 0 6px 6px 0;
+  box-shadow: 3px 0 8px rgba(0,0,0,.25);
+  transition: background var(--nav-transition);
+}
+.sidebar-toggle:hover { background: var(--nav-bg-hover); }
+.sidebar-toggle:focus { outline: 2px solid rgba(59,130,246,.6); outline-offset: 2px; border-radius: 6px; }
+.sidebar-toggle .icon { width: 20px; height: 20px; }
+
+/* 상태별 아이콘 */
+html[data-collapsed="true"]      .sidebar-toggle .menu      { display: block; }
+html[data-collapsed="true"]      .sidebar-toggle .menu-open { display: none; }
+html:not([data-collapsed="true"]) .sidebar-toggle .menu      { display: none; }
+html:not([data-collapsed="true"]) .sidebar-toggle .menu-open { display: block; }
+
+/* ══════════════════════════════════════════════
+   13. 모바일 대응 (옵션)
+══════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .nav_section {
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  html[data-mobile-open="true"] .nav_section {
+    transform: translateX(0);
+  }
+  .main-content { margin-left: 0 !important; }
+  .sidebar-toggle { right: -36px; }
+}

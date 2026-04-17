@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:attr="data-collapsed=${sidebarCollapsed} ? 'true' : 'false'">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>layout</title>
+
+	<!-- 첫 페인트 전에 접힘 상태와 CSS 변수 확정 -->
+	<script>
+		(function () {
+			var root = document.documentElement;
+			root.setAttribute('data-first-paint', '1'); // 전환 잠깐 OFF
+
+			// 서버가 박아준 data-collapsed 기준으로 --nav-w 확정
+			var collapsed = root.getAttribute('data-collapsed') === 'true';
+			root.style.setProperty('--nav-w', collapsed ? '70px' : '240px');
+		})();
+
+		// 페인트 직후 전환 ON
+		window.addEventListener('DOMContentLoaded', function () {
+			requestAnimationFrame(function () {
+				document.documentElement.removeAttribute('data-first-paint');
+			});
+		});
+	</script>
+
+	<!-- 크리티컬 CSS (레이아웃 변수 강제) -->
+	<style id="critical-sidebar">
+		:root {
+			--nav-w: 240px;
+		}
+
+		/* 안전망 */
+
+		.nav_section {
+			width: var(--nav-w) !important;
+		}
+
+		.main-content {
+			margin-left: var(--nav-w) !important;
+		}
+
+		/* 접힘 기본 룩 */
+		html[data-collapsed="true"] .nav_section span {
+			display: none !important;
+		}
+
+		html[data-collapsed="true"] .nav_section .nav_link,
+		html[data-collapsed="true"] .nav_section .nav_sub_link {
+			justify-content: center !important;
+			padding: 15px 0 !important;
+		}
+
+		html[data-collapsed="true"] .nav_section .icon-image {
+			margin-right: 0 !important;
+		}
+
+		/* 접힘 시 인라인 서브는 노출 금지(플라이아웃만 사용) */
+		html[data-collapsed="true"] .nav_section .nav_sub_link[data-group] {
+			display: none !important;
+		}
+
+		/* 첫 페인트 동안 전환 제거 */
+		html[data-first-paint="1"] .nav_section,
+		html[data-first-paint="1"] .main-content {
+			transition: none !important;
+		}
+	</style>
+	<style>
+
+	</style>
+</head>
+
+<body>
+	<!-- 헤더 -->
+	<div class="wrapper" th:fragment="header">
+		<div class="logo">
+			<!-- <span style="color: red; position: absolute;">DEV</span> -->
+			<div class="home-icon">
+				<!-- 토글 버튼 -->
+				<div id="sidebar-toggle" class="sidebar-toggle" onclick="toggleSidebar()" aria-label="사이드바 토글">
+					<!-- 접힘 아이콘: MenuRounded -->
+					<svg class="icon menu" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+						<path fill="currentColor"
+							d="M4 18h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zm0-5h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zM3 7c0 .55.45 1 1 1h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1z" />
+					</svg>
+
+					<!-- 펼침 아이콘: MenuOpenRounded (햄버거+<) -->
+					<svg class="icon menu-open" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+						<path fill="currentColor"
+							d="M4 18h11c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zm0-5h8c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zM3 7c0 .55.45 1 1 1h11c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1zm17.3 7.88L17.42 12l2.88-2.88c.39-.39.39-1.02 0-1.41a.9959.9959 0 0 0-1.41 0L15.3 11.3c-.39.39-.39 1.02 0 1.41l3.59 3.59c.39.39 1.02.39 1.41 0 .38-.39.39-1.03 0-1.42z" />
+					</svg>
+				</div>
+			</div>
+			<div class="logo-img"><img src="/icon/ev/core_logo2.png" alt="logo"></div>
+			<div class="logout-img"><a href="/aff/Logout"><img src="/icon/ev/logout.png" alt="logout"></a></div>
+		</div>
+	</div>
+
+	<!-- 관리자 네비 -->
+	<div id="admin-nav" class="nav_section" th:fragment="nav_section">
+		<ul>
+			<!-- 연도 선택 -->
+			<li class="nav_link menu1">
+				<div class="select" id="year-select" th:attr="data-current-year=${currentEvalYear}">
+					<div class="selected">
+						<div class="selected-value" th:text="${currentEvalYear}">연도</div>
+						<div class="arrow"></div>
+					</div>
+					<ul>
+						<li class="option" th:each="y : ${availableYears}"
+							th:attr="data-year=${y}" th:text="${y}">年</li>
+					</ul>
+				</div>
+			</li>
+
+			<li class="nav_link menu2" data-base-url="/aff/admin/userList" data-icon-on="/icon/ev/icon-employee-list-on.svg"
+				data-icon-off="/icon/ev/icon-employee-list-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-employee-list-off.svg" alt=""><span>직원명부</span>
+			</li>
+
+			<li class="nav_link menu3" data-base-url="/aff/admin/summary?orgName=효사랑가족요양병원&year=2024"
+				data-icon-on="/icon/ev/icon-print-summary-on.svg" data-icon-off="/icon/ev/icon-print-summary-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-print-summary-off.svg" alt=""><span>다면평가 총괄표출력</span>
+			</li>
+
+			<li class="nav_link menu4" data-base-url="/aff/admin/kpi/summary?year=2024"
+				data-icon-on="/icon/ev/icon-print-summary-on.svg" data-icon-off="/icon/ev/icon-print-summary-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-print-summary-off.svg" alt=""><span>Kpi총괄표 출력</span>
+			</li>
+
+			<li class="nav_link menu6" data-base-url="/aff/admin/progress/org"
+				data-icon-on="/icon/ev/icon-hospital-progress-on.svg"
+				data-icon-off="/icon/ev/icon-hospital-progress-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-hospital-progress-off.svg" alt=""><span>병원별 평가 진행률</span>
+			</li>
+
+			<!-- 하위 (menu6) -->
+			<li class="nav_sub_link sub1" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=효사랑전주요양병원&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;효사랑전주요양병원 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub2" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=효사랑가족요양병원&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;효사랑가족요양병원 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub3" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=가족사랑요양병원&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;가족사랑요양병원 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub4" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=자야&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;자야 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub5" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=주식회사 팥알&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;팥알 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub6" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=메디푸드랩스&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;메디푸드랩스 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub7" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=자야장례문화원&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;자야장례문화원 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub8" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=주식회사 조이&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;조이 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub9" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=핵심인재개발원&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;핵심인재 평가진행률</span>
+			</li>
+			<li class="nav_sub_link sub10" data-group="menu6"
+				data-base-url="/aff/admin/progress/org/detail?year=2025&org=골든에이지파트너스&ev="
+				data-icon-on="/icon/ev/hospital_on.svg" data-icon-off="/icon/ev/hospital_off.svg">
+				<img class="icon-image" src="/icon/ev/hospital_off.svg" alt=""><span>&nbsp;&nbsp;&nbsp;골든에이지 평가진행률</span>
+			</li>
+
+			<li class="nav_link settings" data-icon-on="/icon/ev/setting_on.png"
+				data-icon-off="/icon/ev/setting_off.png">
+				<img class="icon-image" src="/icon/ev/setting_off.png" alt=""><span>설정관리</span>
+			</li>
+			<li class="nav_sub_link sub4" data-group="settings" data-base-url="/aff/admin/userDataUpload"
+				data-icon-on="/icon/ev/icon-employee-upload-on.svg"
+				data-icon-off="/icon/ev/icon-employee-upload-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-employee-upload-off.svg" alt=""><span>직원 데이터 업로드</span>
+			</li>
+			<li class="nav_sub_link sub5" data-group="settings" data-base-url="/aff/admin/subManagement"
+				data-icon-on="/icon/ev/icon-department-on.svg" data-icon-off="/icon/ev/icon-department-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-department-off.svg" alt=""><span>부서설정</span>
+			</li>
+			<li class="nav_sub_link sub7" data-group="settings" data-base-url="/aff/admin/target"
+				data-icon-on="/icon/ev/icon-target-setting-on.svg" data-icon-off="/icon/ev/icon-target-setting-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-target-setting-off.svg" alt=""><span>직원별 평가대상 설정</span>
+			</li>
+			<li class="nav_sub_link sub8" data-group="settings" data-base-url="/aff/admin/targets/new"
+				data-icon-on="/icon/ev/icon-custom-target-on.svg" data-icon-off="/icon/ev/icon-custom-target-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-custom-target-off.svg" alt=""><span>평가대상 커스텀</span>
+			</li>
+			<li class="nav_sub_link sub9" data-group="settings" data-base-url="/aff/admin/evaluation"
+				data-icon-on="/icon/ev/icon-problem-upload-on.svg" data-icon-off="/icon/ev/icon-problem-upload-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt=""><span>문제 업로드</span>
+			</li>
+			<li class="nav_sub_link sub3" data-group="settings" data-base-url="/aff/admin/kpiGeneralUpload"
+				data-icon-on="/icon/ev/icon-employee-upload-on.svg"
+				data-icon-off="/icon/ev/icon-employee-upload-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-employee-upload-off.svg" alt=""><span>kpi 데이터 업로드</span>
+			</li>
+			<li class="nav_sub_link sub10" data-group="settings" data-base-url="/aff/admin/notice"
+				data-icon-on="/icon/ev/icon-problem-upload-on.svg" data-icon-off="/icon/ev/icon-problem-upload-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt=""><span>공지사항</span>
+			</li>
+			<li class="nav_sub_link sub11" data-group="settings" data-base-url="/aff/release"
+				data-icon-on="/icon/ev/icon-problem-upload-on.svg" data-icon-off="/icon/ev/icon-problem-upload-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt=""><span>평가결과 차단</span>
+			</li>
+			<li class="nav_sub_link sub12" data-group="settings" data-base-url="/aff/admin/evalrelease"
+				data-icon-on="/icon/ev/icon-problem-upload-on.svg" data-icon-off="/icon/ev/icon-problem-upload-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt=""><span>평가진행 차단</span>
+			</li>
+		</ul>
+	</div>
+
+	<!-- 직원 네비 (필요 페이지에서만 렌더) -->
+	<div id="user-nav" class="nav_section" th:fragment="nav_section2">
+		<ul>
+			<li class="nav_link menu1" th:data-base-url="@{/aff/Info}" data-icon-on="/icon/ev/icon-staff-eval-on.svg"
+				data-icon-off="/icon/ev/icon-staff-eval-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt=""><span>직원평가</span>
+			</li>
+			<li class="nav_link menu2" data-icon-on="/icon/ev/icon-mypage-on.svg"
+				data-icon-off="/icon/ev/icon-mypage-off.svg">
+				<!-- th:data-base-url="@{/myPage}"  -->
+				<img class="icon-image" src="/icon/ev/icon-mypage-off.svg" alt=""><span>마이페이지</span>
+			</li>
+			<li class="nav_sub_link sub1" th:data-base-url="@{/aff/pwdSet}"
+				data-icon-on="/icon/ev/icon-password-change-on.svg"
+				data-icon-off="/icon/ev/icon-password-change-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-password-change-off.svg"
+					alt=""><span>&nbsp;&nbsp;&nbsp;&nbsp;비밀번호변경</span>
+			</li>
+			<li class="nav_sub_link sub2" th:data-base-url="@{/aff/report}"
+				data-icon-on="/icon/ev/icon-evaluation-info-on.svg"
+				data-icon-off="/icon/ev/icon-evaluation-info-off.svg">
+				<img class="icon-image" src="/icon/ev/icon-evaluation-info-off.svg"
+					alt=""><span>&nbsp;&nbsp;&nbsp;&nbsp;평가정보</span>
+			</li>
+		</ul>
+
+		<!-- <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div> -->
+	</div>
+
+	<!-- 페이지 본문은 .main-content 사용 -->
+
+</body>
+
+<!-- 공용 스크립트 -->
+<script th:fragment="scripts">
+	/* ===== Mobile detection ===== */
+	const mqMobile = window.matchMedia('(max-width: 1024px)');
+	function isMobile() { return mqMobile.matches; }
+
+	/* ===== Drawer open/close ===== */
+	function openMobileNav() {
+		document.documentElement.setAttribute('data-mobile-open', 'true');
+		document.body.style.overflow = 'hidden'; // 배경 스크롤 잠금
+		// 접근성
+		const adminNav = document.getElementById('admin-nav') || document.getElementById('user-nav');
+		if (adminNav) adminNav.setAttribute('aria-modal', 'true');
+	}
+	function closeMobileNav() {
+		console.log('test');
+		document.documentElement.removeAttribute('data-mobile-open');
+		document.body.style.overflow = '';
+		const adminNav = document.getElementById('admin-nav') || document.getElementById('user-nav');
+		if (adminNav) adminNav.removeAttribute('aria-modal');
+	}
+	/* breakpoint 변경 시 drawer 상태 정리 */
+	mqMobile.addEventListener?.('change', () => {
+		// 데스크탑으로 넘어가면 drawer 강제 닫기
+		if (!isMobile()) closeMobileNav();
+	});
+
+	/* ESC로 닫기 (모바일 drawer 열려 있을 때) */
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && document.documentElement.getAttribute('data-mobile-open') === 'true') {
+			closeMobileNav();
+		}
+	});
+
+
+	/* ===== 년도 선택/메뉴 링크 ===== */
+	function initPage() {
+		const isUserMode = !!document.getElementById('user-nav');
+
+		if (isUserMode) {
+			updateMenuLinksUser();
+			return;
+		}
+
+		const currentEvalYear = /*[[${currentEvalYear}]]*/ "2026";
+		const validYears = Array.from(document.querySelectorAll('#year-select .option[data-year]')).map(el => el.dataset.year);
+		let storedYear = localStorage.getItem("selectedYear");
+		// 저장된 연도가 없거나 드롭다운 목록에 없으면 현재 평가 연도로 초기화
+		if (!storedYear || !validYears.includes(storedYear)) {
+			storedYear = currentEvalYear;
+		}
+		localStorage.setItem("selectedYear", storedYear);
+
+		const selectedValue = document.querySelector(".selected-value");
+		if (selectedValue) selectedValue.textContent = storedYear;
+
+		updateMenuLinksAdmin(storedYear);
+		syncYearToForms(storedYear);
+	}
+
+	function updateMenuLinksAdmin(year) {
+		document.querySelectorAll('#admin-nav [data-base-url]').forEach(el => {
+			const base = el.dataset.baseUrl;
+			if (!base) return;
+
+			const url = new URL(base, location.origin);
+			url.searchParams.set('year', year);
+			const href = url.pathname + '?' + url.searchParams.toString();
+
+			// 기존 인라인 onclick 제거
+			el.removeAttribute('onclick');
+
+			el.onclick = (e) => {
+				// 새 탭/새 창( Ctrl/⌘ 클릭, 휠클릭 ) 예외 처리
+				if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+				e.preventDefault();
+				// 목적지 없으면 드로어만 닫고 끝내지 않도록 방어
+				const go = () => { location.href = href; };
+
+				if (shouldUseSpinner(el)) {
+					navigateWithSpinner(href);
+				} else {
+					if (isMobile()) closeMobileNav();
+					go();
+				}
+			};
+		});
+	}
+	function updateMenuLinksUser() {
+		document.querySelectorAll('#user-nav [data-base-url]').forEach(el => {
+			const baseUrl = el.dataset.baseUrl;
+			if (!baseUrl) return;
+
+			el.removeAttribute('onclick');
+			el.onclick = (e) => {
+				if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+				e.preventDefault();
+				if (shouldUseSpinner(el)) navigateWithSpinner(baseUrl);
+				else {
+					if (isMobile()) closeMobileNav();
+					location.href = baseUrl;
+				}
+			};
+		});
+	}
+
+	function syncYearToForms(year) {
+		document.querySelectorAll('input[name="year"]').forEach(el => el.value = year);
+	}
+
+	function setActiveMenu(menuClass) {
+		const nav = document.getElementById('admin-nav') || document.getElementById('user-nav');
+		if (!nav) return;
+		nav.querySelectorAll('.nav_link, .nav_sub_link').forEach(li => li.classList.remove('active'));
+		nav.querySelectorAll('[data-icon-on][data-icon-off]').forEach(li => {
+			const img = li.querySelector('img.icon-image');
+			if (img && li.dataset.iconOff) img.src = li.dataset.iconOff;
+		});
+
+		const li = nav.querySelector('.' + menuClass);
+		if (!li) return;
+		li.classList.add('active');
+		const img = li.querySelector('img.icon-image');
+		if (img && li.dataset.iconOn) img.src = li.dataset.iconOn;
+
+		if (li.classList.contains('nav_sub_link')) {
+			let prev = li.previousElementSibling;
+			while (prev && !prev.classList.contains('nav_link')) prev = prev.previousElementSibling;
+			if (prev) {
+				prev.classList.add('active');
+				const pimg = prev.querySelector('img.icon-image');
+				if (pimg && prev.dataset.iconOn) pimg.src = prev.dataset.iconOn;
+			}
+		}
+	}
+
+	function setActiveByUrl() {
+		const nav = document.getElementById('admin-nav') || document.getElementById('user-nav');
+		if (!nav) return;
+
+		const cur = new URL(location.href);
+		const curPath = cur.pathname;
+		const curOrg = cur.searchParams.get('org') || '';
+		const curYear = cur.searchParams.get('year') || '';
+		const curEv = cur.searchParams.get('ev') || '';
+
+		let best = null;
+		let bestScore = -1;
+
+		// 점수 규칙:
+		//  1) 경로 일치 + org 완전일치 + year/ev 일치 (가점)
+		//  2) 경로 일치 + org 완전일치
+		//  3) 경로 정확 일치
+		//  4) 경로 prefix 일치(경계 고려)
+		function scoreCandidate(li) {
+			const base = li.dataset.baseUrl;
+			if (!base) return -1;
+
+			const u = new URL(base, location.origin);
+			const tPath = u.pathname;
+			const tOrg = u.searchParams.get('org') || '';
+			const tYear = u.searchParams.get('year') || '';
+			const tEv = u.searchParams.get('ev') || '';
+
+			let s = -1;
+
+			// 경로 정확 일치 최우선 기반
+			if (curPath === tPath) {
+				s = 1000 + tPath.length; // 길이가 길수록 더 구체적
+				// org 일치 가점
+				if (tOrg && curOrg && tOrg === curOrg) s += 500;
+				// year/ev 일치 가점(선택)
+				if (tYear && curYear && tYear === curYear) s += 50;
+				if (tEv && curEv && tEv === curEv) s += 20;
+				// 쿼리스트링 항목 수가 많을수록(=더 구체적) 살짝 가점
+				s += u.searchParams.toString().length;
+			} else {
+				// 경계 있는 prefix 매칭 ("/a/b"는 "/a/bc"와 매칭 X)
+				const prefix = tPath.endsWith('/') ? tPath : tPath + '/';
+				if (curPath.startsWith(prefix)) {
+					s = 100 + tPath.length;
+				}
+			}
+			return s;
+		}
+
+		nav.querySelectorAll('[data-base-url]').forEach(li => {
+			const s = scoreCandidate(li);
+			if (s > bestScore) { bestScore = s; best = li; }
+		});
+
+		if (best) {
+			const keyClass = Array.from(best.classList).find(c => /^menu\d+$|^sub\d+$/.test(c));
+			if (keyClass) setActiveMenu(keyClass);
+		}
+	}
+	/* ===== 커스텀 셀렉트 ===== */
+	function selectOption(optionElement) {
+		const year = optionElement.dataset.year || optionElement.textContent.trim();
+		const box = optionElement.closest(".select");
+		const selectedValue = box.querySelector(".selected-value");
+		if (selectedValue) selectedValue.textContent = year;
+		localStorage.setItem("selectedYear", year);
+		updateMenuLinksAdmin(year);
+		syncYearToForms(year);
+		location.href = "/aff/admin/userList?year=" + year;
+	}
+
+	document.addEventListener("DOMContentLoaded", function () {
+		initPage();
+		try { setActiveByUrl(); } catch (e) { console.warn(e); }
+
+		document.querySelectorAll(".select").forEach(sel => {
+			sel.addEventListener("click", function (e) {
+				const t = e.target;
+				if (t.classList.contains("option")) selectOption(t);
+				sel.classList.toggle("active");
+			});
+		});
+
+		document.addEventListener("click", function (e) {
+			const isSelect = e.target.classList.contains("select") || e.target.closest(".select");
+			if (!isSelect) document.querySelectorAll(".select").forEach(b => b.classList.remove("active"));
+		});
+	});
+
+	/* ===== 플라이아웃 ===== */
+	(function () {
+		const nav = document.getElementById('admin-nav');
+		if (!nav) return;
+
+		function setupHoverGroup(parentSelector, group) {
+			const parent = nav.querySelector(parentSelector);
+			if (!parent) return;
+			const subs = Array.from(nav.querySelectorAll('.nav_sub_link[data-group="' + group + '"]'));
+
+			function setSubsVisible(v) { subs.forEach(el => el.classList.toggle('is-visible', v)); }
+			function hasActive() { return subs.some(el => el.classList.contains('active')); }
+			function isHovering() { return parent.matches(':hover') || subs.some(el => el.matches(':hover')); }
+
+			function refresh() {
+				if (isMobile()) { setSubsVisible(false); return; } // ← 모바일 가드
+				if (document.documentElement.getAttribute('data-collapsed') === 'true') { setSubsVisible(false); return; }
+				setSubsVisible(hasActive() || isHovering());
+			}
+
+			refresh();
+			['mouseenter', 'mouseleave'].forEach(evt => {
+				parent.addEventListener(evt, refresh);
+				subs.forEach(el => el.addEventListener(evt, refresh));
+			});
+
+			const moHtml = new MutationObserver(refresh);
+			moHtml.observe(document.documentElement, { attributes: true, attributeFilter: ['data-collapsed'] });
+		}
+
+		setupHoverGroup('.nav_link.menu6', 'menu6');
+		setupHoverGroup('.nav_link.settings', 'settings');
+	})();
+
+	/* ===== 토글: data-collapsed + 쿠키 ===== */
+	function toggleSidebar() {
+		if (isMobile()) {
+			const open = document.documentElement.getAttribute('data-mobile-open') === 'true';
+			if (open) closeMobileNav(); else openMobileNav();
+			return;
+		}
+		const root = document.documentElement;
+		const collapsed = root.getAttribute('data-collapsed') === 'true';
+		const next = !collapsed;
+		root.setAttribute('data-collapsed', next ? 'true' : 'false');
+		root.style.setProperty('--nav-w', next ? '70px' : '240px');
+
+		// 다음 페이지에서도 유지
+		document.cookie = 'sidebarCollapsed=' + (next ? 'true' : 'false') + '; Path=/; Max-Age=' + (60 * 60 * 24 * 365);
+
+		const flyout = document.getElementById('nav-flyout');
+		if (flyout) flyout.style.display = 'none';
+
+		const btn = document.getElementById('sidebar-toggle');
+		if (btn) btn.setAttribute('aria-label', next ? '사이드바 펼치기' : '사이드바 접기');
+	}
+
+	/* ===== 툴팁/플라이아웃 컨테이너 ===== */
+	function initSidebarTooltips() {
+		const nav = document.getElementById('admin-nav') || document.getElementById('user-nav');
+		if (!nav) return;
+		nav.querySelectorAll('.nav_link, .nav_sub_link').forEach(li => {
+			const label = li.querySelector('span')?.textContent?.trim() || '';
+			if (label) { li.setAttribute('data-tooltip', label); li.setAttribute('title', label); }
+		});
+	}
+
+	function initSidebarFlyout() {
+		const nav = document.getElementById('admin-nav');
+		if (!nav) return;
+		let flyout = document.getElementById('nav-flyout');
+		if (!flyout) { flyout = document.createElement('div'); flyout.id = 'nav-flyout'; document.body.appendChild(flyout); }
+
+		const groupMap = [
+			{ parentSelector: '.nav_link.menu6', group: 'menu6' },
+			{ parentSelector: '.nav_link.settings', group: 'settings' }
+		];
+
+		const openFlyoutFor = (parentEl, group) => {
+			const subs = Array.from(nav.querySelectorAll('.nav_sub_link[data-group="' + group + '"]'));
+			if (!subs.length) return closeFlyout();
+			flyout.innerHTML = '';
+			subs.forEach(sub => {
+				const item = document.createElement('div');
+				item.className = 'flyout-item' + (sub.classList.contains('active') ? ' active' : '');
+				const img = sub.querySelector('img.icon-image')?.cloneNode(true);
+				if (img) item.appendChild(img);
+				const text = document.createElement('span');
+				text.textContent = sub.querySelector('span')?.textContent?.trim() || '';
+				item.appendChild(text);
+				item.addEventListener('click', (e) => {
+					e.stopPropagation();
+					const baseUrl = sub.dataset.baseUrl;
+					if (baseUrl) location.href = baseUrl;
+					else {
+						const handler = sub.getAttribute('onclick'); if (handler) eval(handler);
+					}
+					closeFlyout();
+				});
+				flyout.appendChild(item);
+			});
+
+			const sbRect = document.querySelector('.nav_section').getBoundingClientRect();
+			const pRect = parentEl.getBoundingClientRect();
+			flyout.style.left = (sbRect.right + 8) + 'px';
+			let top = pRect.top;
+			const maxTop = window.innerHeight - Math.min(flyout.scrollHeight, window.innerHeight * 0.7) - 12;
+			top = Math.max(12, Math.min(top, maxTop));
+			flyout.style.top = top + 'px';
+			flyout.style.display = 'block';
+		};
+
+		const closeFlyout = () => { flyout.style.display = 'none'; };
+
+		let hideTimer = null;
+		const scheduleClose = () => {
+			clearTimeout(hideTimer);
+			hideTimer = setTimeout(() => {
+				const hoveringFlyout = flyout.matches(':hover');
+				const hoveringAnyParent = groupMap.some(({ parentSelector }) => {
+					const el = nav.querySelector(parentSelector);
+					return el && el.matches(':hover');
+				});
+				if (!hoveringFlyout && !hoveringAnyParent) closeFlyout();
+			}, 120);
+		};
+
+		groupMap.forEach(({ parentSelector, group }) => {
+			const parent = nav.querySelector(parentSelector);
+			if (!parent) return;
+			parent.setAttribute('data-has-flyout', 'true');
+			parent.addEventListener('mouseenter', () => {
+				const isCollapsed = document.documentElement.getAttribute('data-collapsed') === 'true';
+				if (!isCollapsed) { closeFlyout(); return; }
+				openFlyoutFor(parent, group);
+			});
+			parent.addEventListener('mouseleave', scheduleClose);
+		});
+
+		flyout.addEventListener('mouseleave', scheduleClose);
+		flyout.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+
+		const obs = new MutationObserver(() => {
+			if (document.documentElement.getAttribute('data-collapsed') !== 'true') closeFlyout();
+		});
+		obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-collapsed'] });
+	}
+
+	document.addEventListener('DOMContentLoaded', () => {
+		initSidebarTooltips();
+		initSidebarFlyout();
+
+	});
+	const overlay = document.getElementById('spinner-overlay');
+	const topbar = document.getElementById('topbar-progress');
+
+	const showSpinner = () => {
+		if (overlay) { overlay.classList.add('show'); overlay.style.display = 'flex'; }
+		if (topbar) { topbar.classList.add('active'); topbar.style.width = '10%'; }
+	};
+	const OnlyshowSpinner = () => {
+		if (overlay) { overlay.classList.add('show'); overlay.style.display = 'flex'; }
+	};
+	function navigateWithSpinner(url) {
+		showSpinner();
+		requestAnimationFrame(() => requestAnimationFrame(() => {
+			location.href = url;
+		}));
+	}
+
+	// ✅ 어떤 메뉴에 스피너를 적용할지 판단(여기서는 menu2~menu5)
+	function shouldUseSpinner(el) {
+		return ['menu2', 'menu3', 'menu4', 'menu5'].some(cls => el.classList.contains(cls));
+		// 또는 정규식:
+		// return /\bmenu[2-5]\b/.test(el.className);
+	}
+</script>
+
+</html>

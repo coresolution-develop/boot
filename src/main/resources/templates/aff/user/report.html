@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+  th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+  <meta property="og:title" content="코어솔루션 인사평가시스템"> <!-- 공유시 사이트 이름 -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hr.sosyge.net/aff/login"> <!-- 공유시 입력될 URL -->
+  <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">
+  <!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+  <meta property="og:description" content="코어솔루션 인사평가시스템"> <!-- 공유시 보여질 사이트 간략 소개 -->
+  <title></title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/demoinfocss.css}">
+  <link rel="stylesheet" th:href="@{/css/report.css}" />
+  <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+  <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+  <style>
+    body{
+      min-height: 100%;
+    }
+    .ac-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .ac-item {
+      padding: 10px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .ac-item h6 {
+      margin: 0 0 6px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .ac-item ul {
+      margin: 0;
+      padding-left: 16px;
+    }
+
+    .ac-item li {
+      margin: 2px 0;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    @media print {
+      #area-comments {
+        page-break-inside: avoid;
+      }
+    }
+
+    /* 좌/우 반반 레이아웃 */
+    .area-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      /* 50:50 (원하면 1.2fr 0.8fr 로 가중) */
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    /* 차트 박스 높이 (기존 h-240 있으면 그대로, 필요시 상향) */
+    .chart-fixed.h-240 {
+      height: 320px;
+    }
+
+    /* 보기 답답하면 320~360 추천 */
+
+    /* 우측 요약 패널 */
+    .area-card__summary {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--surface-subtle, rgba(0, 0, 0, 0.04));
+      overflow: auto;
+      /* 내용 길면 스크롤 */
+    }
+
+    .area-bullets {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .area-bullets li {
+      line-height: 1.5;
+    }
+
+    .area-summaries {
+      justify-content: space-evenly;
+    }
+
+    .areaSummary {
+      font-size: 12px;
+    }
+
+    .card h5 {
+      font-size: 14px;
+    }
+
+    /* 좁은 화면에서는 세로 스택 */
+    @media (max-width: 980px) {
+      .area-split {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-fixed.h-240 {
+        height: 280px;
+      }
+    }
+
+    .kpi-cards {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin: 10px 0 16px;
+    }
+
+    .kpi-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .kpi-card h4 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .kpi-card .val {
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 980px) {
+      .kpi-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 13px;
+    }
+
+    .tbl th,
+    .tbl td {
+      border: 0.6pt solid #d6d6d6;
+      padding: 6px 8px;
+      text-align: center;
+    }
+
+    /* .tbl thead th{ background:#f2f4f7; position: sticky; top: 72px; z-index: 1; } */
+    .point {
+      color: #d32f2f;
+      font-weight: 700;
+    }
+    /* 경혁팀 모드 공통 */
+.ky-mode .kpi-card h4 { color:#1e3a8a; }
+.ky-mode .kpi-card { border-color:#c7d2fe; }
+
+/* 경혁팀 카드 레이아웃(필요 시) */
+.ky-cards { grid-template-columns: repeat(5, minmax(0,1fr)); }
+
+/* 경혁팀 상세표 전용 */
+.tbl.ky-detail thead th {
+  background: #eef2ff;      /* 연한 인디고 */
+  font-weight: 700;
+}
+.tbl.ky-detail tbody td.point {
+  color:#ef4444; font-weight:800;
+}
+
+/* 모바일 대응 필요 시 */
+@media (max-width:980px){
+  .ky-cards { grid-template-columns: repeat(2,1fr); }
+  .ai-report-total {
+    flex-direction: column;
+  }
+}
+.ky-radar-wrap .radar-card{
+    height: 280px; padding: 10px 12px; border:1px solid #e5e7eb; border-radius:12px;
+    background:#fff;
+  }
+  [data-theme="dark"] .ky-radar-wrap .radar-card{ background:#111827; border-color:#374151; }
+
+.grade-tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+.grade-tooltip-panel {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  background: #1f2937;
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 6px;
+  min-width: 160px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 999;
+  display: none; /* 기본은 안 보이게 */
+}
+
+.grade-tooltip:hover .grade-tooltip-panel {
+  display: block;
+}
+
+.grade-tooltip-panel::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -6px;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-right-color: #1f2937;
+}
+
+.tooltip-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+.tooltip-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tooltip-list li {
+  line-height: 1.35;
+}
+
+/* 내 등급에 붙일 스타일 */
+.tooltip-list li.is-mine {
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+/* 기본: 데스크톱은 원래처럼 */
+.tbl.kpi-detail-table {
+  width: 100%;
+}
+
+/* 모바일 이하부터 카드화 */
+@media (max-width: 900px) {
+  /* thead는 한 번만 보여주고 싶으면 여기서 숨김 */
+  .tbl.kpi-detail-table thead {
+    display: none;
+  }
+
+  .tbl.kpi-detail-table tr {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: #fff;
+    padding: 6px 8px;
+  }
+
+  .tbl.kpi-detail-table td {
+    border: none;
+    padding: 4px 0 4px 110px; /* 라벨 들어갈 공간 */
+    position: relative;
+    text-align: left;
+  }
+
+  .tbl.kpi-detail-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    top: 4px;
+    width: 100px;
+    font-weight: 600;
+    font-size: 12px;
+    color: #4b5563;
+    white-space: normal;
+  }
+
+  /* 숫자형도 왼쪽정렬 */
+  .tbl.kpi-detail-table td.point {
+    font-weight: 700;
+  }
+}
+/* 데스크톱에서는 테이블만 보이게 */
+.desktop-only {
+  display: table;
+}
+.kpi-detail-mobile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* 모바일에서는 테이블 숨기고 카드 보여주기 */
+  .desktop-only {
+    display: none;
+  }
+  .kpi-detail-mobile {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+  .kpi-mcard {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .kpi-mcard h5 {
+    font-size: 13px;
+    margin: 0 0 6px;
+    font-weight: 700;
+    color: #111827;
+  }
+  .kpi-mcard .kv {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    margin: 3px 0;
+  }
+  .kpi-mcard .kv span {
+    color: #6b7280;
+  }
+  .kpi-mcard .kv strong {
+    font-weight: 700;
+    color: #111827;
+  }
+}
+/* 1) 기본: 데스크톱에서는 원래 테이블 보이게 */
+.tbl.ky-detail {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+
+.tbl.ky-detail th,
+.tbl.ky-detail td {
+  border: 0.6pt solid #d6d6d6;
+  padding: 6px 8px;
+  text-align: center;
+}
+
+/* 2) 모바일에서는 이 테이블 숨기고 카드형으로 대체 */
+@media (max-width: 900px) {
+  .tbl.ky-detail {
+    display: none;
+  }
+
+  /* 카드 컨테이너 */
+  .ky-detail-mobile {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 12px;
+  }
+
+  /* 카드 하나 */
+  .ky-detail-mcard {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .ky-detail-mcard h5 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1f2937;
+  }
+
+  /* 점수 줄 */
+  .ky-detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 3px 0;
+    font-size: 12px;
+  }
+
+  .ky-detail-row span.label {
+    color: #6b7280;
+  }
+
+  .ky-detail-row span.val {
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .ky-detail-row span.val.point {
+    color: #ef4444;
+  }
+
+  [data-theme="dark"] .ky-detail-mcard {
+    background: #111827;
+    border-color: #374151;
+  }
+}
+/* 데스크톱에서는 테이블만 보이게 */
+.ky-detail.desktop-only {
+  display: table;
+}
+
+/* 기본적으로 모바일 카드는 숨김 */
+.ky-detail-mobile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  /* 모바일에서는 테이블 숨기기 */
+  .ky-detail.desktop-only {
+    display: none;
+  }
+
+  .ky-detail-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .ky-mcard {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .ky-mcard h5 {
+    font-size: 13px;
+    margin: 0 0 6px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .ky-mcard .kv {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+    margin: 3px 0;
+  }
+
+  .ky-mcard .kv span {
+    color: #6b7280;
+  }
+
+  .ky-mcard .kv strong {
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .ky-mcard .kv strong.point {
+    color: #ef4444;
+  }
+
+  /* 다크모드 대응 있으면 */
+  [data-theme="dark"] .ky-mcard {
+    background: #111827;
+    border-color: #374151;
+  }
+}
+/* ==== PRINT: AI 리포트를 두 카드 아래에 별도 카드로 빼기 ==== */
+@media print {
+
+  /* 1) 두 카드(왼쪽/오른쪽 차트)는 2열 */
+  .chart-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  /* 2) 오른쪽 카드 껍데기는 없애고 안의 애들을 부모 그리드의 아이템으로 승격 */
+  .chart-grid > .card:nth-child(2) {
+    display: contents !important;
+  }
+
+  /* 3) 오른쪽 카드 안의 '차트 영역(.chart-fixed ...)'만 2열의 오른쪽에 놓기 */
+  .chart-grid > .card:nth-child(2) .chart-fixed {
+    grid-column: 2 / 3 !important;
+    height: 220px !important;   /* 필요하면 200~240 조절 */
+    margin-bottom: 0 !important;
+  }
+
+  /* 4) AI 리포트(.area-summaries)는 두 카드 전체폭으로 아래 줄에 */
+  .chart-grid > .card:nth-child(2) .area-summaries {
+    grid-column: 1 / -1 !important;   /* 전체폭 */
+    display: block !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    padding: 10px 12px !important;
+    margin-top: 6px !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 5) 안쪽 각 영역 간격만 살짝 */
+  .chart-grid > .card:nth-child(2) .area-summaries .area {
+    margin-bottom: 6px !important;
+  }
+  .chart-grid > .card:nth-child(2) .area-summaries .badge {
+    margin-bottom: 3px !important;
+  }
+}
+@media print {
+  /* 1) 두 개 카드 나란히 */
+  .chart-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px !important;
+    align-items: flex-start !important;
+  }
+
+  /* 2) 오른쪽 카드만 안에서 2단으로 쪼갠다 */
+  .chart-grid > .card:nth-child(2) {
+    display: grid !important;
+    /* 위에 차트 영역 하나, 아래에 AI 리포트 하나 */
+    grid-template-rows: auto auto !important;
+    gap: 8px !important;
+  }
+
+  /* 3) 차트 부분은 카드의 첫 줄 */
+  .chart-grid > .card:nth-child(2) .area-split {
+    /* 원래 좌우 1:1이었지만 프린트에서는 세로로만 */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .chart-grid > .card:nth-child(2) .chart-fixed {
+    height: 220px !important;   /* 필요하면 조절 */
+    min-height: 0 !important;
+  }
+
+  /* 4) AI 리포트만 아래쪽에 카드처럼 */
+  .chart-grid > .card:nth-child(2) .area-summaries {
+    display: block !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    padding: 8px 10px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* 내용 간격만 정리 */
+  .chart-grid > .card:nth-child(2) .area-summaries .area {
+    margin-bottom: 6px !important;
+  }
+}
+/* 기본은 안 보이게 */
+.print-ai-report {
+  display: none;
+}
+
+@media print {
+  /* 1) 오른쪽 카드 안의 원래 AI 리포트는 프린트에서 숨긴다 */
+  .chart-grid > .card:nth-child(2) .area-summaries {
+    display: none !important;
+  }
+
+  /* 2) 대신 우리가 따로 만든 프린트용 블록을 보여준다 */
+  .print-ai-report {
+    display: block !important;
+    margin-top: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px 12px;
+    page-break-inside: avoid;
+  }
+
+  .print-ai-report h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .print-ai-body .area {
+    margin-bottom: 6px;
+  }
+  .print-ai-body .area:last-child {
+    margin-bottom: 0;
+  }
+}
+@media print {
+  /* 프린트용 전체 박스 */
+  .print-ai-report {
+    display: block !important;
+    margin-top: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px 12px;
+    page-break-inside: avoid;
+  }
+
+  .print-ai-report h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* 카드들을 그리드로 */
+  .print-ai-body {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 8px;
+  }
+
+  /* 각 영역 카드 */
+  .print-ai-body .ai-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 6px 8px 8px;
+    background: #fff;
+    page-break-inside: avoid;
+  }
+
+  .print-ai-body .ai-card-head {
+    margin-bottom: 4px;
+  }
+
+  .print-ai-body .ai-card .badge {
+    margin: 0;
+    font-size: 11px;
+    display: inline-block;
+  }
+
+  .print-ai-body .ai-card-text {
+    font-size: 11px;
+    line-height: 1.45;
+    margin: 4px 0 0;
+    word-break: keep-all;
+  }
+  /* 종합 역량지표 AI 리포트는 무조건 새 페이지에서 시작 */
+  #ai-report-score {
+    page-break-before: always;
+    break-before: always;
+  }
+
+  /* 혹시라도 카드 안에서 다시 쪼개지지 않게 */
+  #ai-report-score,
+  #ai-report-score .card,
+  #ai-report-score .summary-box {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+    @media (max-width: 980px) {
+      .kpi-cards {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* 좁은 화면에서는 세로 스택 */
+    @media (max-width: 980px) {
+      .area-split {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-fixed.h-240 {
+        height: 280px;
+      }
+    }
+
+    /* 모바일 대응 필요 시 */
+    @media (max-width:980px) {
+      .ky-cards {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .ai-report-total {
+        flex-direction: column;
+      }
+    }
+
+    /* 모바일 이하부터 카드화 */
+    @media (max-width: 900px) {
+
+      /* thead는 한 번만 보여주고 싶으면 여기서 숨김 */
+      .tbl.kpi-detail-table thead {
+        display: none;
+      }
+
+      .tbl.kpi-detail-table tr {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        background: #fff;
+        padding: 6px 8px;
+      }
+
+      .tbl.kpi-detail-table td {
+        border: none;
+        padding: 4px 0 4px 110px;
+        /* 라벨 들어갈 공간 */
+        position: relative;
+        text-align: left;
+      }
+
+      .tbl.kpi-detail-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: 4px;
+        width: 100px;
+        font-weight: 600;
+        font-size: 12px;
+        color: #4b5563;
+        white-space: normal;
+      }
+
+      /* 숫자형도 왼쪽정렬 */
+      .tbl.kpi-detail-table td.point {
+        font-weight: 700;
+      }
+    }
+
+    @media (max-width: 900px) {
+
+      /* 모바일에서는 테이블 숨기고 카드 보여주기 */
+      .desktop-only {
+        display: none;
+      }
+
+      .kpi-detail-mobile {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+
+      .kpi-mcard {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .kpi-mcard h5 {
+        font-size: 13px;
+        margin: 0 0 6px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .kpi-mcard .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        margin: 3px 0;
+      }
+
+      .kpi-mcard .kv span {
+        color: #6b7280;
+      }
+
+      .kpi-mcard .kv strong {
+        font-weight: 700;
+        color: #111827;
+      }
+    }
+
+    /* 2) 모바일에서는 이 테이블 숨기고 카드형으로 대체 */
+    @media (max-width: 900px) {
+      .tbl.ky-detail {
+        display: none;
+      }
+
+      /* 카드 컨테이너 */
+      .ky-detail-mobile {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 12px;
+      }
+
+      /* 카드 하나 */
+      .ky-detail-mcard {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .ky-detail-mcard h5 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #1f2937;
+      }
+
+      /* 점수 줄 */
+      .ky-detail-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 3px 0;
+        font-size: 12px;
+      }
+
+      .ky-detail-row span.label {
+        color: #6b7280;
+      }
+
+      .ky-detail-row span.val {
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .ky-detail-row span.val.point {
+        color: #ef4444;
+      }
+
+      [data-theme="dark"] .ky-detail-mcard {
+        background: #111827;
+        border-color: #374151;
+      }
+    }
+
+    @media (max-width: 900px) {
+
+      /* 모바일에서는 테이블 숨기기 */
+      .ky-detail.desktop-only {
+        display: none;
+      }
+
+      .ky-detail-mobile {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .ky-mcard {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .ky-mcard h5 {
+        font-size: 13px;
+        margin: 0 0 6px;
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .ky-mcard .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        margin: 3px 0;
+      }
+
+      .ky-mcard .kv span {
+        color: #6b7280;
+      }
+
+      .ky-mcard .kv strong {
+        font-weight: 700;
+        color: #111827;
+      }
+
+      .ky-mcard .kv strong.point {
+        color: #ef4444;
+      }
+
+      /* 다크모드 대응 있으면 */
+      [data-theme="dark"] .ky-mcard {
+        background: #111827;
+        border-color: #374151;
+      }
+    }
+
+    /* ==== PRINT: AI 리포트를 두 카드 아래에 별도 카드로 빼기 ==== */
+    @media print {
+
+      /* 1) 두 카드(왼쪽/오른쪽 차트)는 2열 */
+      .chart-grid {
+        display: grid !important;
+        gap: 12px !important;
+        align-items: flex-start !important;
+      }
+
+      /* 2) 오른쪽 카드 껍데기는 없애고 안의 애들을 부모 그리드의 아이템으로 승격 */
+      .chart-grid>.card:nth-child(2) {
+        display: contents !important;
+      }
+
+      /* 4) AI 리포트(.area-summaries)는 두 카드 전체폭으로 아래 줄에 */
+      .chart-grid>.card:nth-child(2) .area-summaries {
+        grid-column: 1 / -1 !important;
+        /* 전체폭 */
+        display: block !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 10px !important;
+        background: #fff !important;
+        padding: 10px 12px !important;
+        margin-top: 6px !important;
+        page-break-inside: avoid !important;
+      }
+
+      /* 5) 안쪽 각 영역 간격만 살짝 */
+      .chart-grid>.card:nth-child(2) .area-summaries .area {
+        margin-bottom: 6px !important;
+      }
+
+      .chart-grid>.card:nth-child(2) .area-summaries .badge {
+        margin-bottom: 3px !important;
+      }
+    }
+
+    @media print {
+
+      /* 1) 두 개 카드 나란히 */
+      .chart-grid {
+        display: grid !important;
+        grid-template-columns: 0.7fr 1.3fr !important;
+        gap: 12px !important;
+        align-items: flex-start !important;
+      }
+
+      /* 2) 오른쪽 카드만 안에서 2단으로 쪼갠다 */
+      .chart-grid>.card:nth-child(2) {
+        display: grid !important;
+        /* 위에 차트 영역 하나, 아래에 AI 리포트 하나 */
+        grid-template-rows: auto auto !important;
+        gap: 8px !important;
+      }
+
+      /* 3) 차트 부분은 카드의 첫 줄 */
+      .chart-grid>.card:nth-child(2) .area-split {
+        /* 원래 좌우 1:1이었지만 프린트에서는 세로로만 */
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+
+      .chart-grid>.card:nth-child(2) .chart-fixed {
+        height: 180px !important;
+        /* 필요하면 조절 */
+        min-height: 0 !important;
+        grid-column: 2 / 3 !important;
+      }
+
+      /* 4) AI 리포트만 아래쪽에 카드처럼 */
+      .chart-grid>.card:nth-child(2) .area-summaries {
+        display: block !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 10px !important;
+        background: #fff !important;
+        padding: 8px 10px !important;
+        max-height: none !important;
+        overflow: visible !important;
+        page-break-inside: avoid !important;
+      }
+
+      /* 내용 간격만 정리 */
+      .chart-grid>.card:nth-child(2) .area-summaries .area {
+        margin-bottom: 6px !important;
+      }
+    }
+
+    @media print {
+
+      /* 1) 오른쪽 카드 안의 원래 AI 리포트는 프린트에서 숨긴다 */
+      .chart-grid>.card:nth-child(2) .area-summaries {
+        display: none !important;
+      }
+
+      /* 2) 대신 우리가 따로 만든 프린트용 블록을 보여준다 */
+      .print-ai-report {
+        display: block !important;
+        margin-top: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        padding: 10px 12px;
+        page-break-inside: avoid;
+      }
+
+      .print-ai-report h4 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .print-ai-body .area {
+        margin-bottom: 6px;
+      }
+
+      .print-ai-body .area:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    @media print {
+
+      /* 프린트용 전체 박스 */
+      .print-ai-report {
+        display: block !important;
+        margin-top: 10px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        padding: 10px 12px;
+        page-break-inside: avoid;
+      }
+
+      .print-ai-report h4 {
+        margin: 0 0 8px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      /* 카드들을 그리드로 */
+      .print-ai-body {
+        display: grid;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      /* 각 영역 카드 */
+      .print-ai-body .ai-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 6px 8px 8px;
+        background: #fff;
+        page-break-inside: avoid;
+      }
+
+      .print-ai-body .ai-card-head {
+        margin-bottom: 4px;
+      }
+
+      .print-ai-body .ai-card .badge {
+        margin: 0;
+        font-size: 11px;
+        display: inline-block;
+      }
+
+      .print-ai-body .ai-card-text {
+        font-size: 11px;
+        line-height: 1.45;
+        margin: 4px 0 0;
+        word-break: keep-all;
+      }
+
+      /* 종합 역량지표 AI 리포트는 무조건 새 페이지에서 시작 */
+      #ai-report-score {
+        page-break-before: always;
+        break-before: always;
+      }
+
+      /* 혹시라도 카드 안에서 다시 쪼개지지 않게 */
+      #ai-report-score,
+      #ai-report-score .card,
+      #ai-report-score .summary-box {
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      .report-card h4 {
+        font-size: 12px;
+      }
+
+      .summary-box,
+      pre.comment-summary {
+        font-size: 12px;
+      }
+
+      .chart-grid .card:nth-child(2) .chart-fixed {
+        width: 100% !important;
+        height: 280px !important;
+        /* 필요하면 조절 */
+        min-height: 0 !important;
+      }
+
+      /* 혹시 캔버스가 인라인 스타일에 묶여 있으면 이것도 같이 */
+      #distChart {
+        height: 100% !important;
+      }
+
+      .gauge>h5 {
+        font-size: 10px;
+      }
+    }
+
+    /* === PRINT: distChart 높이 키우기 === */
+    @media print {
+
+      /* 레이더 한 변 길이 */
+      :root {
+        --ky-radar-size: 240px; /* 필요하면 230~260 정도로 조절 */
+      }
+
+      /* 레이더 / 요약 2열 */
+      .ky-radar-wrap {
+        display: grid;
+        grid-template-columns: var(--ky-radar-size) minmax(0, 1fr);
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      /* 왼쪽 레이더 카드: 정사각형 고정 */
+      .ky-radar .radar-card {
+        width: var(--ky-radar-size) !important;
+        height: var(--ky-radar-size) !important;
+        padding: 6px;
+        box-sizing: border-box;
+      }
+
+      .ky-radar .radar-card canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+      }
+
+      /* 오른쪽 종합평가 카드: 높이를 레이더와 동일하게 */
+      .ky-report .radar-card {
+        height: var(--ky-radar-size) !important;  /* ← 핵심 */
+        padding: 8px 10px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+      }
+
+      .ky-radar h4,
+      .ky-report h4 {
+        margin: 4px 0;
+        font-size: 12px;
+      }
+
+      .ky-report .summary-box {
+        font-size: 11px;
+        line-height: 1.4;
+        width: 100%;
+        background: var(--rc-soft);
+        border-left: 4px solid var(--rc-accent);
+        border-right: 4px solid var(--rc-accent);
+        padding: 15px;
+      }
+      /* 4) AI 리포트(.area-summaries)는 두 카드 전체폭으로 아래 줄에 */
+      .chart-grid>.card:nth-child(2) .area-summaries {
+        grid-column: 1 / -1 !important;
+        /* 전체폭 */
+        display: block !important;
+        border: 1px solid #e5e7eb !important;
+        border-radius: 10px !important;
+        background: #fff !important;
+        padding: 10px 12px !important;
+        margin-top: 6px !important;
+        page-break-inside: avoid !important;
+      }
+
+    }
+    .kpi-card-head {
+      display: flex;
+    justify-content: space-between;
+    }
+    /* ===== 최종 프린트 레이아웃 오버라이드 ===== */
+@media print {
+
+  /* 전체 폰트·컬러 보정 */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-size: 11px;
+  }
+
+  /* 상단 차트 2개 - 좌: 레이더, 우: 분포그래프 */
+  .chart-grid {
+    display: grid !important;
+    grid-template-columns: 0.65fr 1.35fr !important; /* 레이더:분포 = 65:135 */
+    gap: 10px !important;
+    align-items: stretch !important;
+  }
+
+  .chart-grid .card {
+    box-shadow: none !important;
+    margin: 0 !important;
+  }
+
+  /* 레이더와 분포 차트 높이를 맞춰서 한 페이지에 AI 카드까지 들어가도록 축소 */
+  .radar-wrap {
+    height: 180px !important;
+  }
+  .radar-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+
+  .chart-fixed.h-240 {
+    height: 180px !important;
+    min-height: 0 !important;
+  }
+
+  /* 영역별 요약(우측 텍스트) – 너무 길면 잘리지 않게, 스크롤 대신 줄바꿈 */
+  .area-summaries {
+    max-height: 180px !important;
+    overflow: hidden !important;
+    font-size: 11px !important;
+    page-break-inside: avoid !important;
+  }
+  .area-summaries .area {
+    margin-bottom: 4px !important;
+  }
+
+  /* [영역별 응답 분포] AI 리포트 – 차트 아래 카드로 붙어서 나오게 */
+  .print-ai-report {
+    display: block !important;      /* 화면에서는 숨기고, 인쇄에서만 보이도록 */
+    margin-top: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    padding: 8px 10px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-ai-report h4 {
+    margin: 0 0 6px !important;
+    font-size: 12px !important;
+  }
+
+  .print-ai-body {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .print-ai-body .ai-card {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 6px !important;
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-ai-body .ai-card-text {
+    margin: 3px 0 0 !important;
+  }
+
+  /* 종합 역량지표 AI 리포트는 새 페이지에서 시작 */
+  #ai-report-score {
+    page-break-before: always;
+    break-before: always;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 종합평가 AI 리포트 카드(아래쪽 큰 카드)도 쪼개지지 않게 */
+  #ai-report-score .card,
+  #ai-report-score .summary-box {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* 레이더 + 종합 AI 프린트용 2열(맨 아래 ai-report-print-row) */
+  .ai-report-print-row {
+    display: grid !important;
+    grid-template-columns: 0.55fr 1.45fr !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+    page-break-before: always;
+    page-break-inside: avoid;
+  }
+
+  .ai-report-print-row .radar-cell .radar-wrap {
+    height: 200px !important;
+  }
+
+  .ai-report-print-row .report-cell .summary-box {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* 표 폰트 조금 작게 */
+  .tbl th,
+  .tbl td {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+  }
+}
+/* ===== 인쇄 레이아웃 최종 정리 ===== */
+@media print {
+
+  /* 1) 오른쪽 카드 안 요약(파란 박스)은 아예 숨김 */
+  .chart-grid > .card .area-summaries {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+
+  /* 2) 차트 2개는 2열 유지 */
+  .chart-grid {
+    display: grid !important;
+    grid-template-columns: 0.6fr 1.4fr !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+    height: 100% !important;
+  }
+
+  .chart-grid .card {
+    box-shadow: none !important;
+    margin: 0 !important;
+    height: 100% !important;
+  }
+
+  .radar-wrap {
+    height: 190px !important;
+  }
+  .radar-wrap canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+
+  .chart-fixed.h-240 {
+    height: 140px !important;
+    min-height: 0 !important;
+  }
+
+  /* 3) 카드 밖에 있는 print-ai-report 를
+        차트 두 개 아래 전체 폭 카드로 출력 */
+  .print-ai-report {
+    display: block !important;           /* 인쇄에서만 보이게 */
+    margin-top: 10px !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+    padding: 10px 12px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-ai-report h4 {
+    margin: 0 0 8px !important;
+    font-size: 12px !important;
+    font-weight: 700;
+  }
+
+  .print-ai-body {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .print-ai-body .ai-card {
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-ai-body .ai-card-text {
+    margin-top: 4px !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  /* 오른쪽 카드 안의 요약(파란 박스)은 완전히 제거 */
+  .chart-grid > .card:nth-child(2) .area-summaries,
+  .chart-grid > .card:nth-child(2) .area-summaries * {
+    display: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+  }
+  .print-ai-body .ai-card {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+  }
+}
+  </style>
+</head>
+
+<body>
+  <div th:replace="~{Include/afflayout :: header}"></div>
+  <div th:replace="~{Include/afflayout :: nav_section2}"></div>
+
+  <main class="main-content">
+    <div class="form-area">
+      <form method="get" action="/aff/report" class="filter search-form" id="searchForm" data-spinner="on">
+        <select class="custom" name="year" style="margin:0;" id="yearSelect">
+          <option value="2024" th:selected="${year == 2024}">2024</option>
+          <option value="2025" th:selected="${year == 2025}">2025</option>
+        </select>
+        <select class="custom" name="ev" id="evSelect" style="margin:0; width: auto;" required>
+          <option th:if="${#lists.isEmpty(availableEvOptions)}" value="">(관계 없음)</option>
+          <option th:each="opt : ${availableEvOptions}" th:value="${opt.value}" th:text="${opt.label}"
+            th:selected="${selectedEvValue != null and selectedEvValue == opt.value}">
+          </option>
+        </select>
+        <button class="white-btn search-btn" id="search-btn" type="submit"
+          style="font-size: 12px; padding: 11px 20px;">조회</button>
+        <div class="toolbar no-print">
+          <button class="orange-btn" type="button" style="font-size: 12px; padding: 11px 20px;"
+            onclick="window.print()">출력</button>
+        </div>
+      </form>
+      <!-- 버튼은 항상 표시 -->
+      <form method="post" id="aiForm" th:action="@{/aff/report/summary}" class="mt-2 text-end no-print ai-button"
+        style="margin: 8px 0 12px;" data-spinner="on">
+        <input type="hidden" name="run" value="1" />
+        <input type="hidden" name="year" id="aiYear" th:value="${year}" />
+        <input type="hidden" name="ev" id="aiEv" th:value="${selectedEvValue}" />
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+        <button class="orange-btn btn-animated search-btn js-async-submit"
+          style=" font-size: 12px; padding: 11px 20px; height: 40px;"><span class="btn-label">AI</span></button>
+      </form>
+    </div>
+    <div id="topbar-progress"></div>
+    <div id="toast" th:if="${msg}" th:text="${msg}" class="toast">요약을 갱신했습니다.</div>
+    <!-- 선택 후에만 결과 출력 -->
+    <div id="print-area">
+      <div class="print-only print-title ">
+        <h2 style="margin:0 0 4px;">2025년 근무평가 조사 결과표</h2>
+      </div>
+      <div th:if="${vm != null}">
+        <table class="meta">
+          <tr>
+            <th>사번</th>
+            <th>소속</th>
+            <th>부서명</th>
+            <th>직책</th>
+            <th>성명</th>
+            <td rowspan="2" th:text="${vm.relationPath}">경혁팀 &gt; 경혁팀</td>
+          </tr>
+          <tr>
+            <td th:text="${empId}">-</td>
+            <td th:text="${orgName}">-</td>
+            <td th:text="${deptName}">-</td>
+            <td th:text="${position}">-</td>
+            <td th:text="${empName}">-</td>
+          </tr>
+        </table>
+        <!-- 클릭(조회) 전엔 아예 렌더되지 않음 -->
+        <div id="report-wrapper" th:if="${showReport}" data-visible="true" class="report-card reveal">
+
+          <div class="chart-grid" th:if="${objJson != null and objJson != '{}'}">
+            <div class="card stagger">
+              <h5>종합 역량 분석</h5>
+              <!-- 추가: 레이더 래퍼 -->
+              <div class="radar-wrap">
+                <!-- 레전드: 상단 우측 고정 -->
+                <div class="legend legend-top">
+                  <span class="chip chip-me">내점수</span>
+                  <span class="chip chip-ev">평가구간별 평균</span>
+                </div>
+
+                <canvas id="radar"></canvas>
+              </div>
+              <div class="gauge">
+                <h5>평가구간 평균 점수 포지셔닝</h5>
+                <div class="barbox">
+                  <div class="bar" id="bar-ev">
+                    <div class="fill" style="width:0%"></div>
+                    <div class="marker" id="marker-me-ev">92</div>
+                    <!-- <span class="avg-pin" id="pin-avg-ev"></span> -->
+                  </div>
+                  <div class="scale"><span>0</span><span>50</span><span>100</span></div>
+                </div>
+              </div>
+
+            </div>
+            <div class="card stagger" style="height: 100%;">
+              <h5>영역별 응답 분포 및 AI 리포트</h5>
+
+              <!-- ✅ 좌/우 1:1 그리드 래퍼 추가 -->
+              <div class="area-split">
+                <!-- 좌측: 차트 고정 높이 -->
+                <div class="chart-fixed h-240">
+                  <canvas id="distChart"></canvas>
+
+                  <!-- (선택) 범례 칩: 차트 아래 계속 표시 -->
+                  <div id="distLegend" class="legend-vertical"
+                    style="margin-top:8px; gap:8px; display:flex; flex-wrap:wrap;">
+                    <span class="chip" style="background:#ffe1e1;">매우미흡</span>
+                    <span class="chip" style="background:#ffeedd;">미흡</span>
+                    <span class="chip" style="background:#eee;">보통</span>
+                    <span class="chip" style="background:#dfeaff;">우수</span>
+                    <span class="chip" style="background:#fde2f2;">매우우수</span>
+                  </div>
+                </div>
+
+                <!-- 우측: 영역 한줄 요약 -->
+                <div id="" class="area-summaries card stagger no-print" th:if="${stats != null and stats.areaSummary != null}">
+
+                  <div class="area" th:each="e : ${stats.areaSummary}">
+                    <span class="badge" th:text="${e.key}">섬김</span>
+                    <p class="areaSummary" th:text="${e.value}">
+                      섬김 영역 요약 문장
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 프린트 전용 AI 리포트 -->
+          <div class="print-ai-report"
+              th:if="${stats != null and stats.areaSummary != null}">
+            <h4>[영역별 응답 분포] AI 리포트</h4>
+            <div class="print-ai-body" style="display: flex !important; flex-direction: column !important; min-height: 0 !important;">
+              <div class="ai-card" th:each="e : ${stats.areaSummary}">
+                <div class="ai-card-head" >
+                  <span class="badge" th:text="${e.key}">섬김</span>
+                </div>
+                <p class="ai-card-text" th:text="${e.value}">
+                  영역 요약이 들어갑니다.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="summary-area">
+            <!-- 임계치 미달 -->
+            <div th:style="${'margin-top:12px;'}" th:if="${vm.overallResp <= 0}">
+              <p class="text-muted">응답 수가 부족합니다. (현재 [[${vm.overallResp}]]건, 최소 1건 필요)</p>
+            </div>
+
+            <!-- 임계치 이상 -->
+            <div id="ai-report-score" class="card stagger" th:if="${scoreReport != null}">
+              <h4 th:text="${scoreReport.title}">AI 리포트 (점수 기반)</h4>
+              <div class="summary-box" th:text="${scoreReport.summary}">요약</div>
+            </div>
+            <div id="ai-report" th:style="${'margin-top:12px;'}" class="card stagger" th:if="${vm.overallResp >= 1}">
+              <!-- 리포트(JSON) 있을 때 -->
+              <div th:if="${report != null}">
+                <h4 th:text="${report.title}">직원 평가 리포트</h4>
+                <div class="summary-box" th:text="${report.summary}">요약</div>
+                <div class="report-details">
+                  <div class="report-section" th:if="${report.strengths != null}">
+                    <span class="badge">핵심역량 3가지</span>
+                    <ul class="bullets">
+                      <li th:each="s : ${report.strengths}" th:text="${s}">강점</li>
+                    </ul>
+                  </div>
+
+                  <div class="report-section" th:if="${report.improvements != null}">
+                    <span class="badge">발전과제 3가지</span>
+                    <ul class="bullets">
+                      <li th:each="i : ${report.improvements}" th:text="${i}">개선</li>
+                    </ul>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- 리포트(JSON) 없으면 텍스트 폴백 -->
+              <div th:if="${report == null}">
+                <h4>직원 평가 리포트</h4>
+                <pre class="comment-summary" th:text="${vm.essaySummary}">요약 없음</pre>
+              </div>
+            </div>
+          </div>
+
+        </div>
+<table class="meta meta2">
+          <tr>
+            <th>평가점수</th>
+            <th rowspan="2">점수분포</th>
+            <th>매우우수</th>
+            <th>우수</th>
+            <th>보통</th>
+            <th>미흡</th>
+            <th>매우미흡</th>
+            <th>평균</th>
+            <th>응답</th>
+          </tr>
+          <tr>
+            <td th:text="${#numbers.formatDecimal(vm.overallScore100,1,1)}">0.0</td>
+            <td th:text="${#numbers.formatDecimal(vm.ratio['매우우수'],1,1)+'%'}">0%</td>
+            <td th:text="${#numbers.formatDecimal(vm.ratio['우수'],1,1)+'%'}">0%</td>
+            <td th:text="${#numbers.formatDecimal(vm.ratio['보통'],1,1)+'%'}">0%</td>
+            <td th:text="${#numbers.formatDecimal(vm.ratio['미흡'],1,1)+'%'}">0%</td>
+            <td th:text="${#numbers.formatDecimal(vm.ratio['매우미흡'],1,1)+'%'}">0%</td>
+            <td th:text="${#numbers.formatDecimal(vm.questionAvg,1,2)}">0.00</td>
+            <td th:text="${vm.overallResp}">0</td>
+          </tr>
+        </table>
+        <!-- 본문 표 -->
+        <div class="table-wrap">
+          <table class="tbl">
+            <colgroup>
+              <col class="col1" /> <!-- 평가영역 -->
+              <col class="col2" /> <!-- 문항번호 -->
+              <col class="col3" /> <!-- 매우우수 -->
+              <col class="col4" /> <!-- 우수 -->
+              <col class="col5" /> <!-- 보통 -->
+              <col class="col6" /> <!-- 미흡 -->
+              <col class="col7" /> <!-- 매우미흡 -->
+              <col class="col8" /> <!-- 평균 -->
+              <col class="col9" /> <!-- 응답 -->
+              <col class="col-question col10" /> <!-- 문항(평가요소) - 가변/넓게 -->
+            </colgroup>
+            <thead>
+              <tr>
+                <th>평가영역</th>
+                <th>문항번호</th>
+                <th class="hnum">매우우수</th>
+                <th class="hnum">우수</th>
+                <th class="hnum">보통</th>
+                <th class="hnum">미흡</th>
+                <th class="hnum">매우미흡</th>
+                <th class="hnum">평균</th>
+                <th class="hnum">응답</th>
+                <th class="col-question">문항(평가요소)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="r, iterStat : ${vm.rows}">
+                <td th:if="${r.groupFirst}" th:attr="rowspan=${r.groupSize}" class="area-cell">
+                  <div class="area-name" th:text="${r.area}">섬김</div>
+                  <div class="area-score" th:text="${'(' + (r.groupSize * (vm.typeCode == 'AA' ? 10 : 5)) + ')'}">
+                    (20)
+                  </div>
+                </td>
+                <!-- ↓↓↓ 각 칸에 ‘역할 클래스’와 라벨을 달아줍니다 ↓↓↓ -->
+                <td class="c-no" data-label="문항번호" th:text="${iterStat.index + 1}">1</td>
+                <td class="c-5 num" data-label="매우우수" th:text="${r.counts['매우우수']}">0</td>
+                <td class="c-4 num" data-label="우수" th:text="${r.counts['우수']}">0</td>
+                <td class="c-3 num" data-label="보통" th:text="${r.counts['보통']}">0</td>
+                <td class="c-2 num" data-label="미흡" th:text="${r.counts['미흡']}">0</td>
+                <td class="c-1 num" data-label="매우미흡" th:text="${r.counts['매우미흡']}">0</td>
+                <td class="c-avg num" data-label="평균"
+                  th:text="${#numbers.formatDecimal(vm.typeCode == 'AA' ? (r.avg * 2) : r.avg, 1, 2)}">0.00</td>
+                <td class="c-resp num" data-label="응답" th:text="${r.resp}">0</td>
+                <!-- 질문 텍스트: 모바일에선 카드의 맨 위로 보냅니다 -->
+                <td class="c-q col-question" data-label="문항(평가요소)" th:text="${r.label}">문항 텍스트</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(vm.rows)}">
+                <td colspan="10" class="muted center">해당 관계에 대한 평가 데이터가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        
+
+      </div>
+
+      
+    </div>
+
+  </main>
+  <!-- 스피너 오버레이 -->
+  <div id="spinner-overlay" style="display:none;">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p>잠시만 기다려주세요</p>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script th:replace="~{Include/afflayout :: scripts}"></script>
+  <script th:src="@{/js/aff/user/report.js(v=${#dates.createNow().time})}" defer></script>
+  <script id="kpiRadarData" type="application/json" th:if="${renderRadar}" th:utext="${radarJson}"></script>
+
+  <script id="chart-data" type="application/json" th:utext="${objJson != null ? objJson : '{}'}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.grade-tooltip').forEach(function (card) {
+      console.log(card);
+      const myGrade = card.getAttribute('data-my-grade');
+      console.log(myGrade);
+      if (!myGrade) return;
+      card.querySelectorAll('.tooltip-list li').forEach(function (li) {
+        if (li.getAttribute('data-grade') === myGrade) {
+          li.classList.add('is-mine');
+        }
+      });
+    });
+  });
+  document.getElementById('aiForm')?.addEventListener('submit', function (e) {
+  // GET 폼의 현재 선택값을 POST 폼 hidden에 복사
+  const yearSel = document.getElementById('yearSelect');
+  const evSel   = document.getElementById('evSelect');
+  document.getElementById('aiYear').value = yearSel?.value || '';
+  document.getElementById('aiEv').value   = evSel?.value   || '';
+});
+</script>
+</body>
+
+</html>

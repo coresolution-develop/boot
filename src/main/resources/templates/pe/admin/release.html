@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
+    <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://hr.sosyge.net/pe/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
+    <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
+    <title>관리자페이지</title>
+    <link rel="stylesheet" th:href="@{/css/css.css}">
+    <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+    <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+    <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+    <style>
+.bg-425c7b {
+	background: #425c7b;
+	color: #fff;
+}
+.bg-586f8b {
+	background: #586f8b;
+	color: #fff;
+}
+.bg-d9e9e9 {
+	background: #d9e9e9;
+}/* 
+.tr-bottom::before {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-bottom: 1px solid #cccccc;
+} */
+main {
+	width: 100%;
+	background: #f7f7f7;
+	margin-left: 240px;
+}
+.pd {
+	border-top: 11px solid #f7f7f7;
+	position: fixed;
+	top: 62px;
+	width: 100%;
+	z-index: 999;
+}
+td, th {/* 
+	border: 1px solid #d7d7d7; */
+	height: 45px;
+	text-align: center;/*
+	border-right: 1px solid #d7d7d7; 
+	border-bottom: 1px solid #d7d7d7; */
+	font-size: 12pt;
+}
+tbody td {
+	border: 1px solid #d7d7d7;
+	background: #fff;
+}
+.lasttd {/* 
+	border-right:1px solid #d7d7d7;
+	border-bottom:1px solid #d7d7d7; */
+}
+
+.scroll-container {
+	padding: 10px; 
+}
+.scrolltable {
+	width: 100%;
+	border: 2px solid #cccccc;
+	color: #222222;
+}
+.sticky-top {
+	position: -webkit-sticky;
+    position: sticky;
+    top: 72px;
+    z-index: 2; /* 높은 z-index 값을 설정 */
+}
+.sticky-top::before {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-bottom: 1px solid #d7d7d7;
+    border-right: 1px solid #d7d7d7;
+}
+.sticky-top:nth-child(1)::before {
+	border-right: 1px solid #cccccc;	
+}
+.sticky-top:nth-child(2)::before {
+	border-left: 1px solid #cccccc;	
+}
+.sticky-middle {
+	position: -webkit-sticky;
+    position: sticky;
+    top: 117px;
+    z-index: 2;
+}
+.sticky-middle::before {
+	content: "";
+	position: absolute;
+	top: -1px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-top: 1px solid #d7d7d7;
+    border-right: 1px solid #d7d7d7;
+}
+.sticky-middle:nth-child(4)::before {
+	border-right: 1px solid #cccccc;
+}
+.sticky-bottom {
+	position: -webkit-sticky;
+    position: sticky;
+    top: 162px;
+    z-index: 2;
+    color: #222222;
+}
+.sticky-bottom::before {
+	content: "";
+	position: absolute;
+	top: 0px;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	border-top: 2px solid #d7d7d7;
+    border-right: 1px solid #d7d7d7;
+	border-bottom: 2px solid #cccccc;
+}
+.sticky-bottom:nth-child(2)::before {
+	border-left: 1px solid #cccccc;
+}
+tbody th, tbody td {
+    position: relative; /* 상대 위치 설정 */
+    z-index: 1; /* 낮은 z-index 값을 설정 */
+}
+tbody td::before {
+    border-right: 1px solid #d7d7d7;
+	border-bottom: 1px solid #d7d7d7;
+}
+.scrolltable > thead{
+	color: #fff;
+}
+.scrolltable td:nth-child(4) {
+	border-right: 2px solid #ccc;
+}
+.nav__link {
+	display: flex;
+	align-items: center;
+	height: 64px;
+	padding-left: 25px;
+	border-left: 4px solid #2f425a;
+	cursor:pointer;
+}
+.active {
+	border-left: 4px solid #00bec2;
+	background: #293a4f;
+	color: #fff;
+	padding-left: 30px;
+	
+}
+.bg-gray {
+	background: #eaeaea;
+}
+.infotable {
+	width: 100%;
+}
+.infotable > thead > tr > th {
+	background: #425c7b;
+	color: #fff;
+	border: 1px solid #d7d7d7;
+	border-bottom: 2px solid #ccc;
+}
+.pointer {
+	cursor: pointer;
+}
+.info-sticky-top::before {
+	content: "";
+	border-bottom: 2px solid #ccc;
+}
+.link-btn {
+	cursor: pointer;
+	width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+.btn-css {
+	width: 90%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border: 1px solid #ddd;
+	height: 40px;
+    cursor: pointer;
+	border-radius: 5px;
+	box-shadow: 0 1px 1px rgba(0,0,0,0.12), 0 1px 1px rgba(0,0,0,0.24);
+	-webkit-transition: all 0.15s ease-in-out;
+	-moz-transition: all 0.15s ease-in-out;
+	-ms-transition: all 0.15s ease-in-out;
+	-o-transition: all 0.15s ease-in-out;
+	transition: all 0.15s ease-in-out;
+	background: #fafafa;
+}
+.btn-css:hover {
+	-webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	-moz-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	-ms-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	-o-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.19), 0 2px 3px rgba(0, 0, 0, 0.23);
+}
+.icon-image {
+	margin-right: 10px;
+}
+.main-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px;
+}
+.card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+}
+.muted {
+    color: #666;
+    font-size: 13px;
+}
+.card {
+    animation: card-rise .32s ease-out both;
+}
+    </style>
+</head>
+<body>
+    <div th:replace="~{Include/layout :: header}"></div>
+    <div th:replace="~{Include/layout :: nav_section}"></div>
+    <div class="main-content">
+        <div class="main-inner">
+            <section class="card">
+                <h2>결과 공개 설정</h2>
+
+                <div style="max-width:760px;">
+                <div style="display:flex; gap:10px; align-items:center; margin:10px 0;">
+                    <select class="custom" id="year" style="margin: 0;">
+                        <option th:each="y : ${#numbers.sequence(2023, currentYear)}"
+                        th:value="${y}" th:text="${y}"
+                        th:selected="${y} == ${year}"></option>
+                    </select>
+
+                    <span id="state-badge" class="btn-css" style="padding:6px 10px; min-width:120px;">상태: -</span>
+                </div>
+
+                <form id="gate-form" class="infotable" style="padding:12px;">
+                    <div style="display:grid; grid-template-columns:160px 1fr; gap:10px; align-items:center;">
+                    <label for="openAt"><b>공개 시작</b></label>
+                    <input type="datetime-local" id="openAt" name="openAt" required>
+
+                    <label for="closeAt">공개 종료(선택)</label>
+                    <input type="datetime-local" id="closeAt" name="closeAt">
+
+                    <label for="enabled">사용 여부</label>
+                    <input type="checkbox" id="enabled" name="enabled" checked>
+                    </div>
+
+                    <div style="margin-top:12px; display:flex; gap:8px;">
+                    <button type="submit" class="btn-css" style="height:42px; padding:0 16px;">저장</button>
+                    <button type="button" id="reload" class="btn-css" style="height:42px; padding:0 16px;">새로고침</button>
+                    </div>
+                </form>
+
+                <p style="margin-top:10px; color:#666;">
+                    * 모든 시각은 <b>Asia/Seoul</b> 기준으로 저장/비교됩니다.
+                </p>
+                </div>
+            </section>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+	<div th:replace="~{Include/layout :: scripts}"></div>
+    <script th:src="@{/js/admin/admin.js}"></script>
+<script>
+(function(){
+  const $ = (s, r=document)=>r.querySelector(s);
+  const yearSel = $('#year');
+  const openAt  = $('#openAt');
+  const closeAt = $('#closeAt');
+  const enabled = $('#enabled');
+  const badge   = $('#state-badge');
+  const form    = $('#gate-form');
+  const reload  = $('#reload');
+
+  const setBadge = (openNow) => {
+    badge.textContent = '상태: ' + (openNow ? '공개중' : '비공개');
+    badge.style.background = openNow ? '#e6fff2' : '#fff5f5';
+    badge.style.border = '1px solid ' + (openNow ? '#22c55e' : '#e11d48');
+    badge.style.color = openNow ? '#166534' : '#9f1239';
+  };
+
+  const toLocalInputValue = (isoOrNull) => {
+    if(!isoOrNull) return '';
+    // 서버에서 LocalDateTime 직렬화가 '2025-12-20T09:00:00' 라면 그대로 사용
+    // 초 단위 제거
+    return (isoOrNull.length >= 16) ? isoOrNull.substring(0,16) : isoOrNull;
+  };
+
+  async function fetchGate(){
+    const y = yearSel.value;
+    const res = await fetch(`/admin/release/api/gate?year=${y}`, {credentials:'same-origin'});
+    if(!res.ok){ alert('설정 조회 실패'); return; }
+    const js = await res.json();
+    if(!js.exists){
+      openAt.value = ''; closeAt.value = ''; enabled.checked = true;
+      setBadge(false);
+      return;
+    }
+    const d = js.data;
+    openAt.value  = toLocalInputValue(d.openAt);
+    closeAt.value = toLocalInputValue(d.closeAt);
+    enabled.checked = !!d.enabled;
+    setBadge(!!js.openNow);
+  }
+
+  async function saveGate(e){
+    e.preventDefault();
+    const y  = yearSel.value;
+    const oa = openAt.value;   // 'yyyy-MM-ddTHH:mm'
+    const ca = closeAt.value;  // or ''
+    if(!oa){ alert('공개 시작 시각을 입력하세요.'); return; }
+
+    const formData = new URLSearchParams();
+    formData.append('year', y);
+    formData.append('openAt', oa);
+    if(ca) formData.append('closeAt', ca);
+    formData.append('enabled', enabled.checked ? 'true' : 'false');
+
+    const res = await fetch('/admin/release/api/gate', {
+      method:'POST',
+      headers: {'Content-Type':'application/x-www-form-urlencoded'},
+      body: formData.toString(),
+      credentials:'same-origin'
+    });
+    if(!res.ok){ alert('저장 실패'); return; }
+    const js = await res.json();
+    if(js.ok){
+      alert('저장되었습니다.');
+      fetchGate();
+    } else {
+      alert('저장 실패');
+    }
+  }
+
+  yearSel.addEventListener('change', fetchGate);
+  form.addEventListener('submit', saveGate);
+  reload.addEventListener('click', fetchGate);
+
+  // 초기 로드
+  fetchGate();
+})();
+</script>
+  <!-- 스피너 오버레이 -->
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container">
+    <div class="spinner"></div>
+    <p>잠시만 기다려주세요</p>
+  </div>
+</div>
+</body>
+</html>

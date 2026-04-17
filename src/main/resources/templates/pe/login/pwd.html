@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1" >
+    <title>코어솔루션 인사평가 시스템</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/css.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/demopwdcss.css?ver=0226}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/alertcss.css?ver=0226}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/pwdmediacss.css?ver=0226}">
+    <link rel="stylesheet" type="text/css" th:href="@{/css/mobileheadercss.css?ver=0227}">
+    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
+    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+</head>
+<body>
+    
+<form id="frm" th:action="@{/pwdAction}" method="post">
+    <input type="hidden" name="idx" id="idx" th:value="${idx}">
+	<section>
+        <div class="login">
+            <div class="line"></div>
+            <div class="login-head">
+                <div class="head-img-area" onclick="homego()">
+                    <img src="/icon/arrow2.png">
+                </div>
+                <div class="head-span-area">
+                    <span class="bold">비밀번호 설정</span>
+                </div>
+            </div>
+            
+            <ul class="normal">
+                <li><input type="text" name="id" id="id" placeholder="사번" title="사번" readonly="readonly" th:value="${id}"></li>
+                <li><input type="text" name="name" id="name" placeholder="이름" title="이름" readonly="readonly" th:value="${name}"></li>
+                <li><input type="password" name="pwd" id="pwd" placeholder="비밀번호" title="비밀번호" autofocus="autofocus"></li>
+                <li><input type="password" name="pwd2" id="pwd2" placeholder="비밀번호확인" title="비밀번호확인"></li>
+                <li><button class="bold" type="button" id="btn" value="">비밀번호 설정</button></li>			
+            </ul>
+        </div>
+	</section>
+	
+	<div class="modal normal">
+		<div class="modal_body">
+			<div>
+				<img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+				<div class="menu_msg">text</div>
+				<div class="modal_footer">
+					<div class="btn modal_btn" onclick="closePopup()">
+						확인
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal2 normal">
+        <div class="modal_body2">
+            <div>
+                <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                <div class="menu_msg2">text</div>
+                <div class="modal_footer2">
+                    <div class="btn modal_btn2" onclick="closePopup2()">
+                        확인
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal3 normal">
+        <div class="modal_body3">
+            <div>
+                <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                <div class="menu_msg3">text</div>
+                <div class="modal_footer3">
+                    <div class="btn modal_btn2" onclick="modal_insert()">
+                        확인
+                    </div>
+                    <div class="btn pink_btn2" onclick="closePopup3()">
+                        취소
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal4 normal">
+        <div class="modal_body4">
+            <div>
+                <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
+                <div class="menu_msg4">text</div>
+                <div class="modal_footer4">
+                    <div class="btn modal_btn2" onclick="modal_insert()">
+                        확인
+                    </div>
+                    <div class="btn pink_btn2" onclick="closePopup4()">
+                        취소
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+    <script th:src="@{/js/login/pwd.js}"></script>
+
+</body>
+</html>

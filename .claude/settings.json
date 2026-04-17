@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileJava)",
+      "Bash(./gradlew bootRun)",
+      "Bash(lsof -ti:9090)",
+      "Bash(xargs kill:*)",
+      "Read(//tmp/**)",
+      "Read(//private/tmp/**)",
+      "Bash(git config:*)"
+    ],
+    "additionalDirectories": [
+      "/private/tmp"
+    ]
+  }
+}

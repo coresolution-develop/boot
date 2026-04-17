@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+  <meta charset="UTF-8">
+  <title>직원 데이터 업로드 | 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <style>
+/* ── 레이아웃 ── */
+.main-inner { max-width: 960px; margin: 0 auto; padding: 24px 20px; }
+
+/* ── 카드 ── */
+.card {
+  background: #fff; border: 1px solid #e5e9ef; border-radius: 12px;
+  padding: 24px 28px; margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.card-title {
+  font-size: 17px; font-weight: 700; color: #1e293b;
+  margin: 0 0 6px; display: flex; align-items: center; gap: 8px;
+}
+.card-title .icon { font-size: 18px; }
+.card-sub { font-size: 13px; color: #64748b; margin: 0 0 18px; }
+
+/* ── 안내 리스트 ── */
+.guide-list { margin: 0; padding: 0; list-style: none; }
+.guide-list li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; color: #475569; padding: 5px 0;
+  border-bottom: 1px dashed #f1f5f9;
+}
+.guide-list li:last-child { border-bottom: none; }
+.guide-list .num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: #1b304a; color: #fff; font-size: 11px; font-weight: 700;
+  flex-shrink: 0; margin-top: 1px;
+}
+.guide-list .warn { color: #ef4444; font-weight: 600; }
+
+/* ── 컬럼 설명표 ── */
+.col-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+.col-table th {
+  background: #1b304a; color: #fff; padding: 7px 10px;
+  text-align: center; font-weight: 600; border: 1px solid #2d4a6a;
+}
+.col-table td {
+  padding: 6px 10px; border: 1px solid #e5e9ef;
+  vertical-align: middle; color: #374151;
+}
+.col-table tr:nth-child(even) td { background: #f8fafc; }
+.col-table .required { color: #ef4444; font-weight: 700; font-size: 11px; }
+.col-table .optional { color: #64748b; font-size: 11px; }
+.col-table .bool-col { text-align: center; }
+
+/* ── 액션 영역 ── */
+.action-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 4px;
+}
+@media (max-width: 680px) { .action-grid { grid-template-columns: 1fr; } }
+
+.action-box {
+  border: 1px solid #e5e9ef; border-radius: 10px; padding: 18px 20px;
+}
+.action-box-title {
+  font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.action-box-desc { font-size: 12px; color: #64748b; margin: 0 0 14px; }
+
+/* ── 드래그앤드롭 영역 ── */
+.drop-zone {
+  border: 2px dashed #cbd5e1; border-radius: 8px;
+  padding: 20px; text-align: center; cursor: pointer;
+  transition: border-color .18s, background .18s;
+  background: #f8fafc;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: #3b82f6; background: #eff6ff;
+}
+.drop-zone input[type=file] { display: none; }
+.drop-zone-icon { font-size: 28px; margin-bottom: 6px; }
+.drop-zone-text { font-size: 13px; color: #64748b; }
+.drop-zone-text strong { color: #3b82f6; }
+.file-selected { font-size: 12px; color: #1e293b; margin-top: 6px; font-weight: 600; }
+
+/* ── 버튼 ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 38px; padding: 0 18px; border-radius: 7px; font-size: 13px;
+  font-weight: 600; cursor: pointer; border: 1px solid; width: 100%;
+  margin-top: 10px; transition: filter .12s;
+}
+.btn-download { background: #1b304a; border-color: #1b304a; color: #fff; }
+.btn-download:hover { filter: brightness(1.12); }
+.btn-upload  { background: #2563eb; border-color: #2563eb; color: #fff; }
+.btn-upload:hover  { filter: brightness(1.08); }
+.btn-reset   { background: #fff; border-color: #fca5a5; color: #dc2626; }
+.btn-reset:hover   { background: #fef2f2; }
+
+/* ── 경고 박스 ── */
+.warn-box {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px;
+  padding: 12px 14px; margin-top: 16px; font-size: 13px; color: #92400e;
+}
+.warn-box .w-icon { font-size: 18px; flex-shrink: 0; }
+
+/* ── 카드 애니메이션 ── */
+@keyframes card-rise { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.card { opacity:0; transform:translateY(10px); }
+.page-ready .card { animation: card-rise .28s ease-out both; }
+.page-ready .card:nth-child(2) { animation-delay:.05s; }
+.page-ready .card:nth-child(3) { animation-delay:.10s; }
+@media (prefers-reduced-motion:reduce) { .card,.page-ready .card { animation:none; opacity:1; transform:none; } }
+
+/* ── 부서 섹션 구분선 ── */
+.section-divider {
+  display: flex; align-items: center; gap: 12px; margin: 8px 0 20px;
+  font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: .06em;
+}
+.section-divider::before, .section-divider::after {
+  content: ''; flex: 1; height: 1px; background: #e5e9ef;
+}
+  </style>
+</head>
+<body>
+<div th:replace="~{Include/layout :: header}"></div>
+<div th:replace="~{Include/layout :: nav_section}"></div>
+
+<div class="main-content">
+<div class="main-inner">
+
+  <!-- ────────────────── 부서 업로드 ────────────────── -->
+  <div class="card">
+    <p class="card-title"><span class="icon">🏥</span> 부서 업로드</p>
+    <p class="card-sub">직원 데이터 업로드 전에 반드시 부서를 먼저 등록해주세요.</p>
+
+    <ul class="guide-list">
+      <li><span class="num">1</span>아래 <strong>양식 다운로드</strong>를 눌러 템플릿을 받은 후 부서명·부서코드를 입력하세요.</li>
+      <li><span class="num">2</span>B3 셀부터 데이터를 작성하고, 샘플 행(파란 배경)은 삭제 후 업로드하세요.</li>
+      <li><span class="num">3</span>업로드 전 미리보기 화면에서 내용을 확인한 뒤 확정하세요.</li>
+    </ul>
+
+    <div class="action-grid" style="margin-top:16px;">
+      <!-- 양식 다운로드 -->
+      <div class="action-box">
+        <p class="action-box-title">📥 양식 다운로드</p>
+        <p class="action-box-desc">헤더·샘플 데이터가 포함된 엑셀 파일을 다운로드합니다.</p>
+        <form th:action="@{/excel/subtemplate}" method="get">
+          <button type="submit" class="btn btn-download">⬇ 부서 양식 다운로드</button>
+        </form>
+      </div>
+
+      <!-- 파일 업로드 -->
+      <div class="action-box">
+        <p class="action-box-title">📤 파일 업로드</p>
+        <p class="action-box-desc">작성 완료된 부서 파일을 선택하거나 드래그해주세요.</p>
+        <form id="subUploadForm" th:action="@{/excel/subupload}" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="year" th:value="${year}"/>
+          <div class="drop-zone" id="subDropZone">
+            <div class="drop-zone-icon">📂</div>
+            <div class="drop-zone-text">파일을 <strong>드래그</strong>하거나 클릭하세요<br><span style="font-size:11px;">.xlsx / .xls 파일 허용</span></div>
+            <div class="file-selected" id="subFileName"></div>
+            <input type="file" name="file" id="subFileInput" accept=".xlsx,.xls">
+          </div>
+          <button type="submit" class="btn btn-upload" id="subSubmitBtn">⬆ 부서 업로드</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────── 직원 업로드 ────────────────── -->
+  <div class="card">
+    <p class="card-title"><span class="icon">👥</span> 직원 데이터 업로드</p>
+    <p class="card-sub">부서 등록 완료 후 직원 데이터를 업로드하세요.</p>
+
+    <ul class="guide-list">
+      <li><span class="num">1</span>아래 <strong>양식 다운로드</strong>를 눌러 직원 템플릿을 받아주세요.</li>
+      <li><span class="num">2</span><strong>B3 셀부터</strong> 데이터를 작성하고, 샘플 행(파란 배경)은 삭제 후 업로드하세요.</li>
+      <li><span class="num">3</span>경혁팀장~평가제외 열은 <strong>0(해당없음) 또는 1(해당)</strong>만 입력하세요.</li>
+      <li><span class="num">4</span><strong>[Q열] 부서코드</strong>를 직접 입력하면 부서가 자동 등록됩니다 (부서 업로드 생략 가능).</li>
+      <li><span class="num">5</span>업로드 전 미리보기에서 오류·경고를 확인한 뒤 확정하세요.</li>
+      <li><span class="num">6</span><span class="warn">데이터 초기화</span>는 복구 불가능합니다. 신중하게 사용하세요.</li>
+    </ul>
+
+    <!-- 컬럼 설명 테이블 -->
+    <details style="margin-top:14px;">
+      <summary style="cursor:pointer; font-size:13px; font-weight:600; color:#1e293b; padding:6px 0;">
+        📋 컬럼 구조 보기 / 접기
+      </summary>
+      <div style="overflow-x:auto; margin-top:8px;">
+        <table class="col-table">
+          <thead>
+            <tr>
+              <th>열</th><th>컬럼명</th><th>필수</th><th>형식 / 설명</th><th>예시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="bool-col">B</td><td>기관명</td><td class="required required">필수</td><td>소속 기관명</td><td>효사랑전주요양병원</td></tr>
+            <tr><td class="bool-col">C</td><td>소속기관</td><td class="required">필수</td><td>하위 소속기관명</td><td>사랑모아</td></tr>
+            <tr><td class="bool-col">D</td><td>부서명</td><td class="required">필수</td><td>등록된 부서명 또는 Q열 부서코드 사용</td><td>간호부</td></tr>
+            <tr><td class="bool-col">E</td><td>사원번호</td><td class="required">필수</td><td>고유 사번 (중복 불가)</td><td>100001</td></tr>
+            <tr><td class="bool-col">F</td><td>직책</td><td class="optional">선택</td><td>직급·직책</td><td>간호사</td></tr>
+            <tr><td class="bool-col">G</td><td>이름</td><td class="required">필수</td><td>성명</td><td>홍길동</td></tr>
+            <tr><td class="bool-col">H</td><td>입사일</td><td class="optional">선택</td><td>날짜 셀 또는 yyyy-MM-dd</td><td>2022-03-01</td></tr>
+            <tr><td class="bool-col">I</td><td>퇴사일</td><td class="optional">선택</td><td>퇴사하지 않았으면 공백</td><td>2025-12-31</td></tr>
+            <tr><td class="bool-col">J</td><td>핸드폰번호</td><td class="optional">선택</td><td>010-XXXX-XXXX</td><td>010-1234-5678</td></tr>
+            <tr><td class="bool-col">K</td><td>경혁팀장여부</td><td class="optional">선택</td><td class="bool-col">0 또는 1</td><td class="bool-col">1</td></tr>
+            <tr><td class="bool-col">L</td><td>경혁팀원여부</td><td class="optional">선택</td><td class="bool-col">0 또는 1</td><td class="bool-col">1</td></tr>
+            <tr><td class="bool-col">M</td><td>부서장여부</td><td class="optional">선택</td><td class="bool-col">0 또는 1</td><td class="bool-col">0</td></tr>
+            <tr><td class="bool-col">N</td><td>1인부서여부</td><td class="optional">선택</td><td class="bool-col">0 또는 1</td><td class="bool-col">0</td></tr>
+            <tr><td class="bool-col">O</td><td>의료리더여부</td><td class="optional">선택</td><td class="bool-col">0 또는 1</td><td class="bool-col">0</td></tr>
+            <tr><td class="bool-col">P</td><td>평가제외여부</td><td class="optional">선택</td><td class="bool-col">1=제외, 0=포함</td><td class="bool-col">0</td></tr>
+            <tr style="background:#f0fdf4;"><td class="bool-col">Q</td><td>[선택] 부서코드</td><td class="optional">선택</td><td>입력 시 부서 자동 등록 (부서 업로드 생략 가능)</td><td>N01</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <div class="action-grid" style="margin-top:20px;">
+      <!-- 양식 다운로드 -->
+      <div class="action-box">
+        <p class="action-box-title">📥 양식 다운로드</p>
+        <p class="action-box-desc">스타일·샘플·드롭다운 검증이 포함된 템플릿을 다운로드합니다.</p>
+        <form th:action="@{/excel/downloadTemplate}" method="get">
+          <input type="hidden" name="year" th:value="${year}"/>
+          <button type="submit" class="btn btn-download">⬇ 직원 양식 다운로드</button>
+        </form>
+      </div>
+
+      <!-- 파일 업로드 -->
+      <div class="action-box">
+        <p class="action-box-title">📤 파일 업로드</p>
+        <p class="action-box-desc">작성 완료된 직원 파일을 선택하거나 드래그해주세요.</p>
+        <form id="uploadForm" th:action="@{/excel/upload}" method="post" enctype="multipart/form-data">
+          <input type="hidden" name="year" th:value="${year}"/>
+          <div class="drop-zone" id="dropZone">
+            <div class="drop-zone-icon">📂</div>
+            <div class="drop-zone-text">파일을 <strong>드래그</strong>하거나 클릭하세요<br><span style="font-size:11px;">.xlsx / .xls 파일 허용</span></div>
+            <div class="file-selected" id="fileName"></div>
+            <input type="file" name="file" id="fileInput" accept=".xlsx,.xls">
+          </div>
+          <button type="submit" class="btn btn-upload" id="submitBtn">⬆ 직원 업로드</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 데이터 초기화 -->
+    <div class="warn-box">
+      <span class="w-icon">⚠️</span>
+      <div>
+        <strong>데이터 초기화</strong> — 현재 연도의 직원·역할 데이터를 모두 삭제합니다. 복구가 불가능합니다.<br>
+        <form th:action="@{/excel/reset}" method="post" style="margin-top:8px;"
+              onsubmit="return confirm('정말 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.');">
+          <input type="hidden" name="year" th:value="${year}"/>
+          <button type="submit" class="btn btn-reset" style="width:auto; padding:0 20px;">🗑 데이터 초기화</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main-inner -->
+</div><!-- /main-content -->
+
+<div id="spinner-overlay" style="display:none;">
+  <div class="spinner-container"><div class="spinner"></div><p>잠시만 기다려주세요</p></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-latest.min.js"></script>
+<div th:replace="~{Include/layout :: scripts}"></div>
+<script th:src="@{/js/admin/admin.js}"></script>
+<script>
+/* 드래그앤드롭 공통 헬퍼 */
+function initDropZone(zoneId, inputId, nameId, formId, submitId) {
+  const zone    = document.getElementById(zoneId);
+  const input   = document.getElementById(inputId);
+  const nameEl  = document.getElementById(nameId);
+  const submit  = document.getElementById(submitId);
+
+  zone.addEventListener('click', () => input.click());
+
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) setFile(file);
+  });
+
+  input.addEventListener('change', () => {
+    if (input.files[0]) setFile(input.files[0]);
+  });
+
+  function setFile(file) {
+    // DataTransfer를 통해 input에 파일 적용
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    input.files = dt.files;
+    nameEl.textContent = '✅ ' + file.name;
+    zone.style.borderColor = '#3b82f6';
+  }
+
+  submit.addEventListener('click', () => {
+    if (!input.files || input.files.length === 0) {
+      alert('파일을 선택해주세요.');
+      return false;
+    }
+    document.getElementById('spinner-overlay').style.display = 'flex';
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.add('page-ready');
+  initDropZone('dropZone',    'fileInput',    'fileName',    'uploadForm',    'submitBtn');
+  initDropZone('subDropZone', 'subFileInput', 'subFileName', 'subUploadForm', 'subSubmitBtn');
+});
+</script>
+</body>
+</html>
