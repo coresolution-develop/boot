@@ -451,7 +451,7 @@ public class ExcelContoller {
 
         try {
             // 👉 리스트와 연도를 함께 넘깁니다.
-            poiService.saveDepartments(subList, year);
+            poiService.saveDepartments(subList, year, null); // 슈퍼 어드민: institution_id = null
             model.addAttribute("message", "부서 정보를 성공적으로 저장했습니다.");
             // 세션에 담긴 리스트는 비워 줘도 좋습니다.
             session.removeAttribute("subList");

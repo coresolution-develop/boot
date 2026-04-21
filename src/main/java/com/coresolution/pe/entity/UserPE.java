@@ -36,6 +36,9 @@ public class UserPE {
     /** user_roles 테이블에서 GROUP_CONCAT 으로 가져온 역할 CSV (예: "SUB_HEAD,TEAM_MEMBER") */
     private String rolesCsv;
 
+    /** 평가 대상 수 (조회 전용) */
+    private int targetCount;
+
     public boolean isPasswordSet() {
         // DB에 "null" 문자열이 들어간 경우까지 방어
         return this.pwd != null

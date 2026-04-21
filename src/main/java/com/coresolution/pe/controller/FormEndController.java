@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.coresolution.pe.entity.EndLetter;
 import com.coresolution.pe.entity.UserPE;
-import com.coresolution.pe.mapper.LoginMapper;
+import com.coresolution.pe.mapper.EndLetterMapper;
 import com.coresolution.pe.service.PeService;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class FormEndController {
 
     @Autowired
     private PeService pe;
+    private final EndLetterMapper endLetterMapper;
     @Value("${app.exhibition.mask-personal:false}")
     private boolean exhibitionMaskPersonal;
 
@@ -63,12 +65,20 @@ public class FormEndController {
         if (target == null)
             throw new AccessDeniedException("대상자 정보를 찾을 수 없습니다.");
 
+        // 완료 편지 (없으면 null → 템플릿에서 기본 문구 표시)
+        EndLetter letter = null;
+        try {
+            letter = endLetterMapper.findByYearAndInstitution(
+                    Integer.parseInt(year), userInfo.getCName());
+        } catch (Exception ignored) { /* 테이블 미존재 등 예외 무시 */ }
+
         // 모델 바인딩
         model.addAttribute("userInfo", userInfo);
         model.addAttribute("target", target);
         model.addAttribute("year", year);
         model.addAttribute("evaluatorId", pathEvalId);
         model.addAttribute("maskPersonalInfo", exhibitionMaskPersonal);
+        model.addAttribute("letter", letter);
 
         return "pe/user/formend"; // 위에서 만든 템플릿 경로
     }

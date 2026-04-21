@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/inst-admin-layout :: head('직원 상세')}"></head>
+<body>
+<div th:replace="~{Include/inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:860px; margin:0 auto; padding:20px;">
+<style>
+/* ── 카드 ── */
+.card { background:#fff; border:1px solid #e5e9ef; border-radius:12px;
+        padding:24px 28px; margin-bottom:16px;
+        box-shadow:0 2px 8px rgba(0,0,0,.04);
+        opacity:0; transform:translateY(10px); }
+@keyframes card-rise { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+.page-ready .card { animation:card-rise .28s ease-out both; }
+.page-ready .card:nth-child(2) { animation-delay:.05s; }
+.page-ready .card:nth-child(3) { animation-delay:.10s; }
+.page-ready .card:nth-child(4) { animation-delay:.15s; }
+@media(prefers-reduced-motion:reduce){.card,.page-ready .card{animation:none;opacity:1;transform:none;}}
+
+.card-title { font-size:16px; font-weight:700; color:#1e293b; margin:0 0 16px;
+              display:flex; align-items:center; gap:8px; padding-bottom:12px;
+              border-bottom:1px solid #f1f5f9; }
+
+/* ── 알림 배너 ── */
+.alert { display:flex; align-items:flex-start; gap:10px; border-radius:8px;
+         padding:12px 14px; margin-bottom:16px; font-size:13px; }
+.alert-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+.alert-error   { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+
+/* ── 정보 그리드 ── */
+.info-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:600px){ .info-grid{ grid-template-columns:1fr; } }
+.info-row { display:flex; flex-direction:column; gap:4px; }
+.info-label { font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.04em; }
+.info-value { font-size:14px; color:#1e293b; font-weight:500; }
+.info-value.mono { font-family:monospace; font-size:13px; color:#475569; }
+
+/* ── 뱃지 ── */
+.badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px;
+         font-size:12px; font-weight:600; white-space:nowrap; }
+.badge-eval-ok  { background:#dcfce7; color:#166534; }
+.badge-eval-ex  { background:#fee2e2; color:#991b1b; }
+.badge-pwd-ok   { background:#dcfce7; color:#166534; }
+.badge-pwd-none { background:#fee2e2; color:#991b1b; }
+
+/* ── 역할 체크박스 그리드 ── */
+.role-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:10px; margin-top:4px; }
+.role-item { display:flex; align-items:center; gap:10px;
+             border:1px solid #e5e9ef; border-radius:8px; padding:10px 14px;
+             cursor:pointer; transition:border-color .15s, background .15s; }
+.role-item:hover { border-color:#3b82f6; background:#f0f6ff; }
+.role-item input[type=checkbox] { width:16px; height:16px; accent-color:#1b304a; flex-shrink:0; }
+.role-item input[type=checkbox]:checked ~ .role-label { color:#1b304a; font-weight:700; }
+.role-item.is-checked { border-color:#1b304a; background:#f0f6ff; }
+.role-label { font-size:13px; color:#374151; line-height:1.3; }
+.role-desc  { font-size:11px; color:#94a3b8; }
+
+/* ── 버튼 ── */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:6px;
+       height:36px; padding:0 16px; border-radius:7px; font-size:13px;
+       font-weight:600; cursor:pointer; border:1px solid; transition:filter .12s; }
+.btn-primary { background:#1b304a; border-color:#1b304a; color:#fff; }
+.btn-primary:hover { filter:brightness(1.12); }
+.btn-danger  { background:#fff; border-color:#fca5a5; color:#dc2626; }
+.btn-danger:hover  { background:#fef2f2; }
+.btn-warn    { background:#fff7ed; border-color:#fed7aa; color:#c2410c; }
+.btn-warn:hover    { background:#ffedd5; }
+.btn-back    { background:#f8fafc; border-color:#e2e8f0; color:#374151; }
+.btn-back:hover    { background:#f1f5f9; }
+
+/* ── 구분선 ── */
+.divider { height:1px; background:#f1f5f9; margin:16px 0; }
+
+/* ── 경고 박스 ── */
+.warn-inline { background:#fff7ed; border:1px solid #fed7aa; border-radius:8px;
+               padding:10px 14px; font-size:12px; color:#92400e; margin-top:12px; }
+</style>
+
+  <!-- 뒤로가기 + 제목 -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+    <a th:href="@{/pe/inst-admin/userList(year=${year})}" class="btn btn-back">← 목록</a>
+    <h1 style="font-size:20px; font-weight:700; color:#1e293b; margin:0;"
+        th:text="${user.name} + ' 님 상세'">직원명 상세</h1>
+  </div>
+
+  <!-- 플래시 알림 -->
+  <div th:if="${success}" class="alert alert-success">
+    <span th:text="${success}"></span>
+  </div>
+  <div th:if="${error}" class="alert alert-error">
+    <span th:text="${error}"></span>
+  </div>
+
+  <!-- ① 기본 정보 카드 -->
+  <div class="card">
+    <p class="card-title">기본 정보</p>
+
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">이름</span>
+        <span class="info-value" th:text="${user.name}">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">사번</span>
+        <span class="info-value mono" th:text="${user.id}">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">부서</span>
+        <span class="info-value" th:text="${user.subName ?: '-'}">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">직책</span>
+        <span class="info-value" th:text="${user.position ?: '-'}">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">기관</span>
+        <span class="info-value" th:text="${user.cName ?: '-'}">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">연락처</span>
+        <span class="info-value" th:text="${user.phone ?: '-'}">-</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">평가 포함 여부</span>
+        <span th:if="${user.delYn == 'Y'}"  class="badge badge-eval-ex">평가 제외</span>
+        <span th:unless="${user.delYn == 'Y'}" class="badge badge-eval-ok">평가 포함</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">비밀번호</span>
+        <span th:if="${user.passwordSet}"   class="badge badge-pwd-ok">설정됨</span>
+        <span th:unless="${user.passwordSet}" class="badge badge-pwd-none">미설정</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 평가제외 설정 카드 -->
+  <div class="card">
+    <p class="card-title">평가제외 설정</p>
+
+    <p style="font-size:13px; color:#64748b; margin:0 0 14px;">
+      평가 제외로 설정하면 해당 직원은 평가 대상에서 빠집니다. (퇴직자, 육아휴직자 등)
+    </p>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+      <!-- 평가 포함으로 변경 -->
+      <form th:action="@{/pe/inst-admin/userDetail/{idx}/delYn(idx=${user.idx})}" method="post">
+        <input type="hidden" name="year"  th:value="${year}"/>
+        <input type="hidden" name="delYn" value="N"/>
+        <button type="submit" class="btn btn-primary"
+                th:disabled="${user.delYn != 'Y'}"
+                th:style="${user.delYn != 'Y'} ? 'opacity:.5; cursor:not-allowed;' : ''">
+          평가 포함
+        </button>
+      </form>
+
+      <!-- 평가 제외로 변경 -->
+      <form th:action="@{/pe/inst-admin/userDetail/{idx}/delYn(idx=${user.idx})}" method="post"
+            data-confirm="평가 제외로 변경하시겠습니까?&#10;해당 직원은 평가 대상에서 제외됩니다."
+            data-confirm-danger>
+        <input type="hidden" name="year"  th:value="${year}"/>
+        <input type="hidden" name="delYn" value="Y"/>
+        <button type="submit" class="btn btn-danger"
+                th:disabled="${user.delYn == 'Y'}"
+                th:style="${user.delYn == 'Y'} ? 'opacity:.5; cursor:not-allowed;' : ''">
+          평가 제외
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ③ 역할 설정 카드 -->
+  <div class="card">
+    <p class="card-title">역할 설정</p>
+
+    <p style="font-size:13px; color:#64748b; margin:0 0 16px;">
+      해당 직원의 평가 역할을 설정합니다. 역할에 따라 평가 문항과 평가자가 달라집니다.
+      복수 선택 가능합니다.
+    </p>
+
+    <form th:action="@{/pe/inst-admin/userDetail/{idx}/roles(idx=${user.idx})}" method="post">
+      <input type="hidden" name="year" th:value="${year}"/>
+
+      <div class="role-grid">
+        <label class="role-item"
+               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_head')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="team_head"
+                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_head')}">
+          <div>
+            <div class="role-label">경혁팀장</div>
+            <div class="role-desc">경영혁신팀 팀장</div>
+          </div>
+        </label>
+
+        <label class="role-item"
+               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_member')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="team_member"
+                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_member')}">
+          <div>
+            <div class="role-label">경혁팀원</div>
+            <div class="role-desc">경영혁신팀 팀원</div>
+          </div>
+        </label>
+
+        <label class="role-item"
+               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_head')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="sub_head"
+                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_head')}">
+          <div>
+            <div class="role-label">부서장</div>
+            <div class="role-desc">일반 부서 책임자</div>
+          </div>
+        </label>
+
+        <label class="role-item"
+               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'one_person_sub')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="one_person_sub"
+                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'one_person_sub')}">
+          <div>
+            <div class="role-label">1인부서</div>
+            <div class="role-desc">단독 부서 운영</div>
+          </div>
+        </label>
+
+        <label class="role-item"
+               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'medical_leader')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="medical_leader"
+                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'medical_leader')}">
+          <div>
+            <div class="role-label">의료리더</div>
+            <div class="role-desc">의료직군 리더</div>
+          </div>
+        </label>
+
+        <label class="role-item"
+               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_member')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="sub_member"
+                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_member')}">
+          <div>
+            <div class="role-label">일반직원</div>
+            <div class="role-desc">일반 팀원</div>
+          </div>
+        </label>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button type="submit" class="btn btn-primary">역할 저장</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ④ 비밀번호 초기화 카드 -->
+  <div class="card">
+    <p class="card-title">비밀번호 초기화</p>
+
+    <p style="font-size:13px; color:#64748b; margin:0 0 14px;">
+      비밀번호를 초기화하면 직원이 다음 로그인 시 이름을 사용해 임시 로그인한 후 비밀번호를 새로 설정해야 합니다.
+    </p>
+
+    <form th:action="@{/pe/inst-admin/userDetail/{idx}/resetPwd(idx=${user.idx})}" method="post"
+          data-confirm="정말 비밀번호를 초기화하시겠습니까?&#10;직원이 다음 로그인 시 재설정해야 합니다."
+          data-confirm-warn>
+      <input type="hidden" name="year" th:value="${year}"/>
+      <button type="submit" class="btn btn-warn">비밀번호 초기화</button>
+    </form>
+
+    <div class="warn-inline" th:if="${!user.passwordSet}">
+      이 직원은 아직 비밀번호를 설정하지 않았습니다.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div th:replace="~{Include/inst-admin-layout :: scripts}"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+
+  // 체크박스 상태에 따라 role-item 클래스 토글
+  document.querySelectorAll('.role-item input[type=checkbox]').forEach(function(cb) {
+    cb.addEventListener('change', function() {
+      this.closest('.role-item').classList.toggle('is-checked', this.checked);
+    });
+  });
+});
+</script>
+</body>
+</html>

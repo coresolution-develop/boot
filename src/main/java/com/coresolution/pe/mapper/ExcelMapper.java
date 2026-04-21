@@ -106,7 +106,8 @@ public interface ExcelMapper {
 
     @Update("""
             UPDATE personnel_evaluation.sub_management
-               SET sub_name = #{subName}
+               SET sub_name       = #{subName},
+                   institution_id = #{institutionId}
              WHERE sub_code  = #{subCode}
                AND eval_year = #{evalYear}
             """)
@@ -114,9 +115,9 @@ public interface ExcelMapper {
 
     @Insert("""
             INSERT INTO personnel_evaluation.sub_management
-              (sub_name, sub_code, eval_year)
+              (sub_name, sub_code, eval_year, institution_id)
             VALUES
-              (#{subName}, #{subCode}, #{evalYear})
+              (#{subName}, #{subCode}, #{evalYear}, #{institutionId})
             """)
     void subinsert(SubManagement s);
 

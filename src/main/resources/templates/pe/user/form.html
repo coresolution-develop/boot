@@ -1,217 +1,383 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
-      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
-	<meta charset="UTF-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>코어솔루션 인사평가 시스템</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>인사평가</title>
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}" />
+  <style>
+  /* ── reset & base ─────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: #f1f5f9; color: #1e293b; min-height: 100vh; }
 
-	<link rel="stylesheet" th:href="@{/css/css.css}" />
-	<link rel="stylesheet" th:href="@{/css/alertcss.css}" />
-	<link rel="stylesheet" th:href="@{/css/demoheadercss.css}" />
-	<link rel="stylesheet" th:href="@{/css/leftMenu.css}" />
-	<link rel="stylesheet" th:href="@{/css/admin.css}" />
-	<link rel="stylesheet" th:href="@{/css/demoinfocss.css}" />
-	<link rel="stylesheet" th:href="@{/css/demoformcss.css}" />
-	<link rel="stylesheet" th:href="@{/css/formmediacss.css}" />
-	<link rel="stylesheet" th:href="@{/css/demoform2css.css}" />
-    <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
-    <link rel="stylesheet" th:href="@{/css/formcss2025.css}">
-	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
-	<link rel="shortcut icon" th:href="@{/favicon/favicon.ico}" />
-	<style>
-	.main-content {
-		padding: 0;
-	}
-	</style>
+  /* ── top header ───────────────────────────────────────────── */
+  .ev-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    height: 56px; background: #1b304a;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  }
+  .ev-header-left { display: flex; align-items: center; gap: 12px; }
+  .ev-logo { color: #fff; font-size: 17px; font-weight: 700; text-decoration: none; letter-spacing: -.3px; }
+  .ev-header-right { display: flex; align-items: center; gap: 14px; }
+  .ev-user-info { font-size: 13px; color: #94a3b8; }
+  .ev-user-info strong { color: #e2e8f0; font-weight: 600; }
+  .ev-logout { font-size: 12px; color: #94a3b8; text-decoration: none; border: 1px solid #334e68;
+               padding: 4px 12px; border-radius: 6px; transition: all .15s; }
+  .ev-logout:hover { background: #243d57; color: #e2e8f0; }
+
+  /* ── evaluator card ───────────────────────────────────────── */
+  .evaluator-bar {
+    background: #fff; border-bottom: 1px solid #e2e8f0;
+    padding: 24px 0; margin-top: 56px;
+    min-height: 151px; display: flex; align-items: center;
+  }
+  .evaluator-bar-inner {
+    max-width: 760px; margin: 0 auto; padding: 0 20px;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap; width: 100%;
+  }
+  .evaluator-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #1b304a, #3b5a7e);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px; font-weight: 700; flex-shrink: 0;
+  }
+  .evaluator-meta { flex: 1; min-width: 0; }
+  .evaluator-name { font-size: 16px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px; }
+  .evaluator-id { font-size: 12px; color: #94a3b8; font-weight: 400; }
+  .evaluator-sub { font-size: 12px; color: #64748b; margin-top: 3px; }
+  .evaluator-hire { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+
+  /* ── sticky notice bar ────────────────────────────────────── */
+  .notice-bar {
+    background: #fff7ed; border-bottom: 2px solid #fed7aa;
+    padding: 10px 20px; display: flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; color: #9a3412;
+    transition: all .25s;
+  }
+  .notice-bar.fixed {
+    position: fixed; top: 56px; left: 0; right: 0; z-index: 90;
+    box-shadow: 0 3px 10px rgba(0,0,0,.1);
+  }
+  .notice-bar-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; gap: 8px; width: 100%; }
+
+  /* ── page content ─────────────────────────────────────────── */
+  .page-body { max-width: 760px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* ── target card ──────────────────────────────────────────── */
+  .target-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    padding: 20px 24px; margin-bottom: 24px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  }
+  .target-card-title {
+    font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: .06em;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .target-info-grid {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 12px;
+  }
+  @media(max-width:540px){ .target-info-grid { grid-template-columns: repeat(2,1fr); } }
+  .target-field label { font-size: 11px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 3px; }
+  .target-field span { font-size: 14px; font-weight: 600; color: #1e293b; }
+
+  /* ── section card ─────────────────────────────────────────── */
+  .section-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 14px;
+    margin-bottom: 16px; overflow: hidden;
+    box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  }
+  .section-header {
+    padding: 14px 20px; background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 700; background: #1b304a; color: #fff;
+  }
+  .section-title { font-size: 15px; font-weight: 700; color: #1e293b; }
+
+  /* ── question item ────────────────────────────────────────── */
+  .question-area {
+    padding: 16px 20px; border-bottom: 1px solid #f1f5f9;
+  }
+  .question-area:last-child { border-bottom: none; }
+  p.question {
+    font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 12px; line-height: 1.55;
+  }
+
+  /* ── pill radio buttons ───────────────────────────────────── */
+  .answer { display: flex; flex-wrap: wrap; gap: 8px; }
+  .label { cursor: pointer; }
+  .label input.radio { display: none; }
+  .label .pill {
+    display: inline-block; padding: 7px 16px; border-radius: 20px;
+    font-size: 13px; font-weight: 500; color: #475569;
+    background: #f1f5f9; border: 1.5px solid #e2e8f0;
+    transition: all .15s; user-select: none; white-space: nowrap;
+  }
+  .label input.radio:checked + .pill {
+    background: #1b304a; border-color: #1b304a; color: #fff; font-weight: 700;
+  }
+  .label:hover .pill { border-color: #3b82f6; color: #1d4ed8; background: #eff6ff; }
+  .label input.radio:checked + .pill:hover { background: #243d57; border-color: #243d57; color: #fff; }
+
+  /* ── 주관식 ───────────────────────────────────────────────── */
+  .essay-section { padding: 16px 20px; }
+  p.question-text { font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 10px; line-height: 1.55; }
+  .essay-textarea {
+    width: 100%; padding: 12px 14px; font-size: 14px; color: #1e293b;
+    border: 1.5px solid #e2e8f0; border-radius: 10px; resize: vertical;
+    min-height: 110px; font-family: inherit; line-height: 1.6;
+    transition: border-color .15s, box-shadow .15s; outline: none;
+    background: #f8fafc;
+  }
+  .essay-textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.1); background: #fff; }
+
+  /* ── submit area ──────────────────────────────────────────── */
+  .submit-area { text-align: center; padding: 28px 0 8px; }
+  #end {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 50px; padding: 0 48px; border-radius: 12px;
+    background: #1b304a; border: none; color: #fff;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(27,48,74,.35);
+    transition: filter .15s, transform .1s;
+  }
+  #end:hover { filter: brightness(1.15); }
+  #end:active { transform: scale(.97); }
+
+  /* ── modals ───────────────────────────────────────────────── */
+  .modal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(15,23,42,.5); align-items: center; justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .modal.show { display: flex; }
+  .modal_body {
+    background: #fff; border-radius: 16px; padding: 32px 28px 24px;
+    max-width: 360px; width: calc(100% - 40px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.2); text-align: center;
+  }
+  .menu_icon { width: 44px; height: 44px; margin-bottom: 16px; }
+  .menu_msg { font-size: 14px; color: #374151; line-height: 1.7; margin-bottom: 20px; }
+  .menu_msg p { margin-bottom: 4px; }
+  .menu_msg strong { color: #1b304a; }
+  .modal_footer { display: flex; gap: 10px; justify-content: center; }
+  .modal_btn, .modal_btn2, .pink_btn2 {
+    display: inline-flex; align-items: center; justify-content: center;
+    height: 40px; padding: 0 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    transition: filter .15s;
+  }
+  .modal_btn, .modal_btn2 { background: #1b304a; color: #fff; }
+  .modal_btn:hover, .modal_btn2:hover { filter: brightness(1.15); }
+  .pink_btn2 { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+  .pink_btn2:hover { background: #e2e8f0; }
+  </style>
 </head>
 
 <body>
-	<!-- 공통 레이아웃 조각 -->
-	<div th:replace="~{Include/layout :: header}"></div>
-	<div th:replace="~{Include/layout :: nav_section2}"></div>
 
-	<main class="main-content">
-		<!-- 상단 정보 -->
-		<section class="info">
-			<div class="info-container">
-				<div class="info_name">
-					<span class="normal" th:text="${maskPersonalInfo ? (#strings.isEmpty(userInfo.name) ? '' : #strings.substring(userInfo.name, 0, 1) + '*') : userInfo.name}">이름</span>
-					<span class="light info_id" th:text="| (사원번호 : ${maskPersonalInfo ? (#strings.isEmpty(userInfo.id) ? '' : (#strings.length(userInfo.id) > 2 ? #strings.substring(userInfo.id, 0, 2) + '***' : '***')) : userInfo.id})|">(사원번호)</span>
-				</div>
-				<div class="info_hs light">
-					<span th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|">회사/부서/직급</span>
-				</div>
-				<div class="info_date light">
-					<span th:text="|입사일자 : ${#dates.format(userInfo.createAt,'yyyy-MM-dd')}|">입사일자</span>
-				</div>
-			</div>
-		</section>
+  <!-- ── header ─────────────────────────────────────────────── -->
+  <header class="ev-header">
+    <div class="ev-header-left">
+      <button class="nav-toggle-btn" type="button" aria-label="메뉴">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+          <rect y="3" width="20" height="2" rx="1"/><rect y="9" width="20" height="2" rx="1"/><rect y="15" width="20" height="2" rx="1"/>
+        </svg>
+      </button>
+      <a href="/Info" class="ev-logo">인사평가</a>
+    </div>
+    <div class="ev-header-right">
+      <span class="ev-user-info" th:if="${userInfo != null}">
+        <span th:text="${userInfo.subName}">부서</span>&nbsp;
+        <strong th:text="${userInfo.name}">이름</strong>
+      </span>
+      <a href="/Logout" class="ev-logout">로그아웃</a>
+    </div>
+  </header>
 
-		<!-- 안내 -->
-		<section class="target_info" id="targetInfo">
-			<div class="target_text flex">
-				<img th:src="@{/icon/ev/ok.png}" alt="ok" />
-				<span class="bold">평가대상자를 확인 후 평가를 진행해주세요!</span>
-			</div>
-		</section>
+  <!-- ── user sidebar nav ───────────────────────────────────── -->
+  <div th:replace="~{Include/layout :: user_nav_new}"></div>
 
-		<!-- 평가 대상 박스 -->
-		<section class="target_area">
-			<div class="target">
-				<div class="target_box">
-					<table>
-						<tr class="target_box_header">
-							<td colspan="4">평가대상자</td>
-						</tr>
-						<tr class="target_box_1">
-							<td>부서명</td>
-							<td>사원번호</td>
-							<td>직급</td>
-							<td>성명</td>
-						</tr>
-						<tr class="target_box_2">
-							<td th:text="${target.subName}">부서</td>
-							<td th:text="${maskPersonalInfo ? (#strings.isEmpty(target.id) ? '' : (#strings.length(target.id) > 2 ? #strings.substring(target.id, 0, 2) + '***' : '***')) : target.id}">사번</td>
-							<td th:text="${target.position}">직급</td>
-							<td th:text="${maskPersonalInfo ? (#strings.isEmpty(target.name) ? '' : #strings.substring(target.name, 0, 1) + '*') : target.name}">성명</td>
-						</tr>
-					</table>
-				</div>
-			</div>
+  <!-- ── pg-shell ───────────────────────────────────────────── -->
+  <div class="pg-shell">
 
-			<!-- 질문 영역 -->
-			<form id="frm" onsubmit="return false;">
-				<input type="hidden" id="score" name="score" value="" />
+  <!-- ── evaluator info bar ──────────────────────────────────── -->
+  <div class="evaluator-bar">
+    <div class="evaluator-bar-inner">
+      <div class="evaluator-avatar"
+           th:text="${userInfo != null and !#strings.isEmpty(userInfo.name)} ? ${#strings.substring(userInfo.name,0,1)} : '?'">이</div>
+      <div class="evaluator-meta">
+        <div class="evaluator-name">
+          <span th:text="${maskPersonalInfo
+              ? (#strings.isEmpty(userInfo.name) ? '' : #strings.substring(userInfo.name,0,1)+'*')
+              : userInfo.name}">이름</span>
+          <span class="evaluator-id"
+                th:text="|(사원번호: ${maskPersonalInfo
+                  ? (#strings.isEmpty(userInfo.id) ? '' : (#strings.length(userInfo.id)>2
+                    ? #strings.substring(userInfo.id,0,2)+'***' : '***'))
+                  : userInfo.id})|">(사원번호)</span>
+        </div>
+        <div class="evaluator-sub"
+             th:text="|${userInfo.cName} / ${userInfo.subName} / ${userInfo.position}|">회사/부서/직급</div>
+        <div class="evaluator-hire"
+             th:text="|입사일자: ${#dates.format(userInfo.createAt,'yyyy-MM-dd')}|">입사일자</div>
+      </div>
+    </div>
+  </div>
 
-				<section class="section">
-					<div class="container">
-						<div class="section-content">
-							<div class="scrollbase">
+  <!-- ── sticky notice bar ───────────────────────────────────── -->
+  <div class="notice-bar" id="targetInfo">
+    <div class="notice-bar-inner">
+      <span>평가대상자를 확인 후 평가를 진행해주세요!</span>
+    </div>
+  </div>
 
-								<!-- 공통 컴포넌트: 객관식 그룹 렌더링 -->
-								<th:block th:with="groups=${ {'섬김','배움','키움','나눔','목표관리'} }">
-									<section th:each="g : ${groups}">
-										<div class="bold area_header" th:text="${g}"></div>
+  <!-- ── page body ───────────────────────────────────────────── -->
+  <div class="page-body">
 
-										<!-- 해당 그룹(g) 문항만 출력 -->
-										<div class="question-area" th:each="q, stat : ${questions}" th:if="${q.d3 == g}"
-											th:classappend="|${#strings.substring(g,0,1).toLowerCase()}${q.idx}|">
-											<p class="question bold" th:text="|${stat.count}. ${q.d1}|"></p>
+    <!-- target card -->
+    <div class="target-card">
+      <div class="target-card-title">평가대상자</div>
+      <div class="target-info-grid">
+        <div class="target-field">
+          <label>부서명</label>
+          <span th:text="${target.subName}">부서</span>
+        </div>
+        <div class="target-field">
+          <label>사원번호</label>
+          <span th:text="${maskPersonalInfo
+              ? (#strings.isEmpty(target.id) ? '' : (#strings.length(target.id)>2
+                ? #strings.substring(target.id,0,2)+'***' : '***'))
+              : target.id}">사번</span>
+        </div>
+        <div class="target-field">
+          <label>직급</label>
+          <span th:text="${target.position}">직급</span>
+        </div>
+        <div class="target-field">
+          <label>성명</label>
+          <span th:text="${maskPersonalInfo
+              ? (#strings.isEmpty(target.name) ? '' : #strings.substring(target.name,0,1)+'*')
+              : target.name}">성명</span>
+        </div>
+      </div>
+    </div>
 
-											<!-- 라디오(라벨만 루프 돌리세요: 숫자쌍(라벨,점수)로 쓰면 또 에러납니다) -->
-											<div class="answer">
-												<label class="label"
-													th:each="label : ${ {'매우우수','우수','보통','미흡','매우미흡'} }">
-													<span class="alignBox">
-														<input class="radio" type="radio"
-															th:name="|${#strings.substring(g,0,1).toLowerCase()}${q.idx}|"
-															th:value="${label}">
-														<span class="radioimg"></span>
-														<span class="inputTxt" th:text="${label}"></span>
-													</span>
-												</label>
-											</div>
+    <!-- question form -->
+    <form id="frm" onsubmit="return false;">
+      <input type="hidden" id="score" name="score" value="" />
 
-											<div class="q-1">
-												<div class="q-2"></div>
-											</div>
-										</div>
-									</section>
-								</th:block>
+      <!-- 객관식 그룹 -->
+      <th:block th:with="groups=${ {'섬김','배움','키움','나눔','목표관리'} }">
+        <div class="section-card" th:each="g : ${groups}">
+          <div class="section-header">
+            <span class="section-badge" th:text="${g}">그룹</span>
+            <span class="section-title" th:text="${g}">그룹명</span>
+          </div>
 
-								<!-- 주관식 -->
-								<th:block th:with="essay=${questions.?[d3 == '주관식']}">
-									<div class="area-content" th:if="${!#lists.isEmpty(essay)}">
-										<div class="bold area_header text-target">주관식</div>
+          <div class="question-area"
+               th:each="q, stat : ${questions}"
+               th:if="${q.d3 == g}"
+               th:classappend="|${#strings.substring(g,0,1).toLowerCase()}${q.idx}|">
+            <p class="question" th:text="|${stat.count}. ${q.d1}|"></p>
+            <div class="answer">
+              <label class="label"
+                     th:each="lbl : ${ {'매우우수','우수','보통','미흡','매우미흡'} }">
+                <input class="radio" type="radio"
+                       th:name="|${#strings.substring(g,0,1).toLowerCase()}${q.idx}|"
+                       th:value="${lbl}" />
+                <span class="pill" th:text="${lbl}">레이블</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </th:block>
 
-										<table class="text-area-table" th:each="q : ${essay}">
-											<tr class="text-area-tr1">
-												<td>
-													<p class="question question-text bold" th:text="${q.d1}">종합평가</p>
-												</td>
-											</tr>
-											<tr class="text-area-tr2">
-												<td>
-													<textarea th:id="|t${q.idx}|" th:name="|t${q.idx}|"
-														rows="5"></textarea>
-												</td>
-											</tr>
-										</table>
-									</div>
-								</th:block>
+      <!-- 주관식 -->
+      <th:block th:with="essay=${questions.?[d3 == '주관식']}">
+        <div class="section-card" th:if="${!#lists.isEmpty(essay)}">
+          <div class="section-header">
+            <span class="section-badge" style="background:#7c3aed">주관식</span>
+            <span class="section-title">주관식</span>
+          </div>
+          <div class="essay-section" th:each="q : ${essay}">
+            <p class="question-text" th:text="${q.d1}">종합평가</p>
+            <textarea class="essay-textarea"
+                      th:id="|t${q.idx}|"
+                      th:name="|t${q.idx}|"
+                      rows="5"
+                      placeholder="자유롭게 의견을 작성해 주세요."></textarea>
+          </div>
+        </div>
+      </th:block>
 
-								<!-- 완료 버튼 -->
-								<div class="end_area flex flex-center">
-									<button class="end" id="end" type="button">평가완료</button>
-								</div>
+      <!-- submit -->
+      <div class="submit-area">
+        <button id="end" type="button">평가완료</button>
+      </div>
 
-							</div>
-						</div>
-					</div>
-				</section>
+    </form>
+  </div><!-- /page-body -->
 
-				<!-- 스피너 -->
-				<div id="spinner-overlay" style="display:none;">
-					<div class="spinner-container">
-						<div class="spinner"></div>
-						<p>잠시만 기다려주세요</p>
-					</div>
-				</div>
+  </div><!-- /pg-shell -->
 
-				<!-- 모달들 (간단화) -->
-				<div class="modal normal" id="modal-info">
-					<div class="modal_body">
-						<div>
-							<img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
-							<div class="menu_msg" id="modal-info-text">text</div>
-							<div class="modal_footer">
-								<div class="btn modal_btn" id="modal-info-close">확인</div>
-							</div>
-						</div>
-					</div>
-				</div>
+  <!-- spinner -->
+  <div id="spinner-overlay" style="display:none;">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p>잠시만 기다려주세요</p>
+    </div>
+  </div>
 
-				<div class="modal normal" id="modal-confirm">
-					<div class="modal_body">
-						<div>
-							<img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert">
-							<div class="menu_msg" id="modal-confirm-text">text</div>
-							<div class="modal_footer">
-								<div class="btn modal_btn2" id="modal-confirm-ok">확인</div>
-								<div class="btn pink_btn2" id="modal-confirm-cancel">취소</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</form>
-		</section>
+  <!-- modal: info -->
+  <div class="modal normal" id="modal-info">
+    <div class="modal_body">
+      <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert" />
+      <div class="menu_msg" id="modal-info-text">text</div>
+      <div class="modal_footer">
+        <div class="modal_btn" id="modal-info-close">확인</div>
+      </div>
+    </div>
+  </div>
 
-	</main>
+  <!-- modal: confirm -->
+  <div class="modal normal" id="modal-confirm">
+    <div class="modal_body">
+      <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" alt="alert" />
+      <div class="menu_msg" id="modal-confirm-text">text</div>
+      <div class="modal_footer">
+        <div class="modal_btn2" id="modal-confirm-ok">확인</div>
+        <div class="pink_btn2" id="modal-confirm-cancel">취소</div>
+      </div>
+    </div>
+  </div>
 
-	<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-    <script th:replace="~{Include/layout :: scripts}"></script>
+  <!-- scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 
-	<!-- 타임리프 JS 인라인: 서버 값 안전 주입 -->
-	<script th:inline="javascript">
-		/*<![CDATA[*/
-		window.__PE_CONFIG = {
-			DATA_TYPE: /*[[${dataType}]]*/ 'AA',
-			DATA_EV:    /*[[${dataEv}]]*/ 'C',
-			YEAR:       /*[[${year}]]*/ '2025',
-			EVALUATOR:  /*[[${evaluatorId}]]*/ '00000000',
-			TARGET_ID:  /*[[${target.id}]]*/ '000000',
-			TARGET_NAME: /*[[${maskPersonalInfo ? (#strings.isEmpty(target.name) ? '' : #strings.substring(target.name, 0, 1) + '*') : target.name}]]*/ '홍*',
-			ACTION_URL: /*[[@{/api/formAction/{eval}/{target}/{ev}/{type}(eval=${evaluatorId},target=${target.id},ev=${dataEv},type=${dataType})}]]*/ '/api/formAction',
-			INFO_URL:   /*[[@{/info/{eval}(eval=${evaluatorId})}]]*/ '/info',
-			END_URL:    /*[[@{/FormEnd/{eval}/{target}(eval=${evaluatorId},target=${target.id})}]]*/ '/FormEnd'
-		};
-		/*]]>*/
-	</script>
-	<!-- 외부 파일 로드 (테스트 중 캐시 방지용 v 파라미터) -->
-	<script th:src="@{/js/user/form.js(v=${#dates.createNow().time})}" defer></script>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    window.__PE_CONFIG = {
+      DATA_TYPE:   /*[[${dataType}]]*/ 'AA',
+      DATA_EV:     /*[[${dataEv}]]*/ 'C',
+      YEAR:        /*[[${year}]]*/ '2025',
+      EVALUATOR:   /*[[${evaluatorId}]]*/ '00000000',
+      TARGET_ID:   /*[[${target.id}]]*/ '000000',
+      TARGET_NAME: /*[[${maskPersonalInfo ? (#strings.isEmpty(target.name) ? '' : #strings.substring(target.name, 0, 1) + '*') : target.name}]]*/ '홍*',
+      ACTION_URL:  /*[[@{/api/formAction/{eval}/{target}/{ev}/{type}(eval=${evaluatorId},target=${target.id},ev=${dataEv},type=${dataType})}]]*/ '/api/formAction',
+      INFO_URL:    /*[[@{/info/{eval}(eval=${evaluatorId})}]]*/ '/info',
+      END_URL:     /*[[@{/FormEnd/{eval}/{target}(eval=${evaluatorId},target=${target.id})}]]*/ '/FormEnd'
+    };
+    /*]]>*/
+  </script>
+
+  <script th:src="@{/js/user/form.js(v=${#dates.createNow().time})}" defer></script>
 </body>
-
 </html>

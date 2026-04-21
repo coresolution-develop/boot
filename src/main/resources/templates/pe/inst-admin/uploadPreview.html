@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/inst-admin-layout :: head('업로드 미리보기')}"></head>
+<body>
+<div th:replace="~{Include/inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:1200px; margin:0 auto; padding:20px;">
+<style>
+.card { background:#fff; border:1px solid #e5e9ef; border-radius:12px;
+        padding:20px 24px; margin-bottom:16px;
+        box-shadow:0 2px 8px rgba(0,0,0,.04); }
+.card-title { font-size:17px; font-weight:700; color:#1e293b; margin:0 0 12px;
+              display:flex; align-items:center; gap:8px; }
+
+/* 요약 칩 */
+.summary-row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.chip { padding:5px 14px; border-radius:20px; font-size:13px; font-weight:600; }
+.chip-ok   { background:#dcfce7; color:#166534; border:1px solid #bbf7d0; }
+.chip-warn { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; }
+.chip-err  { background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+.chip-info { background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; }
+
+/* 에러 박스 */
+.error-list { background:#fef2f2; border:1px solid #fecaca; border-radius:8px;
+              padding:12px 16px; margin-bottom:16px; font-size:13px; }
+.error-list .blocking { color:#dc2626; font-weight:600; }
+.error-list .warning  { color:#d97706; }
+
+/* 테이블 */
+.table-wrap { border:1px solid #e5e9ef; border-radius:10px; overflow:hidden; }
+.tbl-scroll { max-height:50vh; overflow:auto; }
+.tbl-scroll::-webkit-scrollbar { width:5px; height:5px; }
+.tbl-scroll::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+.data-table { width:100%; border-collapse:collapse; font-size:12px; white-space:nowrap; }
+.data-table thead th { position:sticky; top:0; z-index:2;
+  background:#f3f6fa; font-weight:600; color:#374151;
+  border-bottom:2px solid #dfe4ea; padding:8px 10px; text-align:center; }
+.data-table tbody td { padding:7px 10px; border-bottom:1px solid #f1f4f8;
+  vertical-align:middle; color:#1e293b; }
+.data-table tbody tr:hover td { background:#f5f8ff; }
+.data-table tbody tr:last-child td { border-bottom:none; }
+
+/* 버튼 */
+.btn { display:inline-flex; align-items:center; gap:6px; height:38px; padding:0 20px;
+       border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; border:1px solid; }
+.btn-confirm { background:#1b304a; border-color:#1b304a; color:#fff; }
+.btn-confirm:hover { filter:brightness(1.12); }
+.btn-back    { background:#fff; border-color:#d0d7de; color:#374151; }
+.btn-back:hover    { background:#f8fafc; }
+.btn-confirm:disabled { opacity:.5; cursor:not-allowed; }
+
+/* 역할 뱃지 */
+.role { display:inline-block; padding:1px 7px; border-radius:12px; font-size:10px;
+        font-weight:600; margin:1px; }
+.role-th  { background:#fef3c7; color:#b45309; }
+.role-tm  { background:#fef9c3; color:#92400e; }
+.role-sh  { background:#dbeafe; color:#1d4ed8; }
+.role-op  { background:#e0e7ff; color:#4338ca; }
+.role-ml  { background:#dcfce7; color:#166534; }
+.role-sm  { background:#f1f5f9; color:#475569; }
+
+/* 기관 강조 */
+.inst-badge { background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8;
+              padding:3px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+</style>
+
+  <!-- 헤더 -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+    <a th:href="@{/pe/inst-admin/userDataUpload(year=${year})}"
+       class="btn btn-back">← 업로드 페이지</a>
+    <h1 style="font-size:20px; font-weight:700; color:#1e293b; margin:0;">직원 업로드 미리보기</h1>
+    <span class="inst-badge" th:text="${institutionName}">기관명</span>
+  </div>
+
+  <!-- 요약 -->
+  <div class="card">
+    <p class="card-title">파싱 결과 요약</p>
+
+    <div class="summary-row">
+      <span class="chip chip-info"
+            th:text="|총 ${userList != null ? userList.size() : 0}명 인식|">총 0명</span>
+      <span class="chip chip-ok"
+            th:if="${blockingCount == 0}">오류 없음 — 확정 가능</span>
+      <span class="chip chip-err"
+            th:if="${blockingCount > 0}"
+            th:text="|차단 오류 ${blockingCount}건 — 확정 불가|">오류</span>
+      <span class="chip chip-warn"
+            th:if="${warningCount > 0}"
+            th:text="|경고 ${warningCount}건|">경고</span>
+    </div>
+
+    <!-- 오류 목록 -->
+    <div class="error-list" th:if="${parseErrors != null and !parseErrors.isEmpty()}">
+      <div th:each="err : ${parseErrors}">
+        <span th:if="${err.blocking}" class="blocking">
+          [<span th:text="${err.rowNum}">0</span>행]
+          <span th:text="${err.field}">-</span>:
+          <span th:text="${err.message}">-</span>
+        </span>
+        <span th:unless="${err.blocking}" class="warning">
+          [<span th:text="${err.rowNum}">0</span>행]
+          <span th:text="${err.field}">-</span>:
+          <span th:text="${err.message}">-</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- c_name 강제 주입 안내 -->
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;
+                padding:10px 14px; font-size:12px; color:#166534;">
+      엑셀의 기관명(B열) 값은 무시되고 <strong th:text="${institutionName}">기관명</strong>
+      으로 자동 설정됩니다.
+    </div>
+  </div>
+
+  <!-- 자동 등록 부서 -->
+  <div class="card" th:if="${autoRegisterDepts != null and !autoRegisterDepts.isEmpty()}">
+    <p class="card-title">자동 등록될 부서</p>
+    <p style="font-size:13px; color:#64748b; margin:0 0 10px;">
+      아래 부서코드가 sub_management에 없어 자동 등록됩니다.
+    </p>
+    <div th:each="entry : ${autoRegisterDepts}"
+         style="font-size:13px; padding:4px 0; border-bottom:1px dashed #f1f5f9;">
+      <strong th:text="${entry.key}">코드</strong> — <span th:text="${entry.value}">부서명</span>
+    </div>
+  </div>
+
+  <!-- 직원 목록 테이블 -->
+  <div class="card" style="padding:0;">
+    <div style="padding:16px 20px 12px;">
+      <p class="card-title" style="margin:0;">직원 목록</p>
+    </div>
+    <div class="table-wrap">
+      <div class="tbl-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>사번</th>
+              <th>이름</th>
+              <th>부서명</th>
+              <th>직책</th>
+              <th>평가제외</th>
+              <th>역할</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${userList == null or #lists.isEmpty(userList)}">
+              <td colspan="7" style="text-align:center; color:#94a3b8; padding:24px;">
+                인식된 직원이 없습니다.
+              </td>
+            </tr>
+            <tr th:each="u, stat : ${userList}">
+              <td th:text="${stat.count}" style="text-align:center; color:#94a3b8;">1</td>
+              <td th:text="${u.id}" style="font-family:monospace; font-size:11px;">-</td>
+              <td th:text="${u.name}" style="font-weight:600;">-</td>
+              <td th:text="${u.subName ?: u.subCode ?: '-'}">-</td>
+              <td th:text="${u.position ?: '-'}">-</td>
+              <td style="text-align:center;">
+                <span th:if="${u.delYn == 'Y'}"
+                      style="color:#dc2626; font-weight:600; font-size:11px;">제외</span>
+                <span th:unless="${u.delYn == 'Y'}"
+                      style="color:#16a34a; font-size:11px;">포함</span>
+              </td>
+              <td>
+                <th:block th:if="${roleList != null}">
+                  <th:block th:each="r : ${roleList}" th:if="${r.userId == u.id}">
+                    <th:block th:each="role : ${r.roles}">
+                      <span th:switch="${#strings.toLowerCase(role.name())}">
+                        <span th:case="'team_head'"      class="role role-th">경혁팀장</span>
+                        <span th:case="'team_member'"    class="role role-tm">경혁팀원</span>
+                        <span th:case="'sub_head'"       class="role role-sh">부서장</span>
+                        <span th:case="'one_person_sub'" class="role role-op">1인부서</span>
+                        <span th:case="'medical_leader'" class="role role-ml">의료리더</span>
+                        <span th:case="'sub_member'"     class="role role-sm">일반직원</span>
+                        <span th:case="*" class="role role-sm"
+                              th:text="${#strings.toLowerCase(role.name())}">-</span>
+                      </span>
+                    </th:block>
+                  </th:block>
+                </th:block>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 확정 / 취소 -->
+  <div style="display:flex; gap:12px; margin-top:4px;">
+    <form th:action="@{/pe/inst-admin/excel/confirmUpload}" method="post">
+      <input type="hidden" name="year" th:value="${year}"/>
+      <button type="submit" class="btn btn-confirm"
+              th:disabled="${hasBlockingErrors}"
+              th:title="${hasBlockingErrors} ? '오류를 수정 후 다시 업로드하세요.' : ''"
+              data-confirm="직원 데이터를 DB에 저장하시겠습니까?"
+              data-ok-label="저장">
+        확정 저장
+      </button>
+    </form>
+    <a th:href="@{/pe/inst-admin/userDataUpload(year=${year})}" class="btn btn-back">
+      다시 업로드
+    </a>
+  </div>
+
+</div>
+</div>
+
+<div th:replace="~{Include/inst-admin-layout :: scripts}"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+});
+</script>
+</body>
+</html>

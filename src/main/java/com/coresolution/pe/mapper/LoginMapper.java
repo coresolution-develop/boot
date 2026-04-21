@@ -81,7 +81,7 @@ public interface LoginMapper {
       """)
   List<UserPE> getUserList(@Param("year") String year);
 
-  @Select("SELECT sub_code FROM personnel_evaluation.sub_management WHERE sub_name = #{subName} AND eval_year = #{year}")
+  @Select("SELECT sub_code FROM personnel_evaluation.sub_management WHERE sub_name = #{subName} AND eval_year = #{year} LIMIT 1")
   String getSubcode(@Param("subName") String subName, @Param("year") int year);
 
   @Select("""
@@ -137,7 +137,7 @@ public interface LoginMapper {
   UserPE findByIdandyear(String userId, String year);
 
   @Select("""
-      SELECT
+      SELECT DISTINCT
           u.idx           AS idx,
           u.c_name        AS cName,
           u.c_name2       AS cName2,
@@ -160,6 +160,7 @@ public interface LoginMapper {
             AND t.eval_year = u.eval_year
       WHERE u.id        = #{userId}
         AND u.eval_year = #{year}
+      LIMIT 1
       """)
   @Results(id = "userPERes_userInfo", value = {
       // 충돌 방지: 조인 컬럼은 별도 alias로 뽑아서 매핑
@@ -368,23 +369,170 @@ public interface LoginMapper {
       @Param("year") String year,
       @Param("institutionName") String institutionName);
 
-  /** 기관 관리자 전용: 특정 기관에 속한 sub_management 목록 */
+  /** 기관 관리자 전용: 특정 기관에 속한 sub_management 목록
+   *  institution_id 기준으로 조회 (users 테이블 JOIN 불필요)
+   *  신규 등록된 부서(institution_id 있음) + 레거시(institution_id=NULL, c_name 조인) 모두 지원
+   */
   @Select("""
+      <script>
       SELECT DISTINCT
           s.idx       AS idx,
           s.sub_name  AS subName,
           s.sub_code  AS subCode,
           s.eval_year AS evalYear
       FROM personnel_evaluation.sub_management s
-      JOIN personnel_evaluation.users_${year} u
-        ON u.sub_code  = s.sub_code
-       AND u.eval_year = s.eval_year
-      WHERE s.eval_year       = #{year}
-        AND u.c_name           = #{institutionName}
+      WHERE s.eval_year = #{year}
+        AND (
+              s.institution_id = #{institutionId}
+              OR (
+                  s.institution_id IS NULL
+                  AND EXISTS (
+                      SELECT 1
+                      FROM personnel_evaluation.users_${year} u
+                      WHERE u.sub_code  = s.sub_code
+                        AND u.eval_year = s.eval_year
+                        AND u.c_name    = #{institutionName}
+                  )
+              )
+            )
       ORDER BY s.sub_name
+      </script>
       """)
   List<SubManagement> getSubManagementByInstitution(
       @Param("year") String year,
+      @Param("institutionId") Integer institutionId,
       @Param("institutionName") String institutionName);
+
+  // ── 기관 관리자 전용: 직원 상세 조회 (기관 범위 검증 포함) ──────────────
+
+  @Select("""
+      SELECT
+          u.idx       AS idx,
+          u.c_name    AS cName,
+          u.c_name2   AS cName2,
+          u.sub_code  AS subCode,
+          s.sub_name  AS subName,
+          u.id        AS id,
+          u.position  AS position,
+          u.name      AS name,
+          u.pwd       AS pwd,
+          u.create_at AS createAt,
+          u.delete_at AS deleteAt,
+          u.phone     AS phone,
+          u.team_code AS teamCode,
+          u.del_yn    AS delYn,
+          u.eval_year AS evalYear,
+          CASE WHEN COALESCE(u.pwd,'') <> '' THEN 1 ELSE 0 END AS passwordSet,
+          (SELECT GROUP_CONCAT(r.role ORDER BY r.role SEPARATOR ',')
+           FROM personnel_evaluation.user_roles_${year} r
+           WHERE r.user_id = u.id AND r.eval_year = #{year}) AS rolesCsv
+      FROM personnel_evaluation.users_${year} u
+      LEFT JOIN personnel_evaluation.sub_management s
+             ON s.sub_code = u.sub_code AND s.eval_year = u.eval_year
+      WHERE u.idx        = #{idx}
+        AND u.eval_year  = #{year}
+        AND u.c_name     = #{institutionName}
+      """)
+  UserPE findUserByIdxAndOrg(
+      @Param("idx") int idx,
+      @Param("year") String year,
+      @Param("institutionName") String institutionName);
+
+  /** 기관 관리자 전용: 평가제외 여부 업데이트 */
+  @Update("UPDATE personnel_evaluation.users_${year} SET del_yn = #{delYn} WHERE idx = #{idx} AND eval_year = #{year}")
+  int updateDelYn(
+      @Param("idx") int idx,
+      @Param("year") String year,
+      @Param("delYn") String delYn);
+
+  /** 기관 관리자 전용: 비밀번호 초기화 (NULL 설정) */
+  @Update("UPDATE personnel_evaluation.users_${year} SET pwd = NULL WHERE idx = #{idx} AND eval_year = #{year}")
+  int resetPasswordByIdx(
+      @Param("idx") int idx,
+      @Param("year") String year);
+
+  /** 기관 관리자 전용: 특정 직원의 역할 전체 삭제 */
+  @Delete("DELETE FROM personnel_evaluation.user_roles_${year} WHERE user_id = #{userId} AND eval_year = #{year}")
+  int deleteRolesByUserId(
+      @Param("userId") String userId,
+      @Param("year") String year);
+
+  /** 기관 관리자 전용: 역할 단건 추가 */
+  @Insert("""
+      INSERT INTO personnel_evaluation.user_roles_${year}
+        (user_id, role, eval_year)
+      VALUES
+        (#{userId}, #{role}, #{year})
+      """)
+  int insertRoleForUser(
+      @Param("userId") String userId,
+      @Param("role") String role,
+      @Param("year") String year);
+
+  // ── 기관 관리자 전용: 기관 범위 데이터 초기화 ────────────────────────
+
+  /** 특정 기관(c_name)의 직원 전체 삭제 (해당 연도) */
+  @Delete("DELETE FROM personnel_evaluation.users_${year} WHERE c_name = #{institutionName} AND eval_year = #{year}")
+  int deleteUsersByYearAndOrg(
+      @Param("year") String year,
+      @Param("institutionName") String institutionName);
+
+  /** 특정 기관 직원의 역할 전체 삭제 (다중 테이블 DELETE) */
+  @Delete("""
+      DELETE r
+      FROM   personnel_evaluation.user_roles_${year} r
+      JOIN   personnel_evaluation.users_${year} u
+             ON  u.id        = r.user_id
+             AND u.eval_year = r.eval_year
+      WHERE  u.c_name    = #{institutionName}
+        AND  u.eval_year = #{year}
+      """)
+  int deleteRolesByYearAndOrg(
+      @Param("year") String year,
+      @Param("institutionName") String institutionName);
+
+  // ── 기관 관리자 전용: 평가 대상 자동 생성용 ────────────────────────────
+
+  /** 특정 기관 소속 활성 직원을 역할 CSV 포함하여 조회 */
+  @Select("""
+      SELECT
+          u.idx        AS idx,
+          u.c_name     AS cName,
+          u.sub_code   AS subCode,
+          u.team_code  AS teamCode,
+          u.id         AS id,
+          u.name       AS name,
+          u.position   AS position,
+          s.sub_name   AS subName,
+          (SELECT GROUP_CONCAT(r.role ORDER BY r.role SEPARATOR ',')
+           FROM personnel_evaluation.user_roles_${year} r
+           WHERE r.user_id = u.id AND r.eval_year = u.eval_year) AS rolesCsv
+      FROM personnel_evaluation.users_${year} u
+      LEFT JOIN personnel_evaluation.sub_management s
+             ON s.sub_code  = u.sub_code
+            AND s.eval_year = u.eval_year
+      WHERE u.eval_year = #{year}
+        AND u.del_yn    = 'N'
+        AND u.c_name    = #{orgName}
+      ORDER BY s.sub_name, u.name
+      """)
+  List<UserPE> getUsersWithRolesByOrg(
+      @Param("year") String year,
+      @Param("orgName") String orgName);
+
+  /** 특정 기관의 모든 평가 대상 삭제 (admin_custom_targets) */
+  @Delete("""
+      DELETE FROM personnel_evaluation.admin_custom_targets
+      WHERE eval_year = #{year}
+        AND user_id IN (
+          SELECT id
+          FROM   personnel_evaluation.users_${year}
+          WHERE  c_name    = #{orgName}
+            AND  eval_year = #{year}
+        )
+      """)
+  int deleteTargetsByOrg(
+      @Param("year") int year,
+      @Param("orgName") String orgName);
 
 }

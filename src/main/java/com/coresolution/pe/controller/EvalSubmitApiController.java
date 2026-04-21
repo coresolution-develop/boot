@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +27,9 @@ public class EvalSubmitApiController {
 
     private final EvalSubmitService submitService;
 
+    @Value("${app.current.eval-year}")
+    private int currentEvalYear;
+
     // 신규 제출(폼 페이지) — x-www-form-urlencoded
     @PostMapping(value = "/formAction/{eval}/{target}/{ev}/{type}", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, Object> submit(
@@ -33,8 +37,9 @@ public class EvalSubmitApiController {
             @PathVariable String target,
             @PathVariable String ev,
             @PathVariable String type,
-            @RequestParam(defaultValue = "2025") String year,
+            @RequestParam(required = false) String year,
             @RequestParam MultiValueMap<String, String> params) {
+        if (year == null || year.isBlank()) year = String.valueOf(currentEvalYear);
 
         Map<String, String> radios = new LinkedHashMap<>();
         Map<String, String> essays = new LinkedHashMap<>();
@@ -60,8 +65,9 @@ public class EvalSubmitApiController {
             @PathVariable("target") String targetId,
             @PathVariable("ev") String dataEv,
             @PathVariable("type") String dataType,
-            @RequestParam(value = "year", defaultValue = "2025") String year,
+            @RequestParam(value = "year", required = false) String year,
             @RequestBody EditPayload payload) {
+        if (year == null || year.isBlank()) year = String.valueOf(currentEvalYear);
 
         // 필요 시 '수정은 항상 허용'하려면 isCompleted 체크를 빼세요.
         // if (submitService.isCompleted(...)) { ... }

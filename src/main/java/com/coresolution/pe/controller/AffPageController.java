@@ -1198,6 +1198,7 @@ public class AffPageController {
         // (기존 뷰에서 사용하므로 유지)
         model.addAttribute("year", year);
         model.addAttribute("orgName", org);
+        model.addAttribute("currentYear", currentEvalYear);
         return "aff/admin/kpi/summary";
     }
 
@@ -1234,6 +1235,7 @@ public class AffPageController {
         // (기존 뷰에서 사용하므로 유지)
         model.addAttribute("year", year);
         model.addAttribute("orgName", org);
+        model.addAttribute("currentYear", currentEvalYear);
 
         return "aff/admin/kpi/summary2";
     }

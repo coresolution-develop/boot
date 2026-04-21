@@ -211,7 +211,7 @@ public interface AffLoginMapper {
               """)
   List<SubManagement> getSubManagement(String year);
 
-  @Select("SELECT sub_code FROM personnel_evaluation_aff.sub_management WHERE sub_name = #{subName} AND eval_year = #{year}")
+  @Select("SELECT sub_code FROM personnel_evaluation_aff.sub_management WHERE sub_name = #{subName} AND eval_year = #{year} LIMIT 1")
   String getSubcode(@Param("subName") String subName, @Param("year") int year);
 
   /** 롤 테이블에서 연도별 삭제 (관리자 제외) */

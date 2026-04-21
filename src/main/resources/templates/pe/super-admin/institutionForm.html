@@ -4,11 +4,13 @@
       th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
 <head>
   <meta charset="UTF-8">
-  <title th:text="${mode == 'new'} ? '기관 등록' : '기관 수정'">기관 등록/수정 | 슈퍼 어드민</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${mode == 'new'} ? '기관 등록 | 최고 관리자' : '기관 수정 | 최고 관리자'">기관 등록/수정 | 최고 관리자</title>
   <link rel="stylesheet" th:href="@{/css/css.css}">
   <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
   <link rel="stylesheet" th:href="@{/css/admin.css}">
   <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <script>(function(){ document.documentElement.setAttribute('data-first-paint',''); })();</script>
   <style>
     .main-inner { max-width:600px; margin:0 auto; padding:24px 20px; }
     .page-title  { font-size:22px; font-weight:700; color:#1e293b; margin-bottom:24px; }
@@ -41,8 +43,8 @@
   </style>
 </head>
 <body>
-<div th:replace="~{Include/layout :: header}"></div>
-<div th:replace="~{Include/layout :: nav_section}"></div>
+<div th:replace="~{Include/super-admin-layout :: header}"></div>
+<div th:replace="~{Include/super-admin-layout :: nav_section}"></div>
 
 <div class="main-content">
 <div class="main-inner">
@@ -114,7 +116,6 @@
 
 </div>
 </div>
-<script src="https://code.jquery.com/jquery-latest.min.js"></script>
-<div th:replace="~{Include/layout :: scripts}"></div>
+<div th:replace="~{Include/super-admin-layout :: scripts}"></div>
 </body>
 </html>

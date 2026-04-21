@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/inst-admin-layout :: head('문제은행 미리보기')}"></head>
+<body>
+<div th:replace="~{Include/inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:900px; margin:0 auto; padding:24px 20px;">
+<style>
+.card{background:#fff;border:1px solid #e5e9ef;border-radius:12px;padding:20px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-title{font-size:16px;font-weight:700;color:#1e293b;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.chip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.chip-aa{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.chip-ab{background:#f0fdf4;color:#166534;border:1px solid #86efac}
+.chip-info{background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd}
+.chip-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde68a}
+.summary-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.error-box{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#dc2626}
+.btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid}
+.btn-confirm{background:#1b304a;border-color:#1b304a;color:#fff}
+.btn-confirm:hover{filter:brightness(1.12)}
+.btn-back{background:#fff;border-color:#d0d7de;color:#374151}
+.btn-back:hover{background:#f8fafc}
+.tbl-wrap{border:1px solid #e5e9ef;border-radius:10px;overflow:hidden}
+.tbl-scroll{max-height:55vh;overflow:auto}
+.tbl-scroll::-webkit-scrollbar{width:4px}
+.tbl-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table thead th{position:sticky;top:0;z-index:2;background:#f3f6fa;font-weight:600;color:#374151;border-bottom:2px solid #dfe4ea;padding:9px 12px;text-align:left}
+.data-table tbody td{padding:8px 12px;border-bottom:1px solid #f1f4f8;color:#1e293b;vertical-align:middle}
+.data-table tbody tr:hover td{background:#f5f8ff}
+.data-table tbody tr:last-child td{border-bottom:none}
+.group-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:#f1f5f9;color:#475569}
+.group-badge.주관식{background:#fef3c7;color:#b45309}
+</style>
+
+<!-- 헤더 -->
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+  <a th:href="@{/pe/inst-admin/evaluation(year=${year})}" class="btn btn-back" style="height:34px;font-size:13px">← 뒤로</a>
+  <h1 style="font-size:20px;font-weight:700;color:#1e293b;margin:0">문제은행 미리보기</h1>
+  <span th:if="${type == 'AA'}" class="chip chip-aa">AA — 10문항</span>
+  <span th:if="${type == 'AB'}" class="chip chip-ab">AB — 20문항</span>
+</div>
+
+<!-- 요약 -->
+<div class="card">
+  <p class="card-title">파싱 결과</p>
+  <div class="summary-row">
+    <span class="chip chip-info" th:text="'총 ' + ${questionList.size()} + '문항'">0문항</span>
+    <span class="chip chip-info" th:text="'객관식 ' + ${objectiveCount} + '문항'">객관식</span>
+    <span class="chip chip-info" th:text="'주관식 ' + ${subjectiveCount} + '문항'">주관식</span>
+    <span class="chip" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0"
+          th:if="${!hasErrors}">오류 없음</span>
+    <span class="chip chip-warn"
+          th:if="${hasErrors}"
+          th:text="${errors.size()} + '건 경고'">경고</span>
+  </div>
+
+  <!-- 경고 목록 -->
+  <div class="error-box" th:if="${hasErrors}">
+    <div th:each="err : ${errors}" th:text="${err}">오류</div>
+  </div>
+
+  <!-- 그룹별 카운트 -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;font-size:12px">
+    <th:block th:each="entry : ${grouped}">
+      <span style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:4px 10px;color:#374151"
+            th:text="${entry.key} + ' ' + ${entry.value.size()} + '문항'">그룹 N</span>
+    </th:block>
+  </div>
+</div>
+
+<!-- 문항 테이블 -->
+<div class="card" style="padding:0">
+  <div style="padding:16px 20px 12px">
+    <p class="card-title" style="margin:0">문항 목록</p>
+  </div>
+  <div class="tbl-wrap">
+    <div class="tbl-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th style="width:100px">그룹</th>
+            <th>문항 텍스트</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${questionList.isEmpty()}">
+            <td colspan="3" style="text-align:center;color:#94a3b8;padding:24px">파싱된 문항이 없습니다.</td>
+          </tr>
+          <tr th:each="q, stat : ${questionList}">
+            <td th:text="${stat.count}" style="color:#94a3b8;font-size:11px">1</td>
+            <td>
+              <span class="group-badge" th:classappend="${q.d3 == '주관식'} ? '주관식' : ''"
+                    th:text="${q.d3}">그룹</span>
+            </td>
+            <td th:text="${q.d1}">문항텍스트</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 버튼 -->
+<div style="display:flex;gap:12px;margin-top:4px">
+  <form th:action="@{/pe/inst-admin/evaluation/confirm}" method="post">
+    <button type="submit" class="btn btn-confirm"
+            th:attr="data-confirm=|이 문항들을 DB에 저장합니까? 기존 ${type} 문항은 모두 교체됩니다.|"
+            data-ok-label="저장">
+      확정 저장
+    </button>
+  </form>
+  <a th:href="@{/pe/inst-admin/evaluation(year=${year})}" class="btn btn-back">
+    다시 업로드
+  </a>
+</div>
+
+</div>
+</div>
+
+<div th:replace="~{Include/inst-admin-layout :: scripts}"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+});
+</script>
+</body>
+</html>

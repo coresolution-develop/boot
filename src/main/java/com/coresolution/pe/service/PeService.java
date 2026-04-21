@@ -243,4 +243,41 @@ public class PeService {
         return cnt > 0;
     }
 
+    // ── 기관 관리자 전용 ──────────────────────────────────────────────────
+
+    /** idx + institutionName 으로 직원 상세 조회 (기관 범위 검증 포함) */
+    public UserPE findUserByIdxAndOrg(int idx, String year, String institutionName) {
+        return loginMapper.findUserByIdxAndOrg(idx, year, institutionName);
+    }
+
+    /** 평가제외 여부 변경 */
+    public boolean updateDelYn(int idx, String year, String delYn) {
+        return loginMapper.updateDelYn(idx, year, delYn) > 0;
+    }
+
+    /** 비밀번호 초기화 (NULL 설정) */
+    public boolean resetPasswordByIdx(int idx, String year) {
+        return loginMapper.resetPasswordByIdx(idx, year) > 0;
+    }
+
+    /** 역할 전체 교체 (삭제 후 재삽입) */
+    @Transactional
+    public void updateRoles(String userId, String year, List<String> roles) {
+        loginMapper.deleteRolesByUserId(userId, year);
+        if (roles != null) {
+            for (String role : roles) {
+                if (role != null && !role.isBlank()) {
+                    loginMapper.insertRoleForUser(userId, role.toLowerCase(), year);
+                }
+            }
+        }
+    }
+
+    /** 기관 범위 직원 + 역할 초기화 (기관 관리자 전용) */
+    @Transactional
+    public void resetByInstitution(String year, String institutionName) {
+        loginMapper.deleteRolesByYearAndOrg(year, institutionName);
+        loginMapper.deleteUsersByYearAndOrg(year, institutionName);
+    }
+
 }

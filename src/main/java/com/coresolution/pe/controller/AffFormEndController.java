@@ -1,6 +1,7 @@
 package com.coresolution.pe.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,9 @@ public class AffFormEndController {
     @Autowired
     private PeAffService pe;
 
+    @Value("${app.current.eval-year}")
+    private int currentEvalYear;
+
     /**
      * 평가 완료 페이지
      * - JS에서 이동하던 경로와 맞춤: /aff/FormEnd/{eval}/{target}
@@ -32,9 +36,10 @@ public class AffFormEndController {
     @GetMapping("/FormEnd/{eval}/{target}")
     public String formEnd(@PathVariable("eval") String pathEvalId,
             @PathVariable("target") String targetId,
-            @RequestParam(value = "year", defaultValue = "2025") int year,
+            @RequestParam(value = "year", required = false) Integer year,
             Authentication auth,
             Model model) {
+        if (year == null) year = currentEvalYear;
 
         // 로그인 확인
         if (auth == null || auth.getName() == null) {

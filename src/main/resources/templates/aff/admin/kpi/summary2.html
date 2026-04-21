@@ -14,7 +14,6 @@
     <title>KPI 평가 총괄(직원)</title>
   <link rel="stylesheet" th:href="@{/css/css.css}">
   <link rel="stylesheet" th:href="@{/css/alertcss.css}">
-  <link rel="stylesheet" th:href="@{/css/demoheadercss.css}">
   <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
   <link rel="stylesheet" th:href="@{/css/admin.css}">
 	<link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
@@ -249,7 +248,7 @@ td .only-in-td { display: inline !important; }   /* span이면 inline이 자연�
     </div>
     <div class="no-print">
       <select class="custom" name="year" id="yearSelect" style="margin:0; width:85px;">
-        <option th:each="y : ${#numbers.sequence(2024, 2025)}"
+        <option th:each="y : ${#numbers.sequence(2024, currentYear)}"
                 th:value="${y}" th:text="${y}"
                 th:selected="${y == selectedYear}"></option>
       </select>

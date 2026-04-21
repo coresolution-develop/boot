@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/inst-admin-layout :: head('평가완료 메시지 설정')}"></head>
+<body>
+<div th:replace="~{Include/inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:860px; margin:0 auto; padding:24px 20px;">
+<style>
+.card{background:#fff;border:1px solid #e5e9ef;border-radius:12px;padding:20px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-title{font-size:16px;font-weight:700;color:#1e293b;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+.card-sub{font-size:12px;color:#64748b;margin:0 0 16px;line-height:1.6}
+.btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid}
+.btn-primary{background:#1b304a;border-color:#1b304a;color:#fff}
+.btn-primary:hover{filter:brightness(1.12)}
+.btn-back{background:#fff;border-color:#d0d7de;color:#374151}
+.btn-back:hover{background:#f8fafc}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+.letter-textarea{
+  width:100%; min-height:340px; padding:14px 16px;
+  font-size:14px; color:#1e293b; font-family:inherit; line-height:1.8;
+  border:1.5px solid #e2e8f0; border-radius:10px; resize:vertical;
+  background:#f8fafc; outline:none; transition:border-color .15s, box-shadow .15s;
+}
+.letter-textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1);background:#fff}
+.preview-box{
+  background:#f9f7f1; border:1px solid #e8e0cc; border-radius:10px;
+  padding:24px 28px; font-size:14px; color:#2b2b2b; line-height:1.9;
+  white-space:pre-wrap; font-family:'Malgun Gothic','맑은 고딕',serif;
+  min-height:160px; word-break:break-word;
+}
+.char-count{font-size:11px;color:#94a3b8;text-align:right;margin-top:6px}
+.hint-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;line-height:1.7;margin-bottom:16px}
+</style>
+
+<!-- 헤더 -->
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+  <a th:href="@{/pe/inst-admin/dashboard(year=${year})}" class="btn btn-back" style="height:34px;font-size:13px">← 대시보드</a>
+  <h1 style="font-size:20px;font-weight:700;color:#1e293b;margin:0">평가완료 메시지 설정</h1>
+  <span style="background:#f0fdf4;border:1px solid #86efac;color:#166534;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600"
+        th:text="${institutionName}">기관명</span>
+  <span style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;padding:3px 12px;border-radius:20px;font-size:12px;font-weight:600"
+        th:text="${year}+'년도'">2026년도</span>
+</div>
+
+<!-- 플래시 -->
+<div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+<div class="alert alert-error"   th:if="${error}"   th:text="${error}"></div>
+
+<!-- 안내 -->
+<div class="hint-box">
+  평가가 완료된 직원에게 표시되는 메시지를 설정합니다.<br>
+  줄바꿈은 그대로 반영됩니다. 기관명/서명을 포함하여 자유롭게 작성하세요.
+</div>
+
+<!-- 편집 카드 -->
+<div class="card">
+  <p class="card-title">메시지 편집</p>
+  <form th:action="@{/pe/inst-admin/end-letter/save}" method="post">
+    <input type="hidden" name="year" th:value="${year}" />
+    <textarea class="letter-textarea" name="content" id="content"
+              placeholder="예)&#10;존경하는 임직원 여러분,&#10;&#10;평가에 참여해 주셔서 감사합니다.&#10;&#10;- 기관장 홍길동 -"
+              th:text="${letter != null ? letter.content : ''}"></textarea>
+    <div class="char-count"><span id="charCount">0</span>자</div>
+    <div style="display:flex;gap:10px;margin-top:12px">
+      <button type="submit" class="btn btn-primary">저장</button>
+    </div>
+  </form>
+</div>
+
+<!-- 미리보기 카드 -->
+<div class="card">
+  <p class="card-title">미리보기</p>
+  <p class="card-sub">실제 직원에게 보이는 메시지 형태입니다.</p>
+  <div class="preview-box" id="preview"
+       th:text="${letter != null and letter.content != null and !#strings.isEmpty(letter.content)
+                  ? letter.content
+                  : '(저장된 메시지가 없습니다)'}">미리보기</div>
+</div>
+
+</div>
+</div>
+
+<div th:replace="~{Include/inst-admin-layout :: scripts}"></div>
+<script>
+const ta = document.getElementById('content');
+const preview = document.getElementById('preview');
+const charCount = document.getElementById('charCount');
+
+function update() {
+  const v = ta.value;
+  charCount.textContent = v.length;
+  preview.textContent = v || '(내용을 입력하세요)';
+}
+
+ta.addEventListener('input', update);
+update();
+
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+});
+</script>
+</body>
+</html>

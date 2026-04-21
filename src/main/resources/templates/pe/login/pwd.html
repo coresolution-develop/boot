@@ -1,105 +1,226 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1" >
-    <title>코어솔루션 인사평가 시스템</title>
-    <link rel="stylesheet" type="text/css" th:href="@{/css/css.css}">
-    <link rel="stylesheet" type="text/css" th:href="@{/css/demopwdcss.css?ver=0226}">
-    <link rel="stylesheet" type="text/css" th:href="@{/css/alertcss.css?ver=0226}">
-    <link rel="stylesheet" type="text/css" th:href="@{/css/pwdmediacss.css?ver=0226}">
-    <link rel="stylesheet" type="text/css" th:href="@{/css/mobileheadercss.css?ver=0227}">
-    <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
-    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
-    <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>비밀번호 설정</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1b304a 100%);
+      font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+      padding: 20px;
+    }
+
+    .pwd-wrap {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .pwd-card {
+      background: #fff;
+      border-radius: 20px;
+      padding: 44px 40px 38px;
+      box-shadow: 0 24px 72px rgba(0,0,0,.36);
+    }
+
+    /* ── 헤더 ── */
+    .pwd-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .pwd-badge {
+      display: inline-block;
+      background: #1b304a;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      padding: 4px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .pwd-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #1e293b;
+      letter-spacing: -.02em;
+    }
+    .pwd-subtitle {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 6px;
+    }
+
+    /* ── 폼 ── */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      letter-spacing: .02em;
+    }
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 14px;
+      color: #1e293b;
+      background: #fafafa;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #1b304a;
+      box-shadow: 0 0 0 3px rgba(27,48,74,.1);
+      background: #fff;
+    }
+    .form-control::placeholder { color: #9ca3af; }
+
+    /* readonly 필드 */
+    .form-control[readonly] {
+      background: #f1f5f9;
+      color: #64748b;
+      cursor: default;
+      border-color: #e2e8f0;
+    }
+
+    /* 구분선 */
+    .divider {
+      border: none;
+      border-top: 1px solid #f1f5f9;
+      margin: 18px 0;
+    }
+
+    /* ── 버튼 ── */
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: #1b304a;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: filter .15s, transform .08s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover { filter: brightness(1.15); }
+    .btn-submit:active { transform: scale(.99); }
+
+    /* ── 뒤로가기 ── */
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #64748b;
+      text-decoration: none;
+    }
+    .back-link:hover { color: #1e293b; }
+
+    /* 안내 */
+    .pwd-hint {
+      margin-top: 18px;
+      padding: 11px 14px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #0369a1;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 480px) {
+      .pwd-card { padding: 34px 24px 28px; }
+      .pwd-title { font-size: 19px; }
+    }
+  </style>
 </head>
 <body>
-    
-<form id="frm" th:action="@{/pwdAction}" method="post">
-    <input type="hidden" name="idx" id="idx" th:value="${idx}">
-	<section>
-        <div class="login">
-            <div class="line"></div>
-            <div class="login-head">
-                <div class="head-img-area" onclick="homego()">
-                    <img src="/icon/arrow2.png">
-                </div>
-                <div class="head-span-area">
-                    <span class="bold">비밀번호 설정</span>
-                </div>
-            </div>
-            
-            <ul class="normal">
-                <li><input type="text" name="id" id="id" placeholder="사번" title="사번" readonly="readonly" th:value="${id}"></li>
-                <li><input type="text" name="name" id="name" placeholder="이름" title="이름" readonly="readonly" th:value="${name}"></li>
-                <li><input type="password" name="pwd" id="pwd" placeholder="비밀번호" title="비밀번호" autofocus="autofocus"></li>
-                <li><input type="password" name="pwd2" id="pwd2" placeholder="비밀번호확인" title="비밀번호확인"></li>
-                <li><button class="bold" type="button" id="btn" value="">비밀번호 설정</button></li>			
-            </ul>
-        </div>
-	</section>
-	
-	<div class="modal normal">
-		<div class="modal_body">
-			<div>
-				<img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
-				<div class="menu_msg">text</div>
-				<div class="modal_footer">
-					<div class="btn modal_btn" onclick="closePopup()">
-						확인
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="modal2 normal">
-        <div class="modal_body2">
-            <div>
-                <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
-                <div class="menu_msg2">text</div>
-                <div class="modal_footer2">
-                    <div class="btn modal_btn2" onclick="closePopup2()">
-                        확인
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal3 normal">
-        <div class="modal_body3">
-            <div>
-                <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
-                <div class="menu_msg3">text</div>
-                <div class="modal_footer3">
-                    <div class="btn modal_btn2" onclick="modal_insert()">
-                        확인
-                    </div>
-                    <div class="btn pink_btn2" onclick="closePopup3()">
-                        취소
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal4 normal">
-        <div class="modal_body4">
-            <div>
-                <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}">
-                <div class="menu_msg4">text</div>
-                <div class="modal_footer4">
-                    <div class="btn modal_btn2" onclick="modal_insert()">
-                        확인
-                    </div>
-                    <div class="btn pink_btn2" onclick="closePopup4()">
-                        취소
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-    <script th:src="@{/js/login/pwd.js}"></script>
 
+<div class="pwd-wrap">
+  <div class="pwd-card">
+
+    <div class="pwd-header">
+      <div class="pwd-badge">Password Setup</div>
+      <h1 class="pwd-title">비밀번호 설정</h1>
+      <p class="pwd-subtitle">처음 로그인 시 비밀번호를 설정해주세요</p>
+    </div>
+
+    <form id="frm" th:action="@{/pwdAction}" method="post">
+      <input type="hidden" name="idx" id="idx" th:value="${idx}">
+
+      <!-- 사번 (readonly) -->
+      <div class="form-group">
+        <label class="form-label">사번</label>
+        <input type="text" name="id" id="id" class="form-control"
+               readonly th:value="${id}" placeholder="사번">
+      </div>
+
+      <!-- 이름 (readonly) -->
+      <div class="form-group">
+        <label class="form-label">이름</label>
+        <input type="text" name="name" id="name" class="form-control"
+               readonly th:value="${name}" placeholder="이름">
+      </div>
+
+      <hr class="divider">
+
+      <!-- 새 비밀번호 -->
+      <div class="form-group">
+        <label class="form-label" for="pwd">새 비밀번호</label>
+        <input type="password" name="pwd" id="pwd" class="form-control"
+               placeholder="비밀번호를 입력하세요" autofocus autocomplete="new-password">
+      </div>
+
+      <!-- 비밀번호 확인 -->
+      <div class="form-group">
+        <label class="form-label" for="pwd2">비밀번호 확인</label>
+        <input type="password" name="pwd2" id="pwd2" class="form-control"
+               placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
+      </div>
+
+      <button type="button" id="btn" class="btn-submit">비밀번호 설정</button>
+    </form>
+
+    <div class="pwd-hint">
+      💡 설정한 비밀번호는 다음 로그인부터 <strong>사번 / 비밀번호</strong> 방식으로 사용됩니다.
+    </div>
+
+    <a href="/login" class="back-link">← 로그인으로 돌아가기</a>
+
+  </div>
+</div>
+
+<!-- 알림 모달 (pwd.js 의존 — 구조 변경 금지) -->
+<div class="modal normal">
+  <div class="modal_body">
+    <div>
+      <img class="menu_icon" th:src="@{/icon/ev/alert_img.png}" onerror="this.style.display='none'">
+      <div class="menu_msg">text</div>
+      <div class="modal_footer">
+        <div class="btn modal_btn" onclick="closePopup()">확인</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script th:src="@{/js/login/pwd.js}"></script>
 </body>
 </html>

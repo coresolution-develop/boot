@@ -4,11 +4,13 @@
       th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
 <head>
   <meta charset="UTF-8">
-  <title>기관 관리자 관리 | 슈퍼 어드민</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>기관 관리자 관리 | 최고 관리자</title>
   <link rel="stylesheet" th:href="@{/css/css.css}">
   <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
   <link rel="stylesheet" th:href="@{/css/admin.css}">
   <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <script>(function(){ document.documentElement.setAttribute('data-first-paint',''); })();</script>
   <style>
     .main-inner  { max-width:1000px; margin:0 auto; padding:24px 20px; }
     .breadcrumb  { font-size:13px; color:#64748b; margin-bottom:6px; }
@@ -29,7 +31,7 @@
 
     /* 기존 관리자 테이블 */
     .admin-table { width:100%; border-collapse:collapse; font-size:13px; }
-    .admin-table th { background:#1b304a; color:#fff; padding:10px 12px;
+    .admin-table th { background:#0f172a; color:#e2e8f0; padding:10px 12px;
                       text-align:left; font-weight:600; white-space:nowrap; }
     .admin-table td { padding:10px 12px; border-bottom:1px solid #f1f5f9;
                       vertical-align:middle; color:#374151; }
@@ -73,8 +75,8 @@
   </style>
 </head>
 <body>
-<div th:replace="~{Include/layout :: header}"></div>
-<div th:replace="~{Include/layout :: nav_section}"></div>
+<div th:replace="~{Include/super-admin-layout :: header}"></div>
+<div th:replace="~{Include/super-admin-layout :: nav_section}"></div>
 
 <div class="main-content">
 <div class="main-inner">
@@ -183,8 +185,7 @@
 
 </div>
 </div>
-<script src="https://code.jquery.com/jquery-latest.min.js"></script>
-<div th:replace="~{Include/layout :: scripts}"></div>
+<div th:replace="~{Include/super-admin-layout :: scripts}"></div>
 <script>
 function validatePwd() {
   const pwd  = document.querySelector('input[name="password"]').value;

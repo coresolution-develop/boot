@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/inst-admin-layout :: head('대시보드')}"></head>
+<body>
+<div th:replace="~{Include/inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:1100px; margin:0 auto; padding:28px 20px;">
+<style>
+/* ── 공통 애니메이션 ── */
+@keyframes db-rise {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*="db-"] { animation:none !important; opacity:1 !important; transform:none !important; }
+}
+
+/* ── 헤더 배너 ── */
+.db-banner {
+  background: linear-gradient(135deg, #1b304a 0%, #2563eb 100%);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  animation: db-rise .35s ease-out both;
+  box-shadow: 0 4px 20px rgba(37,99,235,.25);
+}
+.db-banner-left h1 {
+  font-size: 22px; font-weight: 800; color: #fff;
+  margin: 0 0 6px; letter-spacing: -.01em;
+}
+.db-banner-left p {
+  font-size: 13px; color: rgba(255,255,255,.7); margin: 0;
+}
+.db-banner-right {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.12); border-radius: 10px;
+  padding: 10px 18px;
+}
+.db-banner-right .yr-label {
+  font-size: 11px; color: rgba(255,255,255,.6); font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+}
+.db-banner-right .yr-value {
+  font-size: 24px; font-weight: 800; color: #fff; line-height: 1;
+}
+
+/* ── 통계 카드 그리드 ── */
+.db-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) { .db-stat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .db-stat-grid { grid-template-columns: 1fr; } }
+
+.db-stat {
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 14px;
+  padding: 20px 22px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  position: relative;
+  overflow: hidden;
+  animation: db-rise .35s ease-out both;
+}
+.db-stat:nth-child(1) { animation-delay: .05s; }
+.db-stat:nth-child(2) { animation-delay: .10s; }
+.db-stat:nth-child(3) { animation-delay: .15s; }
+.db-stat:nth-child(4) { animation-delay: .20s; }
+
+/* 왼쪽 색상 막대 */
+.db-stat::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 16px; bottom: 16px;
+  width: 4px;
+  border-radius: 0 4px 4px 0;
+}
+.db-stat-navy::before  { background: #1b304a; }
+.db-stat-green::before { background: #16a34a; }
+.db-stat-red::before   { background: #dc2626; }
+.db-stat-blue::before  { background: #2563eb; }
+
+.db-stat-label {
+  font-size: 11px; font-weight: 700; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .07em;
+  margin: 0 0 10px;
+}
+.db-stat-value {
+  font-size: 36px; font-weight: 800; margin: 0 0 4px; line-height: 1;
+}
+.db-stat-navy  .db-stat-value { color: #1b304a; }
+.db-stat-green .db-stat-value { color: #16a34a; }
+.db-stat-red   .db-stat-value { color: #dc2626; }
+.db-stat-blue  .db-stat-value { color: #2563eb; }
+.db-stat-desc  {
+  font-size: 12px; color: #94a3b8; margin: 0;
+}
+
+/* 경고 상태 (비밀번호 미설정 > 0) */
+.db-stat-warn {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.db-stat-warn .db-stat-label { color: #fca5a5; }
+.db-stat-warn .db-stat-desc  { color: #f87171; }
+
+/* ── 바로가기 카드 ── */
+.db-nav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 900px) { .db-nav-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .db-nav-grid { grid-template-columns: 1fr; } }
+
+.db-nav-card {
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 14px;
+  padding: 22px 20px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  transition: box-shadow .18s, border-color .18s, transform .18s;
+  animation: db-rise .35s ease-out both;
+}
+.db-nav-card:nth-child(1) { animation-delay: .25s; }
+.db-nav-card:nth-child(2) { animation-delay: .30s; }
+.db-nav-card:nth-child(3) { animation-delay: .35s; }
+.db-nav-card:nth-child(4) { animation-delay: .40s; }
+
+.db-nav-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.10);
+  border-color: #bfdbfe;
+  transform: translateY(-2px);
+}
+.db-nav-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+.icon-bg-navy  { background: #eff6ff; }
+.icon-bg-blue  { background: #eff6ff; }
+.icon-bg-teal  { background: #f0fdf4; }
+.icon-bg-amber { background: #fffbeb; }
+
+.db-nav-title {
+  font-size: 15px; font-weight: 700; color: #1e293b; margin: 0;
+}
+.db-nav-desc {
+  font-size: 12px; color: #94a3b8; margin: 0; line-height: 1.5;
+}
+.db-nav-arrow {
+  font-size: 16px; color: #cbd5e1; margin-top: auto;
+  transition: color .18s, transform .18s;
+}
+.db-nav-card:hover .db-nav-arrow { color: #3b82f6; transform: translateX(4px); }
+
+/* ── 안내 섹션 ── */
+.db-guide {
+  background: #f8fafc;
+  border: 1px solid #e5e9ef;
+  border-radius: 14px;
+  padding: 20px 24px;
+  animation: db-rise .35s ease-out .45s both;
+}
+.db-guide-title {
+  font-size: 14px; font-weight: 700; color: #1e293b; margin: 0 0 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.db-guide-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.db-guide-step {
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.db-step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #1b304a; color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.db-step-text { font-size: 12px; color: #475569; line-height: 1.6; }
+.db-step-text strong { color: #1e293b; }
+</style>
+
+  <!-- ① 헤더 배너 -->
+  <div class="db-banner">
+    <div class="db-banner-left">
+      <h1><span th:text="${institutionName}">기관명</span></h1>
+      <p>기관 관리자 대시보드 — 직원·부서·평가를 한곳에서 관리하세요.</p>
+    </div>
+    <div class="db-banner-right">
+      <div>
+        <p class="yr-label">평가연도</p>
+        <p class="yr-value" th:text="${year}">2026</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 통계 카드 -->
+  <div class="db-stat-grid">
+
+    <div class="db-stat db-stat-navy">
+      <p class="db-stat-label">전체 직원</p>
+      <p class="db-stat-value" th:text="${totalUsers}">0</p>
+      <p class="db-stat-desc">등록된 전체 인원</p>
+    </div>
+
+    <div class="db-stat db-stat-green">
+      <p class="db-stat-label">평가 대상</p>
+      <p class="db-stat-value" th:text="${activeUsers}">0</p>
+      <p class="db-stat-desc">평가 포함 직원 수</p>
+    </div>
+
+    <div class="db-stat db-stat-red"
+         th:classappend="${pwdUnset > 0} ? 'db-stat-warn' : ''">
+      <p class="db-stat-label">비밀번호 미설정</p>
+      <p class="db-stat-value" th:text="${pwdUnset}">0</p>
+      <p class="db-stat-desc"
+         th:text="${pwdUnset > 0} ? '초기화 필요' : '모두 설정 완료'">-</p>
+    </div>
+
+    <div class="db-stat db-stat-blue">
+      <p class="db-stat-label">등록 부서</p>
+      <p class="db-stat-value" th:text="${deptCount}">0</p>
+      <p class="db-stat-desc">등록된 부서 수</p>
+    </div>
+
+  </div>
+
+  <!-- ③ 바로가기 -->
+  <div class="db-nav-grid">
+
+    <a th:href="@{/pe/inst-admin/userList(year=${year})}" class="db-nav-card">
+      <div class="db-nav-icon icon-bg-navy"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1b304a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+      <p class="db-nav-title">직원명부</p>
+      <p class="db-nav-desc">직원 목록 조회, 역할·비밀번호·평가제외 관리</p>
+      <span class="db-nav-arrow">→</span>
+    </a>
+
+    <a th:href="@{/pe/inst-admin/userDataUpload(year=${year})}" class="db-nav-card">
+      <div class="db-nav-icon icon-bg-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <p class="db-nav-title">직원 업로드</p>
+      <p class="db-nav-desc">엑셀 파일로 직원 데이터 일괄 등록</p>
+      <span class="db-nav-arrow">→</span>
+    </a>
+
+    <a th:href="@{/pe/inst-admin/subManagement(year=${year})}" class="db-nav-card">
+      <div class="db-nav-icon icon-bg-teal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+      <p class="db-nav-title">부서 설정</p>
+      <p class="db-nav-desc">부서 목록 조회 및 관리</p>
+      <span class="db-nav-arrow">→</span>
+    </a>
+
+    <a th:href="@{/pe/inst-admin/evaluation(year=${year})}" class="db-nav-card">
+      <div class="db-nav-icon icon-bg-amber"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="12" y2="16"/></svg></div>
+      <p class="db-nav-title">평가 설정</p>
+      <p class="db-nav-desc">평가 문항 및 진행 상태 관리</p>
+      <span class="db-nav-arrow">→</span>
+    </a>
+
+  </div>
+
+  <!-- ④ 업무 순서 안내 -->
+  <div class="db-guide">
+    <p class="db-guide-title">업무 진행 순서</p>
+    <div class="db-guide-steps">
+      <div class="db-guide-step">
+        <span class="db-step-num">1</span>
+        <p class="db-step-text"><strong>부서 등록</strong><br>직원 업로드 전 부서를 먼저 등록하세요.</p>
+      </div>
+      <div class="db-guide-step">
+        <span class="db-step-num">2</span>
+        <p class="db-step-text"><strong>직원 업로드</strong><br>엑셀 양식에 직원 정보를 작성 후 업로드하세요.</p>
+      </div>
+      <div class="db-guide-step">
+        <span class="db-step-num">3</span>
+        <p class="db-step-text"><strong>역할 확인</strong><br>직원명부에서 역할·평가제외 여부를 확인하세요.</p>
+      </div>
+      <div class="db-guide-step">
+        <span class="db-step-num">4</span>
+        <p class="db-step-text"><strong>비밀번호 안내</strong><br>미설정 직원에게 초기 로그인 방법을 안내하세요.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div th:replace="~{Include/inst-admin-layout :: scripts}"></div>
+</body>
+</html>

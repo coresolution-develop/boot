@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${pageTitle} + ' | 최고 관리자'">최고 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+
+  <style>
+  /* ── 최고 관리자 헤더 ── */
+  .sa-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 62px;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 0 16px;
+    z-index: 1100;
+    box-shadow: 0 1px 8px rgba(0,0,0,.3);
+  }
+  .sa-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .sa-logo-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .sa-logo-img {
+    height: 28px;
+    width: auto;
+    display: block;
+    filter: brightness(0) invert(1);
+    opacity: .85;
+  }
+  .sa-logo-text {
+    font-size: 15px;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+  }
+  .sa-role-badge {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(251,191,36,.12);
+    border: 1px solid rgba(251,191,36,.3);
+    border-radius: 20px;
+    padding: 3px 10px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .sa-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sa-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-decoration: none;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px;
+    background: rgba(255,255,255,.04);
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+  }
+  .sa-logout-btn:hover {
+    background: rgba(239,68,68,.15);
+    border-color: rgba(239,68,68,.4);
+    color: #f87171;
+  }
+  </style>
+
+  <!-- 첫 페인트 전환 방지 -->
+  <script>
+    (function () {
+      document.documentElement.setAttribute('data-first-paint', '');
+    })();
+  </script>
+</head>
+
+<!-- ─────────────────────────────────────────────
+     헤더 (최고 관리자용)
+───────────────────────────────────────────── -->
+<header th:fragment="header" class="sa-header">
+  <style>
+  .sa-header {
+    position: fixed; top: 0; left: 0; right: 0; height: 62px;
+    background: #0f172a;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px 0 16px; z-index: 1100;
+    box-shadow: 0 1px 8px rgba(0,0,0,.3);
+  }
+  .sa-header-left { display: flex; align-items: center; gap: 12px; }
+  .sa-logo-link { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .sa-logo-img { height: 28px; width: auto; filter: brightness(0) invert(1); opacity: .85; }
+  .sa-logo-text {
+    font-size: 15px; font-weight: 800; color: #f1f5f9;
+    letter-spacing: -.01em; white-space: nowrap;
+  }
+  .sa-role-badge {
+    font-size: 11px; font-weight: 700; color: #fbbf24;
+    background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.3);
+    border-radius: 20px; padding: 3px 10px; letter-spacing: .04em;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .sa-header-right { display: flex; align-items: center; gap: 10px; }
+  .sa-logout-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 13px; font-weight: 600; color: #94a3b8; text-decoration: none;
+    padding: 6px 14px; border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px; background: rgba(255,255,255,.04);
+    transition: background .15s, border-color .15s, color .15s; white-space: nowrap;
+  }
+  .sa-logout-btn:hover {
+    background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.4); color: #f87171;
+  }
+  .sa-menu-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border: none; background: transparent; border-radius: 8px;
+    cursor: pointer; color: #94a3b8; flex-shrink: 0;
+    transition: background .15s, color .15s;
+  }
+  .sa-menu-btn:hover { background: rgba(255,255,255,.08); color: #f1f5f9; }
+  .sa-menu-btn:focus { outline: 2px solid rgba(251,191,36,.4); outline-offset: 2px; }
+  </style>
+  <div class="sa-header-left">
+    <!-- 햄버거 토글 버튼 -->
+    <button class="sa-menu-btn" id="sidebarToggleBtn" aria-label="메뉴">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <rect y="3"  width="20" height="2" rx="1"/>
+        <rect y="9"  width="20" height="2" rx="1"/>
+        <rect y="15" width="20" height="2" rx="1"/>
+      </svg>
+    </button>
+    <a href="/admin/institutions" class="sa-logo-link">
+      <img th:src="@{/img/logo.png}" alt="로고" class="sa-logo-img"
+           onerror="this.style.display='none'">
+      <span class="sa-logo-text">시스템 관리</span>
+    </a>
+    <span class="sa-role-badge">⚙ 최고 관리자</span>
+  </div>
+  <div class="sa-header-right">
+    <a href="/Logout" class="sa-logout-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      로그아웃
+    </a>
+  </div>
+</header>
+
+<!-- ─────────────────────────────────────────────
+     사이드 네비게이션 (최고 관리자용)
+───────────────────────────────────────────── -->
+<div th:fragment="nav_section" id="superAdminNav" class="nav_section"
+     th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+     th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+  <ul>
+    <!-- 섹션 레이블 -->
+    <li class="nav-section-label"><span>기관 관리</span></li>
+
+    <li class="nav_link sa-institutions"
+        data-base-url="/admin/institutions">
+      <svg class="icon-image" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right:10px;flex-shrink:0;opacity:.75;">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span>기관 목록</span>
+    </li>
+
+    <li class="nav_link sa-inst-new"
+        data-base-url="/admin/institutions/new">
+      <svg class="icon-image" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right:10px;flex-shrink:0;opacity:.75;">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="16"/>
+        <line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      <span>기관 등록</span>
+    </li>
+
+    <li class="nav-divider"></li>
+
+    <!-- ─── 일반 관리자 이동 ─── -->
+    <li class="nav-section-label"><span>바로가기</span></li>
+
+    <li class="nav_link sa-admin"
+        data-base-url="/admin/userList">
+      <svg class="icon-image" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right:10px;flex-shrink:0;opacity:.75;">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span>관리자 화면</span>
+    </li>
+  </ul>
+</div>
+
+<!-- ─────────────────────────────────────────────
+     공통 스크립트
+───────────────────────────────────────────── -->
+<th:block th:fragment="scripts">
+<script>
+(function () {
+  'use strict';
+
+  /* ── 첫 페인트 전환 제거 ── */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      document.documentElement.removeAttribute('data-first-paint');
+    });
+  });
+
+  window.addEventListener('DOMContentLoaded', function () {
+
+    /* ── nav 클릭 → URL 이동 ── */
+    document.querySelectorAll('#superAdminNav [data-base-url]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var url = el.getAttribute('data-base-url');
+        if (url) location.href = url;
+      });
+    });
+
+    /* ── 현재 경로 기반 nav 활성화 ── */
+    var path = location.pathname;
+    var best = null;
+    var bestLen = 0;
+    document.querySelectorAll('#superAdminNav [data-base-url]').forEach(function (el) {
+      var base = el.getAttribute('data-base-url');
+      if (base && path.startsWith(base) && base.length > bestLen) {
+        bestLen = base.length;
+        best = el;
+      }
+    });
+    if (best) best.classList.add('active');
+
+    /* ── 사이드바 토글 ── */
+    var toggleBtn = document.getElementById('sidebarToggleBtn');
+    var nav = document.getElementById('superAdminNav');
+    if (toggleBtn && nav) {
+      toggleBtn.addEventListener('click', function () {
+        var collapsed = document.documentElement.getAttribute('data-collapsed') === 'true';
+        var next = !collapsed;
+        var w = next ? '70px' : '240px';
+
+        document.documentElement.setAttribute('data-collapsed', String(next));
+        nav.setAttribute('data-collapsed', String(next));
+        document.documentElement.style.setProperty('--nav-w', w);
+        nav.style.setProperty('--nav-w', w);
+
+        document.cookie = 'sidebarCollapsed=' + next
+          + '; path=/; max-age=31536000; SameSite=Lax';
+
+        fetch('/api/sidebar-toggle', {
+          method: 'POST',
+          body: JSON.stringify({ collapsed: next }),
+          headers: { 'Content-Type': 'application/json' }
+        }).catch(function () {});
+      });
+    }
+
+  }); /* DOMContentLoaded */
+
+})();
+</script>
+</th:block>
+
+</html>

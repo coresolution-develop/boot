@@ -8,4 +8,5 @@ public class SubManagement {
     private String subName;
     private String subCode;
     private int evalYear;
+    private Integer institutionId;   // sub_management.institution_id (nullable)
 }

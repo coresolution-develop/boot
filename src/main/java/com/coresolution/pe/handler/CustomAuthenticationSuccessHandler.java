@@ -124,7 +124,7 @@ public class CustomAuthenticationSuccessHandler
                     : "me";
             target = ctx + "/pwd/" + idxStr;
         } else if (hasRole(authentication.getAuthorities(), "ROLE_ADMIN")) {
-            target = ctx + "/admin/userList";
+            target = ctx + "/admin/institutions";
         } else {
             Integer idx = peService.findIdx(userId); // DB 보정용
             String idxStr = (idx != null && idx > 0) ? String.valueOf(idx) : "me";

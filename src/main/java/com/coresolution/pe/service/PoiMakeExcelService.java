@@ -215,11 +215,12 @@ public class PoiMakeExcelService {
     }
 
     @Transactional
-    public void saveDepartments(List<SubManagement> subs, int year) {
+    public void saveDepartments(List<SubManagement> subs, int year, Integer institutionId) {
         if (subs == null || subs.isEmpty())
             throw new IllegalStateException("업로드된 부서 목록이 없습니다.");
         for (SubManagement s : subs) {
             s.setEvalYear(year);
+            s.setInstitutionId(institutionId);
             if (peService.countByCodeAndYear(s.getSubCode(), year) > 0) {
                 peService.subupdate(s);
             } else {

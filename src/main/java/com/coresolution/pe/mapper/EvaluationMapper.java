@@ -41,6 +41,9 @@ public interface EvaluationMapper {
   @Delete("DELETE FROM personnel_evaluation.evaluation WHERE eval_year = #{year}")
   int deleteByYear(@Param("year") int year);
 
+  @Delete("DELETE FROM personnel_evaluation.evaluation WHERE eval_year = #{year} AND d2 = #{type}")
+  int deleteByYearAndType(@Param("year") int year, @Param("type") String type);
+
   @Select("""
         SELECT COUNT(*) FROM personnel_evaluation.evaluation
          WHERE eval_year = #{year} AND d2 = #{type}

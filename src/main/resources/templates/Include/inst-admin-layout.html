@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${pageTitle} + ' | 기관 관리자'">기관 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+
+  <style>
+  /* ── 기관 관리자 헤더 ── */
+  .ia-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 62px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e9ef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px 0 16px;
+    z-index: 1100;
+    box-shadow: 0 1px 8px rgba(0,0,0,.06);
+  }
+  .ia-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ia-logo-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .ia-logo-img {
+    height: 30px;
+    width: auto;
+    display: block;
+  }
+  .ia-logo-text {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1b304a;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+  }
+  .ia-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .ia-inst-badge {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8ef;
+    border-radius: 20px;
+    padding: 4px 14px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ia-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    text-decoration: none;
+    padding: 6px 14px;
+    border: 1px solid #e2e8ef;
+    border-radius: 8px;
+    background: #fff;
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+  }
+  .ia-logout-btn:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+  }
+  </style>
+
+  <!-- 첫 페인트 전환 방지 (JS 이전에 즉시 실행) -->
+  <script>
+    (function () {
+      document.documentElement.setAttribute('data-first-paint', '');
+    })();
+  </script>
+</head>
+
+<!-- ─────────────────────────────────────────────
+     헤더 (기관 관리자용)
+───────────────────────────────────────────── -->
+<header th:fragment="header" class="ia-header">
+  <style>
+  .ia-menu-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #475569;
+    flex-shrink: 0;
+    transition: background .15s, color .15s;
+  }
+  .ia-menu-btn:hover { background: #f1f5f9; color: #1e293b; }
+  .ia-menu-btn:focus { outline: 2px solid rgba(27,48,74,.3); outline-offset: 2px; }
+  </style>
+  <div class="ia-header-left">
+    <!-- 햄버거 토글 버튼 (헤더로 이동) -->
+    <button class="ia-menu-btn" id="sidebarToggleBtn" aria-label="메뉴">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+        <rect y="3"  width="20" height="2" rx="1"/>
+        <rect y="9"  width="20" height="2" rx="1"/>
+        <rect y="15" width="20" height="2" rx="1"/>
+      </svg>
+    </button>
+    <!-- 로고 -->
+    <a th:href="@{/pe/inst-admin/dashboard}" class="ia-logo-link">
+      <img th:src="@{/img/logo.png}" alt="로고" class="ia-logo-img"
+           onerror="this.style.display='none'">
+      <span class="ia-logo-text">기관 관리자</span>
+    </a>
+  </div>
+  <div class="ia-header-right">
+    <span class="ia-inst-badge"
+          th:text="${session.institutionName != null ? session.institutionName : '기관 관리자'}"></span>
+    <a th:href="@{/pe/inst-admin/logout}" class="ia-logout-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      로그아웃
+    </a>
+  </div>
+</header>
+
+<!-- ─────────────────────────────────────────────
+     사이드 네비게이션 (기관 관리자용)
+───────────────────────────────────────────── -->
+<div th:fragment="nav_section" id="adminNav" class="nav_section"
+     th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+     th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+  <!-- 연도 선택 -->
+  <div class="ia-year-wrap">
+    <select id="yearSelect" class="ia-year-select"
+            th:attr="data-current=${currentEvalYear}">
+      <option th:each="y : ${availableYears}"
+              th:value="${y}"
+              th:text="${y + '년'}"
+              th:selected="${y == currentEvalYear}"></option>
+    </select>
+  </div>
+
+  <ul>
+    <!-- 기관명 표시 -->
+    <li class="nav-section-label"
+        th:text="${session.institutionName != null ? session.institutionName : '기관'}"></li>
+
+    <li class="nav-divider"></li>
+
+    <!-- ─── 직원 관리 ─── -->
+    <li class="nav-section-label"><span>직원 관리</span></li>
+
+    <li class="nav_link inst-userlist"
+        data-base-url="/pe/inst-admin/userList"
+        data-icon-on="/icon/ev/icon-employee-list-on.svg"
+        data-icon-off="/icon/ev/icon-employee-list-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-employee-list-off.svg" alt="">
+      <span>직원명부</span>
+    </li>
+
+    <li class="nav_link inst-upload"
+        data-base-url="/pe/inst-admin/userDataUpload"
+        data-icon-on="/icon/ev/icon-employee-upload-on.svg"
+        data-icon-off="/icon/ev/icon-employee-upload-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-employee-upload-off.svg" alt="">
+      <span>직원 업로드</span>
+    </li>
+
+    <li class="nav-divider"></li>
+
+    <!-- ─── 설정 ─── -->
+    <li class="nav-section-label"><span>설정</span></li>
+
+    <li class="nav_link inst-dept"
+        data-base-url="/pe/inst-admin/subManagement"
+        data-icon-on="/icon/ev/icon-department-on.svg"
+        data-icon-off="/icon/ev/icon-department-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-department-off.svg" alt="">
+      <span>부서 설정</span>
+    </li>
+
+    <li class="nav_link inst-targets"
+        data-base-url="/pe/inst-admin/targets"
+        data-icon-on="/icon/ev/icon-target-setting-on.svg"
+        data-icon-off="/icon/ev/icon-target-setting-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-target-setting-off.svg" alt="">
+      <span>평가 대상 설정</span>
+    </li>
+
+    <li class="nav_link inst-eval"
+        data-base-url="/pe/inst-admin/evaluation"
+        data-icon-on="/icon/ev/icon-problem-upload-on.svg"
+        data-icon-off="/icon/ev/icon-problem-upload-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt="">
+      <span>평가 설정</span>
+    </li>
+
+    <li class="nav_link inst-end-letter"
+        data-base-url="/pe/inst-admin/end-letter"
+        data-icon-on="/icon/ev/icon-problem-upload-on.svg"
+        data-icon-off="/icon/ev/icon-problem-upload-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-problem-upload-off.svg" alt="">
+      <span>완료 메시지 설정</span>
+    </li>
+
+    <li class="nav-divider"></li>
+
+    <!-- ─── 현황 ─── -->
+    <li class="nav-section-label"><span>현황</span></li>
+
+    <li class="nav_link inst-progress"
+        data-base-url="/pe/inst-admin/progress"
+        data-icon-on="/icon/ev/icon-target-setting-on.svg"
+        data-icon-off="/icon/ev/icon-target-setting-off.svg">
+      <img class="icon-image" src="/icon/ev/icon-target-setting-off.svg" alt="">
+      <span>진행률 현황</span>
+    </li>
+  </ul>
+</div>
+
+<!-- ─────────────────────────────────────────────
+     공통 스크립트
+───────────────────────────────────────────── -->
+<th:block th:fragment="scripts">
+<!-- ───────────────────────────────────────────
+     공통 확인/알림 모달 (alert · confirm 대체)
+─────────────────────────────────────────── -->
+<style>
+/* ── 모달 오버레이 ── */
+.ia-modal-ov {
+  position: fixed; inset: 0; z-index: 9900;
+  background: rgba(0,0,0,.45); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .18s ease; pointer-events: none;
+}
+.ia-modal-ov.show { opacity: 1; pointer-events: auto; }
+/* ── 모달 박스 ── */
+.ia-modal-box {
+  background: #fff; border-radius: 16px;
+  padding: 32px 28px 24px; max-width: 420px; width: calc(100% - 40px);
+  box-shadow: 0 24px 64px rgba(0,0,0,.22);
+  transform: scale(.9) translateY(12px); transition: transform .2s ease;
+  position: relative;
+}
+.ia-modal-ov.show .ia-modal-box { transform: scale(1) translateY(0); }
+.ia-modal-ico  { font-size: 38px; text-align: center; margin-bottom: 10px; line-height: 1; }
+.ia-modal-ttl  { font-size: 16px; font-weight: 800; color: #1e293b; text-align: center; margin-bottom: 8px; }
+.ia-modal-msg  { font-size: 14px; color: #475569; text-align: center; line-height: 1.7;
+                 white-space: pre-wrap; word-break: break-word; margin-bottom: 24px; }
+/* ── 버튼 ── */
+.ia-modal-btns { display: flex; gap: 10px; justify-content: center; }
+.ia-mbtn {
+  min-width: 90px; height: 42px; padding: 0 22px;
+  border-radius: 10px; font-size: 14px; font-weight: 700;
+  cursor: pointer; border: 1.5px solid;
+  transition: filter .15s, transform .1s;
+}
+.ia-mbtn:active { transform: scale(.96); }
+.ia-mbtn-cancel { background: #fff; border-color: #d0d7de; color: #374151; }
+.ia-mbtn-cancel:hover { background: #f1f5f9; }
+.ia-mbtn-ok { background: #1b304a; border-color: #1b304a; color: #fff; }
+.ia-mbtn-ok:hover { filter: brightness(1.15); }
+.ia-mbtn-ok.ia-danger { background: #dc2626; border-color: #dc2626; }
+.ia-mbtn-ok.ia-warn   { background: #d97706; border-color: #d97706; }
+</style>
+
+<script>
+/* ══ 모달 시스템 ══════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── DOM 생성 ── */
+  var ov = document.createElement('div');
+  ov.id = 'ia-modal-ov';
+  ov.className = 'ia-modal-ov';
+  ov.innerHTML =
+    '<div class="ia-modal-box" id="ia-modal-box">' +
+      '<div class="ia-modal-ico" id="ia-m-ico"></div>' +
+      '<div class="ia-modal-ttl" id="ia-m-ttl"></div>' +
+      '<div class="ia-modal-msg" id="ia-m-msg"></div>' +
+      '<div class="ia-modal-btns">' +
+        '<button class="ia-mbtn ia-mbtn-cancel" id="ia-m-cancel">취소</button>' +
+        '<button class="ia-mbtn ia-mbtn-ok"     id="ia-m-ok">확인</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+
+  var _ok = null, _cancel = null;
+
+  function openModal(cfg) {
+    document.getElementById('ia-m-ico').textContent  = cfg.icon  || '';
+    document.getElementById('ia-m-ttl').textContent  = cfg.title || '';
+    document.getElementById('ia-m-msg').textContent  = cfg.msg   || '';
+    var okBtn  = document.getElementById('ia-m-ok');
+    var cxBtn  = document.getElementById('ia-m-cancel');
+    okBtn.textContent  = cfg.okLabel  || '확인';
+    cxBtn.textContent  = cfg.cxLabel  || '취소';
+    okBtn.className = 'ia-mbtn ia-mbtn-ok' +
+      (cfg.danger ? ' ia-danger' : cfg.warn ? ' ia-warn' : '');
+    cxBtn.style.display = cfg.hideCancel ? 'none' : '';
+    _ok     = cfg.onOk     || null;
+    _cancel = cfg.onCancel || null;
+    ov.classList.add('show');
+    setTimeout(function(){ okBtn.focus(); }, 180);
+  }
+  function closeModal() { ov.classList.remove('show'); }
+
+  document.getElementById('ia-m-ok').addEventListener('click', function () {
+    closeModal();
+    if (typeof _ok === 'function') { var fn = _ok; _ok = null; _cancel = null; fn(); }
+  });
+  document.getElementById('ia-m-cancel').addEventListener('click', function () {
+    closeModal();
+    if (typeof _cancel === 'function') { var fn = _cancel; _ok = null; _cancel = null; fn(); }
+    else { _ok = null; _cancel = null; }
+  });
+  ov.addEventListener('click', function (e) {
+    if (e.target === ov) {
+      closeModal();
+      if (typeof _cancel === 'function') { var fn = _cancel; _ok = null; _cancel = null; fn(); }
+      else { _ok = null; _cancel = null; }
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && ov.classList.contains('show')) {
+      document.getElementById('ia-m-cancel').click();
+    }
+  });
+
+  /* ── 공개 API ── */
+  window.showAlert = function (msg, opts) {
+    opts = opts || {};
+    openModal({
+      icon: opts.icon || 'ℹ️',
+      title: opts.title || '알림',
+      msg: msg,
+      okLabel: '확인',
+      hideCancel: true,
+      danger: opts.danger, warn: opts.warn,
+      onOk: opts.onOk || null
+    });
+  };
+
+  window.showConfirm = function (msg, onOk, opts) {
+    opts = opts || {};
+    openModal({
+      icon: opts.icon || (opts.danger ? '⚠️' : '❓'),
+      title: opts.title || '확인',
+      msg: msg,
+      okLabel: opts.okLabel || '확인',
+      cxLabel: opts.cxLabel || '취소',
+      danger: opts.danger, warn: opts.warn,
+      onOk: onOk || null,
+      onCancel: opts.onCancel || null
+    });
+  };
+
+  /* ── data-confirm 버튼/링크 자동 처리 ── */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-confirm]');
+    if (!el) return;
+    var tag = el.tagName;
+    if (tag !== 'BUTTON' && tag !== 'A') return;
+    /* 비활성화 버튼 무시 */
+    if (el.disabled) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var msg     = el.getAttribute('data-confirm');
+    var danger  = el.hasAttribute('data-confirm-danger');
+    var warn    = el.hasAttribute('data-confirm-warn');
+    var okLabel = el.getAttribute('data-ok-label') || '확인';
+    showConfirm(msg, function () {
+      if (tag === 'BUTTON' && el.form) {
+        el.removeAttribute('data-confirm');
+        el.form.submit();
+      } else if (tag === 'A') {
+        window.location.href = el.href;
+      }
+    }, { danger: danger, warn: warn, okLabel: okLabel });
+  }, true);
+
+  /* ── data-confirm 폼 submit 자동 처리 ── */
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form.hasAttribute('data-confirm')) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var msg    = form.getAttribute('data-confirm');
+    var danger = form.hasAttribute('data-confirm-danger');
+    var warn   = form.hasAttribute('data-confirm-warn');
+    showConfirm(msg, function () {
+      form.removeAttribute('data-confirm');
+      form.submit();
+    }, { danger: danger, warn: warn });
+  }, true);
+
+})();
+</script>
+
+<style>
+/* ── 연도 선택기 ── */
+.ia-year-wrap {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  flex-shrink: 0;
+}
+.ia-year-select {
+  width: 100%;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 10px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color .15s;
+}
+.ia-year-select:focus { border-color: rgba(59,130,246,.7); }
+.ia-year-select option { background: #1e2e47; color: #e2e8f0; }
+
+/* 접힘 상태에서 연도 선택기 숨김 */
+html[data-collapsed="true"] .ia-year-wrap { display: none; }
+</style>
+<script>
+(function () {
+  'use strict';
+
+  /* ── 첫 페인트 전환 제거 ── */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      document.documentElement.removeAttribute('data-first-paint');
+    });
+  });
+
+  window.addEventListener('DOMContentLoaded', function () {
+
+    /* ── 현재 연도 가져오기 ── */
+    function getCurrentYear() {
+      var sel = document.getElementById('yearSelect');
+      return sel ? sel.value : '';
+    }
+
+    /* ── nav 클릭 → URL 이동 ── */
+    document.querySelectorAll('#adminNav [data-base-url]').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var base = el.getAttribute('data-base-url');
+        if (!base) return;
+        var year = getCurrentYear();
+        var url = base + (year ? '?year=' + encodeURIComponent(year) : '');
+        location.href = url;
+      });
+    });
+
+    /* ── 현재 경로 기반 nav 활성화 ── */
+    var path = location.pathname;
+    document.querySelectorAll('#adminNav [data-base-url]').forEach(function (el) {
+      var base = el.getAttribute('data-base-url');
+      if (base && path.startsWith(base)) {
+        el.classList.add('active');
+        var iconOn = el.getAttribute('data-icon-on');
+        var img = el.querySelector('.icon-image');
+        if (iconOn && img) img.src = iconOn;
+      }
+    });
+
+    /* ── 연도 선택기 → URL 갱신 ── */
+    var sel = document.getElementById('yearSelect');
+    if (sel) {
+      sel.addEventListener('change', function () {
+        var url = new URL(location.href);
+        url.searchParams.set('year', this.value);
+        location.href = url.toString();
+      });
+    }
+
+    /* ── 사이드바 토글 ── */
+    var toggleBtn = document.getElementById('sidebarToggleBtn');
+    var nav = document.getElementById('adminNav');
+    if (toggleBtn && nav) {
+      toggleBtn.addEventListener('click', function () {
+        var collapsed = document.documentElement.getAttribute('data-collapsed') === 'true';
+        var next = !collapsed;
+        var w = next ? '70px' : '240px';
+
+        /* 1) html 에 data-collapsed (CSS 셀렉터 기준) */
+        document.documentElement.setAttribute('data-collapsed', String(next));
+
+        /* 2) nav 에도 data-collapsed 동기화 */
+        nav.setAttribute('data-collapsed', String(next));
+
+        /* 3) html 에 --nav-w (main-content margin-left) */
+        document.documentElement.style.setProperty('--nav-w', w);
+
+        /* 4) nav 자신에 --nav-w (nav_section width) */
+        nav.style.setProperty('--nav-w', w);
+
+        /* 5) 쿠키 저장 */
+        document.cookie = 'sidebarCollapsed=' + next
+          + '; path=/; max-age=31536000; SameSite=Lax';
+
+        /* 6) 서버 API 알림 (실패 무시) */
+        fetch('/api/sidebar-toggle', {
+          method: 'POST',
+          body: JSON.stringify({ collapsed: next }),
+          headers: { 'Content-Type': 'application/json' }
+        }).catch(function () {});
+      });
+    }
+
+  }); /* DOMContentLoaded */
+
+})();
+</script>
+</th:block>
+
+</html>

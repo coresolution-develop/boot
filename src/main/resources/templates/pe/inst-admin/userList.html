@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/inst-admin-layout :: head('직원명부')}"></head>
+<body>
+<div th:replace="~{Include/inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:1400px; margin:0 auto; padding:20px;">
+<style>
+/* ── 카드 ── */
+.card { background:#fff; border:1px solid #e5e9ef; border-radius:12px;
+        padding:20px 24px; margin-bottom:16px;
+        box-shadow:0 2px 8px rgba(0,0,0,.04);
+        opacity:0; transform:translateY(10px); }
+.card-title { font-size:18px; font-weight:700; color:#1e293b; margin:0 0 4px; }
+.card-sub   { font-size:13px; color:#64748b; margin:0; }
+@keyframes card-rise { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+.page-ready .card { animation:card-rise .28s ease-out both; }
+.page-ready .card:nth-child(2) { animation-delay:.05s; }
+@media(prefers-reduced-motion:reduce){.card,.page-ready .card{animation:none;opacity:1;transform:none;}}
+
+/* ── 툴바 ── */
+.toolbar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:14px; }
+.toolbar input[type=text], .toolbar select {
+  height:34px; padding:0 10px; border:1px solid #d0d7de; border-radius:6px;
+  font-size:13px; background:#fff; color:#1e293b; }
+.toolbar input[type=text]:focus, .toolbar select:focus { outline:none; border-color:#3b82f6; }
+.toolbar input[type=text] { min-width:190px; }
+.btn { height:34px; padding:0 14px; border-radius:6px; font-size:13px; cursor:pointer; font-weight:500; border:1px solid; }
+.btn-primary  { background:#1b304a; border-color:#1b304a; color:#fff; }
+.btn-primary:hover { background:#253f60; }
+.btn-outline  { background:#fff; border-color:#d0d7de; color:#374151; }
+.toolbar-right { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.count-badge  { background:#f1f5f9; border:1px solid #e2e8f0; border-radius:20px;
+                padding:3px 12px; font-size:12px; font-weight:600; color:#475569; }
+.filter-reset { font-size:12px; color:#94a3b8; cursor:pointer; text-decoration:underline; }
+.filter-reset:hover { color:#ef4444; }
+/* 기관명 고정 뱃지 */
+.inst-fixed-badge { background:#eff6ff; border:1px solid #93c5fd; color:#1d4ed8;
+                    padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+
+/* ── 테이블 ── */
+.table-wrap { border:1px solid #e5e9ef; border-radius:10px; overflow:hidden; }
+.tbl-scroll { max-height:calc(100vh - 340px); overflow-y:auto; overflow-x:auto; }
+.tbl-scroll::-webkit-scrollbar { width:6px; height:6px; }
+.tbl-scroll::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:4px; }
+.data-table { width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; }
+.data-table thead th { position:sticky; top:0; z-index:3;
+  background:#f3f6fa; font-weight:600; color:#374151;
+  border-bottom:2px solid #dfe4ea; padding:10px 12px; white-space:nowrap; text-align:center; }
+.data-table tbody td { padding:9px 12px; border-bottom:1px solid #f1f4f8;
+  vertical-align:middle; color:#1e293b; }
+.data-table tbody tr:hover td { background:#f5f8ff; }
+.data-table tbody tr:last-child td { border-bottom:none; }
+.col-no   { width:46px;  text-align:center; color:#94a3b8; font-size:12px; }
+.col-dept { width:130px; }
+.col-name { width:90px;  font-weight:600; }
+.col-id   { width:100px; color:#475569; font-family:monospace; font-size:12px; }
+.col-pos  { width:100px; }
+.col-del  { width:80px;  text-align:center; }
+.col-pwd  { width:90px;  text-align:center; }
+.col-roles{ width:220px; }
+.col-act  { width:90px;  text-align:center; }
+
+/* ── 뱃지 ── */
+.badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px;
+         font-size:11px; font-weight:600; white-space:nowrap; margin:1px 2px 1px 0; }
+.badge-TEAM_HEAD      { background:#fef3c7; color:#b45309; }
+.badge-TEAM_MEMBER    { background:#fef9c3; color:#92400e; }
+.badge-SUB_HEAD       { background:#dbeafe; color:#1d4ed8; }
+.badge-ONE_PERSON_SUB { background:#e0e7ff; color:#4338ca; }
+.badge-MEDICAL_LEADER { background:#dcfce7; color:#166534; }
+.badge-SUB_MEMBER     { background:#f1f5f9; color:#475569; }
+.badge-pwd-ok         { background:#dcfce7; color:#166534; }
+.badge-pwd-none       { background:#fee2e2; color:#991b1b; }
+.badge-eval-ok        { background:#e0f2fe; color:#0369a1; }
+.badge-eval-ex        { background:#fef9c3; color:#78350f; }
+
+.btn-mypage { display:inline-flex; align-items:center; gap:4px; padding:4px 10px;
+  border-radius:6px; border:1px solid #d0d7de; background:#fff; font-size:12px;
+  color:#374151; cursor:pointer; }
+.btn-mypage:hover { background:#f0f6ff; border-color:#3b82f6; color:#3b82f6; }
+
+.empty-state { text-align:center; padding:48px 24px; color:#94a3b8; }
+.empty-state p { font-size:14px; margin:0; }
+
+/* ── 페이지네이션 ── */
+.pagination { display:flex; gap:4px; align-items:center; justify-content:center;
+              margin-top:14px; flex-wrap:wrap; }
+.pagination .page { min-width:34px; height:34px; padding:0 10px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid #e2e8f0; border-radius:8px; background:#fff;
+  color:#374151; text-decoration:none; font-size:13px; font-weight:500; }
+.pagination .page:hover { background:#f8fafc; }
+.pagination .is-current  { background:#1b304a; border-color:#1b304a; color:#fff; pointer-events:none; }
+.pagination .is-disabled { opacity:.4; pointer-events:none; }
+</style>
+
+  <!-- ① 헤더 카드 -->
+  <div class="card">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:4px;">
+      <p class="card-title" style="margin:0;">직원 명부</p>
+      <!-- 기관명 고정 표시 (드롭다운 없음) -->
+      <span class="inst-fixed-badge" th:text="${institutionName}">기관명</span>
+    </div>
+    <p class="card-sub">필터를 조합해 원하는 직원을 빠르게 찾아보세요.</p>
+
+    <!-- 필터 폼 -->
+    <form class="toolbar" id="filter-form"
+          th:action="@{/pe/inst-admin/userList}" method="get">
+      <input type="hidden" name="year" th:value="${year}"/>
+      <input type="hidden" name="page" value="1"/>
+
+      <!-- 검색 -->
+      <input type="text" name="q" th:value="${q}"
+             placeholder="이름 / 사번 / 부서 / 직책 검색">
+
+      <!-- 부서 (기관 범위로 제한된 목록) -->
+      <select name="dept">
+        <option value="">부서 전체</option>
+        <option th:each="d : ${departments}" th:value="${d.subCode}" th:text="${d.subName}"
+                th:selected="${deptCode == d.subCode}"></option>
+      </select>
+
+      <!-- 역할 -->
+      <select name="role">
+        <option value="">역할 전체</option>
+        <option value="TEAM_HEAD"      th:selected="${role == 'TEAM_HEAD'}">경혁팀장</option>
+        <option value="TEAM_MEMBER"    th:selected="${role == 'TEAM_MEMBER'}">경혁팀원</option>
+        <option value="SUB_HEAD"       th:selected="${role == 'SUB_HEAD'}">부서장</option>
+        <option value="ONE_PERSON_SUB" th:selected="${role == 'ONE_PERSON_SUB'}">1인부서</option>
+        <option value="MEDICAL_LEADER" th:selected="${role == 'MEDICAL_LEADER'}">의료리더</option>
+        <option value="SUB_MEMBER"     th:selected="${role == 'SUB_MEMBER'}">일반직원</option>
+      </select>
+
+      <!-- 비밀번호 -->
+      <select name="pwd">
+        <option value="">비밀번호 전체</option>
+        <option value="set"   th:selected="${pwd == 'set'}">설정됨</option>
+        <option value="unset" th:selected="${pwd == 'unset'}">미설정</option>
+      </select>
+
+      <!-- 평가제외 -->
+      <select name="delYn">
+        <option value="">평가제외 전체</option>
+        <option value="N" th:selected="${delYn == 'N'}">평가포함</option>
+        <option value="Y" th:selected="${delYn == 'Y'}">평가제외</option>
+      </select>
+
+      <button type="submit" class="btn btn-primary">검색</button>
+      <a th:if="${q != null or deptCode != null or role != null or pwd != null or delYn != null}"
+         th:href="@{/pe/inst-admin/userList(year=${year})}" class="filter-reset">초기화</a>
+
+      <div class="toolbar-right">
+        <span class="count-badge" th:text="|총 ${totalCount}명|">총 0명</span>
+      </div>
+    </form>
+  </div>
+
+  <!-- ② 테이블 카드 -->
+  <div class="card" style="padding:0;">
+    <div class="table-wrap">
+      <div class="tbl-scroll">
+        <table class="data-table">
+          <colgroup>
+            <col class="col-no">
+            <col class="col-dept">
+            <col class="col-name">
+            <col class="col-id">
+            <col class="col-pos">
+            <col class="col-del">
+            <col class="col-pwd">
+            <col class="col-roles">
+            <col class="col-act">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="col-no">#</th>
+              <th>부서명</th>
+              <th>이름</th>
+              <th>사번</th>
+              <th>직책</th>
+              <th>평가제외</th>
+              <th>비밀번호</th>
+              <th>역할</th>
+              <th>상세</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:if="${#lists.isEmpty(userList)}">
+              <td colspan="9">
+                <div class="empty-state">
+                  <p>검색 결과가 없습니다.</p>
+                </div>
+              </td>
+            </tr>
+
+            <tr th:each="user, stat : ${userList}">
+              <td class="col-no" th:text="${(page-1)*size + stat.count}">1</td>
+              <td th:text="${user.subName}">부서명</td>
+              <td class="col-name" th:text="${user.name}">이름</td>
+              <td class="col-id"   th:text="${user.id}">사번</td>
+              <td th:text="${user.position}">직책</td>
+
+              <td class="col-del">
+                <span th:if="${user.delYn == 'Y'}"  class="badge badge-eval-ex">제외</span>
+                <span th:unless="${user.delYn == 'Y'}" class="badge badge-eval-ok">포함</span>
+              </td>
+
+              <td class="col-pwd">
+                <span th:if="${user.passwordSet}"  class="badge badge-pwd-ok">설정됨</span>
+                <span th:unless="${user.passwordSet}" class="badge badge-pwd-none">미설정</span>
+              </td>
+
+              <td class="col-roles">
+                <th:block th:if="${user.rolesCsv != null and !user.rolesCsv.isEmpty()}">
+                  <th:block th:each="r : ${#strings.arraySplit(user.rolesCsv, ',')}">
+                    <span th:switch="${r.trim()}">
+                      <span th:case="'team_head'"      class="badge badge-TEAM_HEAD">경혁팀장</span>
+                      <span th:case="'team_member'"    class="badge badge-TEAM_MEMBER">경혁팀원</span>
+                      <span th:case="'sub_head'"       class="badge badge-SUB_HEAD">부서장</span>
+                      <span th:case="'one_person_sub'" class="badge badge-ONE_PERSON_SUB">1인부서</span>
+                      <span th:case="'medical_leader'" class="badge badge-MEDICAL_LEADER">의료리더</span>
+                      <span th:case="'sub_member'"     class="badge badge-SUB_MEMBER">일반직원</span>
+                      <span th:case="*"                class="badge badge-SUB_MEMBER" th:text="${r.trim()}">기타</span>
+                    </span>
+                  </th:block>
+                </th:block>
+                <span th:if="${user.rolesCsv == null or user.rolesCsv.isEmpty()}"
+                      style="color:#ccc; font-size:12px;">—</span>
+              </td>
+
+              <td class="col-act">
+                <button class="btn-mypage"
+                        th:onclick="|location.href='@{/pe/inst-admin/userDetail/{idx}(idx=${user.idx},year=${year})}'|">
+                  상세보기
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 페이지네이션 -->
+  <nav class="pagination" th:if="${totalPages > 1}"
+       th:with="prev=${page > 1 ? page-1 : 1}, next=${page < totalPages ? page+1 : totalPages}">
+
+    <a class="page" th:classappend="${page==1}?' is-disabled'"
+       th:href="@{/pe/inst-admin/userList(year=${year},q=${q},dept=${deptCode},pwd=${pwd},delYn=${delYn},role=${role},page=${prev},size=${size})}">‹</a>
+
+    <th:block th:each="p : ${#numbers.sequence(1, totalPages)}">
+      <a class="page"
+         th:if="${p == 1 or p == totalPages or (p >= page-2 and p <= page+2)}"
+         th:text="${p}"
+         th:classappend="${p == page}?' is-current'"
+         th:href="@{/pe/inst-admin/userList(year=${year},q=${q},dept=${deptCode},pwd=${pwd},delYn=${delYn},role=${role},page=${p},size=${size})}"></a>
+      <span th:if="${(p == page-3 and p > 2) or (p == page+3 and p < totalPages-1)}"
+            style="color:#ccc; padding:0 2px;">…</span>
+    </th:block>
+
+    <a class="page" th:classappend="${page==totalPages}?' is-disabled'"
+       th:href="@{/pe/inst-admin/userList(year=${year},q=${q},dept=${deptCode},pwd=${pwd},delYn=${delYn},role=${role},page=${next},size=${size})}">›</a>
+  </nav>
+
+</div>
+</div>
+
+<div th:replace="~{Include/inst-admin-layout :: scripts}"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+  document.querySelector('input[name="q"]')?.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('filter-form').submit(); }
+  });
+});
+</script>
+</body>
+</html>
