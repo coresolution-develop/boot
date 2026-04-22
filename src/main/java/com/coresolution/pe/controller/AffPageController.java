@@ -999,6 +999,7 @@ public class AffPageController {
         if (auth == null || !auth.isAuthenticated())
             return "redirect:/aff/login";
         String targetId = auth.getName();
+        model.addAttribute("currentYear", currentEvalYear);
         // 사용자가 명시적으로 요청한 연도(Nullable)
         Integer requested = year;
 

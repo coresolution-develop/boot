@@ -22,6 +22,7 @@ import com.coresolution.pe.service.ReleaseWindowService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 @Controller
 @RequestMapping("/aff/admin/evalrelease")
@@ -30,12 +31,16 @@ public class AffAdminReleaseController {
 
     private final AffReleaseWindowService service;
 
+    @Value("${app.current.eval-year}")
+    private int currentEvalYear;
+
     // 페이지 뷰
     @GetMapping
     public String page(Model model, Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
             return "redirect:/aff/login";
         }
+        model.addAttribute("currentYear", currentEvalYear);
         return "aff/admin/evalrelease";
     }
 

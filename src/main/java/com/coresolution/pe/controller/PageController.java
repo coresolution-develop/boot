@@ -559,6 +559,7 @@ public class PageController {
             return "redirect:/login";
         }
         String targetId = auth.getName();
+        model.addAttribute("currentYear", currentEvalYear);
 
         // 1. 기본 연도 결정
         Integer requested = year; // 사용자가 명시적으로 선택한 연도(Nullable)
