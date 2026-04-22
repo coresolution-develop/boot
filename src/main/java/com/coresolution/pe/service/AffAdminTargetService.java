@@ -21,10 +21,6 @@ import com.coresolution.pe.mapper.AffCustomTargetMapper;
 import com.coresolution.pe.mapper.AffDefaultTargetMapper;
 import com.coresolution.pe.mapper.AffLoginMapper;
 import com.coresolution.pe.mapper.AffUserMapper;
-import com.coresolution.pe.mapper.CustomTargetMapper;
-import com.coresolution.pe.mapper.DefaultTargetMapper;
-import com.coresolution.pe.mapper.LoginMapper;
-import com.coresolution.pe.mapper.UserMapper;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;

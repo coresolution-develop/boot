@@ -446,7 +446,7 @@ public class AffPageController {
                 res.put("message", "사용자를 찾을 수 없거나 변경 실패");
             }
         } catch (Exception e) {
-            // 필요시 로깅
+            log.error("[AffPage] 비밀번호 변경 오류 userId={}", userId, e);
             res.put("result", "N");
             res.put("message", "서버 오류: " + e.getMessage());
         }
@@ -1292,6 +1292,7 @@ public class AffPageController {
 
             return target.isBlank() ? fallbackPath : target;
         } catch (Exception e) {
+            log.debug("[AffPage] safeBack Referer 파싱 실패, fallback 사용: {}", e.getMessage());
             return fallbackPath;
         }
     }

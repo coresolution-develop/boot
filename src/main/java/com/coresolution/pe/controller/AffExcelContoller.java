@@ -37,7 +37,9 @@ import com.coresolution.pe.service.TableInitService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/aff/excel")
 @RequiredArgsConstructor
@@ -221,6 +223,7 @@ public class AffExcelContoller {
             return "Excel/aff/preview";
 
         } catch (Exception e) {
+            log.error("[AffExcel] 직원 엑셀 업로드 파싱 오류 year={}", year, e);
             ra.addFlashAttribute("error", "업로드 실패: " + e.getMessage());
             return "redirect:/aff/excel/uploadStatus?year=" + year;
         }
@@ -396,6 +399,7 @@ public class AffExcelContoller {
             // 세션에 담긴 리스트는 비워 줘도 좋습니다.
             session.removeAttribute("subList");
         } catch (Exception e) {
+            log.error("[AffExcel] 부서 저장 오류 year={}", year, e);
             model.addAttribute("message", "저장 중 오류 발생: " + e.getMessage());
         }
         return "Excel/aff/subuploadStatus";
@@ -409,6 +413,7 @@ public class AffExcelContoller {
             poiService.resetUsersAndRolesExceptCurrentAdmin(year);
             ra.addFlashAttribute("message", "데이터를 초기화했습니다. (관리자 계정 제외)");
         } catch (Exception e) {
+            log.error("[AffExcel] 데이터 초기화 오류 year={}", year, e);
             ra.addFlashAttribute("error", "초기화 중 오류 발생: " + e.getMessage());
         }
         return "redirect:/aff/excel/uploadStatus?year=" + year;
@@ -470,6 +475,7 @@ public class AffExcelContoller {
             ra.addFlashAttribute("message", msg.toString());
             ra.addFlashAttribute("errors", result.getErrors());
         } catch (Exception e) {
+            log.error("[AffExcel] 평가 뱅크 업로드 오류 year={}", year, e);
             ra.addFlashAttribute("message", "업로드 실패: " + e.getMessage());
         }
         return "redirect:/aff/admin/evaluation?year=" + year;
@@ -498,6 +504,7 @@ public class AffExcelContoller {
 
             return "Excel/aff/evalPreview"; // 미리보기 페이지(타임리프)
         } catch (Exception e) {
+            log.error("[AffExcel] 평가 뱅크 미리보기 파싱 오류 year={}", year, e);
             ra.addFlashAttribute("message", "파싱 실패: " + e.getMessage());
             return "redirect:/aff/admin/evaluation?year=" + year;
         }
@@ -611,6 +618,7 @@ public class AffExcelContoller {
 
             return "Excel/aff/kpiGeneralPreview";
         } catch (Exception e) {
+            log.error("[AffExcel] 일반 KPI 업로드 파싱 오류", e);
             ra.addFlashAttribute("error", "업로드 실패: " + e.getMessage());
             return "redirect:/aff/excel/kpi/general/uploadStatus";
         }
@@ -634,6 +642,7 @@ public class AffExcelContoller {
             ra.addFlashAttribute("message", "일반 KPI 정보 저장 완료 (" + affected + "건)");
             session.removeAttribute("kpiGeneralRows");
         } catch (Exception e) {
+            log.error("[AffExcel] 일반 KPI 저장 오류", e);
             ra.addFlashAttribute("error", "저장 중 오류: " + e.getMessage());
         }
 

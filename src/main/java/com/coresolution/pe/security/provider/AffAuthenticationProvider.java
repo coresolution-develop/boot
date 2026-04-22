@@ -61,7 +61,7 @@ public class AffAuthenticationProvider implements AuthenticationProvider {
                     throw new LockedException("PWD_NOT_SET"); // ← 실패(401) 경로로 보냄
 
                 case 0:
-                    throw new UsernameNotFoundException("2025년도 직원근무평가 대상직원이 아닙니다.");
+                    throw new UsernameNotFoundException(currentEvalYear + "년도 직원근무평가 대상직원이 아닙니다.");
                 default:
                     throw new AuthenticationServiceException("예상치 못한 결과: " + result);
             }
