@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta property="og:title" content="코어솔루션 인사평가시스템">
+  <meta property="og:type" content="website">
+  <title>평가 총괄표 (계열사)</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/alertcss.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="stylesheet" th:href="@{/css/Include/spinner.css}" />
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <style>
+.main-content { padding: 10px; }
+.tbl{ width:100%; border-collapse:collapse; table-layout:fixed; font-size:13px; }
+.tbl th,.tbl td{ border:0.6pt solid #d6d6d6; padding:6px 8px; text-align:center; }
+.tbl thead th{ background:#f2f4f7; }
+.left{text-align:left;} .muted{color:#6b7280;} .nowrap{white-space:nowrap;}
+
+@media print {
+  html, body, main, .main-content {
+    margin: 0 !important; padding: 0 !important;
+    width: 100% !important; max-width: none !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  .print-title{ margin:0 0 6mm 0 !important; font-size:20px !important; font-weight:800; break-after:avoid-page; }
+  #print-area {
+    position:static !important; left:auto !important; top:auto !important;
+    margin:0 !important; width:100% !important; max-width:none !important;
+    padding:0 !important; overflow:visible !important;
+  }
+  table { width:100% !important; border-collapse:collapse !important; page-break-inside:auto; break-inside:auto; }
+  thead { display:table-header-group; }
+  .tbl th,.tbl td { padding:4px 6px !important; }
+  .sticky-pad-cover{ display:none !important; }
+  .filter-sticky{ position:static !important; box-shadow:none !important; border-bottom:none !important; }
+  .tbl thead th{ position:static !important; box-shadow:none !important; }
+  .btn-animated,.orange-btn,.white-btn,.custom,.no-print{ display:none !important; }
+  #print-header { display:block !important; margin-bottom:6mm !important; font-size:24px !important; text-align:left; }
+}
+
+html, body, .main-content { background:#fff; }
+
+.sticky-pad-cover{ position:sticky; top:62px; height:10px; background:#fff; z-index:150; }
+.filter-sticky{
+  position:sticky; top:72px; z-index:200; background:#fff;
+  padding:6px 8px; margin:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  border-bottom:1px solid rgba(0,0,0,.06);
+}
+.tbl thead th{
+  position:sticky; top:var(--sticky-offset,72px); z-index:180;
+  background:#f2f4f7; background-clip:padding-box;
+  box-shadow:0 1px 0 rgba(0,0,0,.06) inset, 0 -1px 0 rgba(0,0,0,.06) inset;
+}
+.tbl{ background:#fff; }
+.btn-animated:hover,.orange-btn:hover,.white-btn:hover,.custom:hover{
+  transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+  </style>
+</head>
+
+<body>
+  <div th:replace="~{Include/afflayout :: header}"></div>
+  <div th:replace="~{Include/afflayout :: nav_section}"></div>
+
+  <main class="main-content">
+    <div class="sticky-pad-cover" aria-hidden="true"></div>
+
+    <form method="get" th:action="@{/aff/admin/reportsummary}" class="filter filter-sticky">
+      <div style="display:flex; gap:10px; align-items:center; margin:8px 0 12px;">
+        <div class="no-print">
+          <select class="custom" name="orgName" style="margin:0; width:180px;">
+            <option th:value="''" th:selected="${selectedOrgName == null or selectedOrgName == ''}">전체 기관</option>
+            <option th:each="org : ${orgList}" th:value="${org}" th:text="${org}"
+                    th:selected="${org == selectedOrgName}"></option>
+          </select>
+        </div>
+        <div class="no-print">
+          <select class="custom" name="year" id="yearSelect" style="margin:0; width:85px;">
+            <option th:each="y : ${#numbers.sequence(2024, currentYear)}" th:value="${y}" th:text="${y}"
+                    th:selected="${y == selectedYear}"></option>
+          </select>
+        </div>
+        <div class="toolbar no-print">
+          <button class="white-btn" id="search-btn" type="submit" style="font-size:12px;padding:11px 20px;">조회</button>
+        </div>
+        <div class="toolbar no-print" style="display:flex; gap:8px;">
+          <button class="orange-btn" type="button" style="font-size:12px;padding:11px 20px;" onclick="printAs('A4L')">A4 출력</button>
+          <button class="orange-btn" type="button" style="font-size:12px;padding:11px 20px;" onclick="printAs('A3L')">A3 출력</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="print-area" th:if="${vm != null}">
+      <div id="print-header" style="margin:8px 0 12px 0; display:none;">
+        <span style="font-weight:bold;" th:text="${selectedYear + '년 계열사 근무평가 총괄표 : '}"></span>
+        <span th:text="${selectedOrgName}"></span>
+      </div>
+
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th style="width:130px;">소속기관</th>
+            <th style="width:120px;">부서명</th>
+            <th style="width:80px;">사원번호</th>
+            <th style="width:70px;">성명</th>
+            <th style="width:70px;">직위</th>
+            <th th:each="code : ${vm.evOrder}" th:text="${vm.evPath.get(code)}" style="width:100px;">관계</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${vm.rows}" th:if="${vm != null}">
+            <td class="left nowrap" th:text="${selectedOrgName != null and !#strings.isEmpty(selectedOrgName) ? selectedOrgName : ''}">-</td>
+            <td class="left" th:text="${r.deptName}">부서</td>
+            <td th:text="${r.empId}">id</td>
+            <td th:text="${r.empName}">성명</td>
+            <td th:text="${r.position}">직위</td>
+            <td th:each="code : ${vm.evOrder}" th:with="cell=${r.ev.get(code)}">
+              <span th:text="${cell != null and cell.score100 != null
+                              ? #numbers.formatDecimal(cell.score100, 1, 2)
+                              : '-'}">-</span>
+            </td>
+          </tr>
+          <tr th:if="${vm.rows == null or vm.rows.isEmpty()}">
+            <td th:colspan="${5 + vm.evOrder.size()}" style="color:#888; padding:20px;">
+              조회된 데이터가 없습니다.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:8px; font-size:12px;"
+         th:text="|총 ${vm.totalEmployees}명|"></p>
+    </div>
+  </main>
+
+  <div id="spinner-overlay" style="display:none;">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p>잠시만 기다려주세요</p>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+  <div th:replace="~{Include/afflayout :: scripts}"></div>
+  <script>
+(() => {
+  const STYLE_ID = 'dynamic-print-size';
+  let mqListener = null;
+
+  function removePrintStyle() {
+    if (mqListener && window.matchMedia) {
+      try { window.matchMedia('print').removeEventListener('change', mqListener); } catch {}
+      mqListener = null;
+    }
+    const old = document.getElementById(STYLE_ID);
+    if (old) old.remove();
+    void document.documentElement.offsetHeight;
+  }
+
+  function injectPrintStyle(css) {
+    const tag = document.createElement('style');
+    tag.id = STYLE_ID; tag.media = 'print'; tag.textContent = css;
+    document.head.appendChild(tag);
+  }
+
+  window.printAs = function (size = 'A4L', scale = 1) {
+    removePrintStyle();
+    let pageDecl = 'A4 landscape', base = 10.5, margin = '8mm';
+    switch (size) {
+      case 'A4P': pageDecl='A4 portrait';  base=11;   margin='10mm'; break;
+      case 'A4L': pageDecl='A4 landscape'; base=10.5; margin='8mm';  break;
+      case 'A3P': pageDecl='A3 portrait';  base=11;   margin='10mm'; break;
+      case 'A3L': pageDecl='A3 landscape'; base=10;   margin='8mm';  break;
+    }
+    base = Math.max(9.5, base * (scale || 1));
+    const css = `
+      @page{ size:${pageDecl}; margin:${margin} !important; }
+      @media print{
+        html,body{ margin:0 !important; padding:0 !important; height:auto !important;
+          font-size:${base}px; line-height:1.35;
+          -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+        header,nav,aside,.toolbar,.no-print,.wrapper,
+        #admin-nav,#user-nav,.nav_section,.leftMenu,.lnb,
+        [role="navigation"],[data-role="sidebar"]{ display:none !important; }
+        #print-header{ display:block !important; }
+        #print-area{ position:static !important; margin:0 !important; padding:0 !important;
+          width:100% !important; max-width:none !important; overflow:visible !important; }
+        thead{ display:table-header-group }
+        table{ width:100% !important; border-collapse:collapse !important; page-break-inside:auto }
+        tr{ page-break-inside:auto; break-inside:auto }
+        th,td{ page-break-inside:avoid; break-inside:avoid; padding:4px 6px !important }
+      }`;
+    injectPrintStyle(css);
+    const cleanup = () => setTimeout(removePrintStyle, 50);
+    if (window.matchMedia) {
+      const mq = window.matchMedia('print');
+      mqListener = (e) => { if (!e.matches) cleanup(); };
+      mq.addEventListener?.('change', mqListener);
+    }
+    const prev = window.onafterprint;
+    window.onafterprint = () => { prev && prev(); cleanup(); };
+    setTimeout(() => window.print(), 0);
+  };
+})();
+
+(function(){
+  const root = document.documentElement;
+  const sticky = document.querySelector('.filter-sticky');
+  const BASE = 72;
+  function updateStickyOffset(){
+    const h = sticky ? Math.ceil(sticky.getBoundingClientRect().height) : 0;
+    root.style.setProperty('--sticky-offset', `${BASE + h - 1}px`);
+  }
+  window.addEventListener('load', updateStickyOffset);
+  window.addEventListener('resize', updateStickyOffset);
+  setTimeout(updateStickyOffset, 0);
+  setTimeout(updateStickyOffset, 300);
+})();
+
+$('#search-btn').click(function(){ OnlyshowSpinner(); });
+  </script>
+</body>
+</html>

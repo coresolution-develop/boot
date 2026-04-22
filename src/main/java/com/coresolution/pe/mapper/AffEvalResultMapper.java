@@ -432,4 +432,33 @@ public interface AffEvalResultMapper {
       @Param("evalYear") int evalYear,
       @Param("subCode") String subCode);
 
+  /**
+   * 특정 대상자 + 특정 EV코드의 100점 환산 평균 및 응답 수
+   * (reportsummary 용)
+   * AC(10문항형): avg_score/2.0 * 20, AD/AE(20문항형): avg_score * 20
+   */
+  @Select("""
+      WITH agg AS (
+        SELECT
+          s.target_id AS targetId,
+          s.data_ev   AS dataEv,
+          ROUND(AVG(CASE WHEN s.data_type = 'AC' THEN (s.avg_score / 2.0)
+                         ELSE s.avg_score END) * 20, 2) AS score100,
+          COUNT(*)    AS resp
+        FROM personnel_evaluation_aff.evaluation_submissions s
+        WHERE s.eval_year = #{evalYear}
+          AND s.is_active = 1
+          AND s.del_yn    = 'N'
+          AND s.target_id = #{targetId}
+        GROUP BY s.target_id, s.data_ev
+      )
+      SELECT targetId, dataEv, score100, resp
+        FROM agg
+       WHERE dataEv = #{dataEv}
+       LIMIT 1
+      """)
+  EvalSubmissionRow selectEvAggOne(@Param("evalYear") int evalYear,
+      @Param("targetId") String targetId,
+      @Param("dataEv") String dataEv);
+
 }

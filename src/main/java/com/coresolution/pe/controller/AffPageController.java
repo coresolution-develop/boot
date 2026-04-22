@@ -73,6 +73,7 @@ import com.coresolution.pe.service.AffEvalReportService;
 import com.coresolution.pe.service.AffEvaluationFormService;
 import com.coresolution.pe.service.AffEvaluationService;
 import com.coresolution.pe.service.AffInfoService;
+import com.coresolution.pe.service.AffEvalSummaryService;
 import com.coresolution.pe.service.AffKpiService;
 import com.coresolution.pe.service.AffNoticeV2Service;
 import com.coresolution.pe.service.AffReleaseGateService;
@@ -132,6 +133,8 @@ public class AffPageController {
     private AffKpiService kpi;
     @Autowired
     private YearService yearService;
+    @Autowired
+    private AffEvalSummaryService affEvalSummaryService;
 
     @Value("${app.current.eval-year}")
     private int currentEvalYear;
@@ -1295,6 +1298,23 @@ public class AffPageController {
             log.debug("[AffPage] safeBack Referer 파싱 실패, fallback 사용: {}", e.getMessage());
             return fallbackPath;
         }
+    }
+
+    @GetMapping("/admin/reportsummary")
+    public String affReportSummary(Model model,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) String orgName) {
+        if (year == null) year = currentEvalYear;
+
+        var vm      = affEvalSummaryService.buildSummary(year, orgName);
+        var orgList = mapper.selectAllOrgNames(year);
+
+        model.addAttribute("vm",              vm);
+        model.addAttribute("selectedYear",    year);
+        model.addAttribute("selectedOrgName", orgName);
+        model.addAttribute("orgList",         orgList);
+        model.addAttribute("currentYear",     currentEvalYear);
+        return "aff/admin/reportsummary";
     }
 
     @GetMapping("/admin/kpiGeneralUpload")
