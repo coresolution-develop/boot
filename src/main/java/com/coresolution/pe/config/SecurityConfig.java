@@ -33,10 +33,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 import com.coresolution.pe.handler.AffAuthenticationSuccessHandler;
+import com.coresolution.pe.handler.AffInstAdminSuccessHandler;
 import com.coresolution.pe.handler.CustomAccessDeniedHandler;
 import com.coresolution.pe.handler.CustomAuthenticationSuccessHandler;
 import com.coresolution.pe.handler.InstAdminSuccessHandler;
 import com.coresolution.pe.security.CustomSecurityContextRepository;
+import com.coresolution.pe.security.filter.AffInstAdminAuthenticationFilter;
 import com.coresolution.pe.security.filter.CustomAuthenticationFilter;
 import com.coresolution.pe.security.filter.InstAdminAuthenticationFilter;
 import com.coresolution.pe.security.provider.AffAuthenticationProvider;
@@ -284,10 +286,63 @@ public class SecurityConfig {
         }
 
         // ─────────────────────────────────────────────────────
-        // [Order 2] AFF 체인
+        // [Order 2] 계열사 기관 관리자 전용 FilterChain (/aff/inst-admin/**)
         // ─────────────────────────────────────────────────────
         @Bean
         @Order(2)
+        SecurityFilterChain affInstAdminChain(
+                        HttpSecurity http,
+                        InstAdminAuthenticationProvider instAdminProvider,
+                        AffInstAdminSuccessHandler affInstAdminSuccessHandler,
+                        CustomSecurityContextRepository repo) throws Exception {
+
+                http.securityMatcher(
+                                "/aff/inst-admin/**",
+                                "/aff/inst-login",
+                                "/aff/inst-login/**",
+                                "/aff/inst-loginAction")
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authenticationProvider(instAdminProvider)
+                                .securityContext(c -> c.securityContextRepository(repo))
+                                .requestCache(cache -> cache.disable())
+                                .exceptionHandling(ex -> ex
+                                                .authenticationEntryPoint(
+                                                                new LoginUrlAuthenticationEntryPoint("/aff/inst-login")))
+                                .authorizeHttpRequests(a -> a
+                                                .requestMatchers(
+                                                                "/aff/inst-login", "/aff/inst-loginAction",
+                                                                "/css/**", "/js/**", "/img/**", "/fonts/**",
+                                                                "/icon/**", "/favicon/**", "/error")
+                                                .permitAll()
+                                                .requestMatchers("/aff/inst-admin/**").hasRole("INST_ADMIN")
+                                                .anyRequest().authenticated())
+                                .logout(l -> l
+                                                .logoutUrl("/aff/inst-admin/logout")
+                                                .logoutSuccessUrl("/aff/inst-login")
+                                                .invalidateHttpSession(true)
+                                                .clearAuthentication(true))
+                                .formLogin(AbstractHttpConfigurer::disable);
+
+                var instManager = new org.springframework.security.authentication.ProviderManager(
+                                java.util.List.of(instAdminProvider));
+
+                AuthenticationFailureHandler affInstFailureHandler = (req, res, ex) ->
+                        res.sendRedirect("/aff/inst-login?error=1");
+
+                var affInstFilter = new AffInstAdminAuthenticationFilter(instManager);
+                affInstFilter.setAuthenticationSuccessHandler(affInstAdminSuccessHandler);
+                affInstFilter.setAuthenticationFailureHandler(affInstFailureHandler);
+
+                http.addFilterAt(affInstFilter, UsernamePasswordAuthenticationFilter.class);
+
+                return http.build();
+        }
+
+        // ─────────────────────────────────────────────────────
+        // [Order 3] AFF 체인
+        // ─────────────────────────────────────────────────────
+        @Bean
+        @Order(3)
         SecurityFilterChain affChain(
                         HttpSecurity http,
                         AffAuthenticationProvider affProvider,
@@ -295,7 +350,11 @@ public class SecurityConfig {
                         @Qualifier("affFailureHandler") AuthenticationFailureHandler affFailureHandler,
                         CustomSecurityContextRepository repo) throws Exception {
 
-                http.securityMatcher("/aff/**")
+                http.securityMatcher(new AndRequestMatcher(
+                        new AntPathRequestMatcher("/aff/**"),
+                        new NegatedRequestMatcher(new AntPathRequestMatcher("/aff/inst-admin/**")),
+                        new NegatedRequestMatcher(new AntPathRequestMatcher("/aff/inst-login*")),
+                        new NegatedRequestMatcher(new AntPathRequestMatcher("/aff/inst-loginAction*"))))
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .authenticationProvider(affProvider)
                                 .securityContext(c -> c.securityContextRepository(repo))
@@ -329,10 +388,10 @@ public class SecurityConfig {
         }
 
         // ─────────────────────────────────────────────────────
-        // [Order 3] PE 메인 체인 (직원 로그인 + 어드민)
+        // [Order 4] PE 메인 체인 (직원 로그인 + 어드민)
         // ─────────────────────────────────────────────────────
         @Bean
-        @Order(3)
+        @Order(4)
         public SecurityFilterChain filterChain(
                         HttpSecurity http,
                         CustomAuthenticationProvider customAuthProvider,

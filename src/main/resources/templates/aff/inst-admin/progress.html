@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/aff-inst-admin-layout :: head('평가 진행률 현황')}"></head>
+<body>
+<div th:replace="~{Include/aff-inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/aff-inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<style>
+/* ── 기본 리셋 ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── 페이지 래퍼 ── */
+.pg-wrap { max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+
+/* ── 페이지 헤더 ── */
+.pg-header { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+.pg-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0; }
+.badge { padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.badge-green  { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+.badge-blue   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 34px;
+       padding: 0 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+       cursor: pointer; border: 1px solid; text-decoration: none; }
+.btn-back { background: #fff; border-color: #d0d7de; color: #374151; }
+.btn-back:hover { background: #f8fafc; }
+
+/* ── 요약 카드 그리드 ── */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.sum-card {
+  background: #fff;
+  border: 1px solid #e5e9ef;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.sum-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em; color: #64748b; margin-bottom: 6px;
+}
+.sum-value {
+  font-size: 26px; font-weight: 800; color: #1e293b; line-height: 1;
+}
+.sum-unit { font-size: 13px; font-weight: 400; color: #64748b; margin-left: 3px; }
+.sum-card.accent-blue  { border-left: 4px solid #3b82f6; }
+.sum-card.accent-green { border-left: 4px solid #22c55e; }
+.sum-card.accent-amber { border-left: 4px solid #f59e0b; }
+.sum-card.accent-red   { border-left: 4px solid #ef4444; }
+.sum-card.accent-slate { border-left: 4px solid #64748b; }
+
+/* ── 전체 진행 바 ── */
+.overall-card {
+  background: #fff; border: 1px solid #e5e9ef; border-radius: 12px;
+  padding: 18px 20px; margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.overall-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.overall-title { font-size: 13px; font-weight: 700; color: #1e293b; }
+.overall-pct { font-size: 22px; font-weight: 800; color: #1b304a; }
+.prog-bar-bg { background: #e5e7eb; border-radius: 999px; height: 10px; overflow: hidden; }
+.prog-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #1b304a, #3b82f6); transition: width .4s; }
+.overall-sub { font-size: 12px; color: #64748b; margin-top: 8px; }
+
+/* ── 필터 바 ── */
+.filter-bar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;
+}
+.search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+.search-input {
+  width: 100%; height: 36px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  padding: 0 10px 0 34px; font-size: 13px; outline: none; background: #fff;
+  color: #1e293b; transition: border-color .15s;
+}
+.search-input:focus { border-color: #3b82f6; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
+.sort-select {
+  height: 36px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  padding: 0 10px; font-size: 13px; background: #fff; color: #374151;
+  cursor: pointer; outline: none;
+}
+.sort-select:focus { border-color: #3b82f6; }
+.filter-submit {
+  height: 36px; padding: 0 16px; border-radius: 8px; border: none;
+  background: #1b304a; color: #fff; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: filter .15s;
+}
+.filter-submit:hover { filter: brightness(1.15); }
+.filter-count { font-size: 12px; color: #64748b; white-space: nowrap; }
+
+/* ── 테이블 카드 ── */
+.table-card {
+  background: #fff; border: 1px solid #e5e9ef; border-radius: 12px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table thead th {
+  background: #f8fafc; border-bottom: 1px solid #e5e9ef;
+  padding: 10px 14px; text-align: left; font-weight: 700;
+  color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: .04em;
+  white-space: nowrap;
+}
+.data-table thead th.num { text-align: right; }
+.data-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: background .1s; }
+.data-table tbody tr:last-child { border-bottom: none; }
+.data-table tbody tr:hover { background: #f8fafc; }
+.data-table td { padding: 10px 14px; color: #1e293b; vertical-align: middle; }
+.data-table td.num { text-align: right; }
+
+/* ── 이름 셀 ── */
+.name-cell { display: flex; flex-direction: column; gap: 2px; }
+.name-text { font-weight: 600; font-size: 13.5px; color: #1e293b; }
+.name-meta { font-size: 11px; color: #94a3b8; }
+
+/* ── 상태 뱃지 ── */
+.status-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.chip-done     { background: #f0fdf4; border: 1px solid #86efac; color: #15803d; }
+.chip-progress { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.chip-pending  { background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; }
+
+/* ── 인라인 진행 바 ── */
+.mini-bar-wrap { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.mini-bar-bg {
+  flex: 1; height: 6px; background: #e5e7eb;
+  border-radius: 999px; overflow: hidden;
+}
+.mini-bar-fill { height: 100%; border-radius: 999px; background: #1b304a; min-width: 2px; }
+.mini-pct { font-size: 11px; font-weight: 700; color: #475569; white-space: nowrap; min-width: 32px; text-align: right; }
+
+/* ── 남은 평가 수 강조 ── */
+.pending-0 { color: #22c55e; font-weight: 700; }
+.pending-hi { color: #ef4444; font-weight: 700; }
+.pending-mid { color: #f59e0b; font-weight: 700; }
+
+/* ── 빈 상태 ── */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: #94a3b8; font-size: 14px;
+}
+.empty-ico { font-size: 40px; display: block; margin-bottom: 12px; }
+
+/* ── 반응형 ── */
+@media (max-width: 700px) {
+  .data-table thead th.hide-sm,
+  .data-table td.hide-sm { display: none; }
+  .summary-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+
+<div class="pg-wrap">
+
+  <!-- 페이지 헤더 -->
+  <div class="pg-header">
+    <a th:href="@{/aff/inst-admin/dashboard(year=${year})}" class="btn btn-back">← 대시보드</a>
+    <h1 class="pg-title">평가 진행률 현황</h1>
+    <span class="badge badge-green" th:text="${institutionName}">기관명</span>
+    <span class="badge badge-blue"  th:text="${year}+'년도'">2026년도</span>
+  </div>
+
+  <!-- 요약 카드 -->
+  <div class="summary-grid">
+    <div class="sum-card accent-slate">
+      <div class="sum-label">전체 직원</div>
+      <div class="sum-value" th:text="${totalMembers}">0<span class="sum-unit">명</span></div>
+    </div>
+    <div class="sum-card accent-green">
+      <div class="sum-label">평가 완료</div>
+      <div class="sum-value">
+        <span th:text="${doneAll}">0</span><span class="sum-unit">명</span>
+      </div>
+    </div>
+    <div class="sum-card accent-amber">
+      <div class="sum-label">진행 중</div>
+      <div class="sum-value">
+        <span th:text="${inProgress}">0</span><span class="sum-unit">명</span>
+      </div>
+    </div>
+    <div class="sum-card accent-red">
+      <div class="sum-label">미시작</div>
+      <div class="sum-value">
+        <span th:text="${notStarted}">0</span><span class="sum-unit">명</span>
+      </div>
+    </div>
+    <div class="sum-card accent-blue">
+      <div class="sum-label">완료 평가쌍</div>
+      <div class="sum-value">
+        <span th:text="${completedPairs}">0</span>
+        <span class="sum-unit" th:text="'/ '+${totalPairs}">/ 0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 전체 진행 바 -->
+  <div class="overall-card">
+    <div class="overall-top">
+      <span class="overall-title">전체 평가 완료율</span>
+      <span class="overall-pct"
+            th:text="${totalPairs > 0 ? #numbers.formatDecimal(completedPairs * 100.0 / totalPairs, 1, 1) : '0.0'} + '%'">0%</span>
+    </div>
+    <div class="prog-bar-bg">
+      <div class="prog-bar-fill"
+           th:style="'width:' + (${totalPairs > 0 ? completedPairs * 100 / totalPairs : 0}) + '%'"></div>
+    </div>
+    <div class="overall-sub"
+         th:text="${completedPairs}+'개 완료 / '+${totalPairs}+'개 전체'">0개 완료 / 0개 전체</div>
+  </div>
+
+  <!-- 필터 바 -->
+  <form method="get" th:action="@{/aff/inst-admin/progress}">
+    <input type="hidden" name="year" th:value="${year}" />
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" type="text" name="q"
+               placeholder="이름 · 부서 검색"
+               th:value="${q}">
+      </div>
+      <select class="sort-select" name="sort">
+        <option value="default" th:selected="${sort == 'default' or sort == null}">정렬: 기본</option>
+        <option value="pending_desc" th:selected="${sort == 'pending_desc'}">남은 수 많은 순</option>
+        <option value="pending_asc"  th:selected="${sort == 'pending_asc'}">남은 수 적은 순</option>
+        <option value="progress_desc" th:selected="${sort == 'progress_desc'}">진행률 높은 순</option>
+        <option value="progress_asc"  th:selected="${sort == 'progress_asc'}">진행률 낮은 순</option>
+        <option value="name_asc"  th:selected="${sort == 'name_asc'}">이름 순</option>
+      </select>
+      <button type="submit" class="filter-submit">검색</button>
+      <span class="filter-count" th:text="${members.size()}+'명 표시'">0명 표시</span>
+    </div>
+  </form>
+
+  <!-- 테이블 카드 -->
+  <div class="table-card">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th style="width:40px">#</th>
+          <th>이름 / 부서</th>
+          <th class="hide-sm">직책</th>
+          <th class="num">전체</th>
+          <th class="num">완료</th>
+          <th class="num">남은 수</th>
+          <th style="min-width:140px">진행률</th>
+          <th class="hide-sm">최종 활동</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:if="${members.isEmpty()}">
+          <td colspan="9">
+            <div class="empty-state">
+              <span class="empty-ico">—</span>
+              조회된 직원이 없습니다.
+            </div>
+          </td>
+        </tr>
+        <tr th:each="m, stat : ${members}">
+          <td style="color:#94a3b8;font-size:12px" th:text="${stat.index + 1}">1</td>
+
+          <!-- 이름 + 부서 -->
+          <td>
+            <div class="name-cell">
+              <span class="name-text" th:text="${m.targetName}">홍길동</span>
+              <span class="name-meta" th:text="${m.deptName}">부서</span>
+            </div>
+          </td>
+
+          <!-- 직책 -->
+          <td class="hide-sm" style="color:#475569;font-size:12px" th:text="${m.position}">직책</td>
+
+          <!-- 전체 / 완료 -->
+          <td class="num" th:text="${m.needPairs}">0</td>
+          <td class="num" th:text="${m.donePairs}">0</td>
+
+          <!-- 남은 수 -->
+          <td class="num">
+            <span th:if="${m.pendingPairs == 0}" class="pending-0" th:text="${m.pendingPairs}">0</span>
+            <span th:if="${m.pendingPairs > 0 and m.pendingPairs <= 3}" class="pending-mid" th:text="${m.pendingPairs}">0</span>
+            <span th:if="${m.pendingPairs > 3}" class="pending-hi"  th:text="${m.pendingPairs}">0</span>
+          </td>
+
+          <!-- 진행 바 -->
+          <td>
+            <div class="mini-bar-wrap">
+              <div class="mini-bar-bg">
+                <div class="mini-bar-fill"
+                     th:style="'width:' + (${m.needPairs > 0 ? m.donePairs * 100 / m.needPairs : 0}) + '%'"></div>
+              </div>
+              <span class="mini-pct"
+                    th:text="${m.needPairs > 0 ? #numbers.formatDecimal(m.donePairs * 100.0 / m.needPairs, 1, 0) : 0} + '%'">0%</span>
+            </div>
+          </td>
+
+          <!-- 최종 활동 -->
+          <td class="hide-sm" style="font-size:11px;color:#94a3b8"
+              th:text="${m.updatedAt != null ? #strings.substring(m.updatedAt,0,10) : '-'}">-</td>
+
+          <!-- 상태 칩 -->
+          <td>
+            <span th:if="${m.needPairs > 0 and m.pendingPairs == 0}"
+                  class="status-chip chip-done">완료</span>
+            <span th:if="${m.donePairs > 0 and m.pendingPairs > 0}"
+                  class="status-chip chip-progress">진행중</span>
+            <span th:if="${m.donePairs == 0 and m.needPairs > 0}"
+                  class="status-chip chip-pending">미시작</span>
+            <span th:if="${m.needPairs == 0}"
+                  class="status-chip chip-pending">대상없음</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /pg-wrap -->
+</div><!-- /main-content -->
+
+<div th:replace="~{Include/aff-inst-admin-layout :: scripts}"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+
+  /* 진행 바 애니메이션 */
+  requestAnimationFrame(function () {
+    document.querySelectorAll('.mini-bar-fill, .prog-bar-fill').forEach(function (el) {
+      var w = el.style.width;
+      el.style.width = '0';
+      requestAnimationFrame(function () {
+        el.style.transition = 'width .5s ease';
+        el.style.width = w;
+      });
+    });
+  });
+});
+</script>
+</body>
+</html>

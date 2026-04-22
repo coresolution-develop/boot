@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>계열사 기관 관리자 로그인</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0c1f35 0%, #1a3a5c 60%, #1b304a 100%);
+      font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+    }
+
+    .login-wrap { width: 100%; max-width: 420px; padding: 20px; }
+
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 40px 36px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+
+    .login-logo { text-align: center; margin-bottom: 28px; }
+    .login-logo .badge {
+      display: inline-block;
+      background: #1a3a5c;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .login-logo h1 { font-size: 22px; font-weight: 800; color: #1e293b; }
+    .login-logo p { font-size: 13px; color: #64748b; margin-top: 4px; }
+
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #dc2626;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: #374151; margin-bottom: 6px; letter-spacing: .03em;
+    }
+    .form-control {
+      width: 100%; padding: 11px 14px;
+      border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 14px; color: #1e293b;
+      transition: border-color .15s, box-shadow .15s;
+      background: #fafafa;
+    }
+    .form-control:focus {
+      outline: none; border-color: #1a3a5c;
+      box-shadow: 0 0 0 3px rgba(26,58,92,.1);
+      background: #fff;
+    }
+    .form-control::placeholder { color: #9ca3af; }
+
+    .btn-login {
+      width: 100%; padding: 13px;
+      background: #1a3a5c; color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 8px;
+      transition: filter .15s; letter-spacing: .02em;
+    }
+    .btn-login:hover { filter: brightness(1.15); }
+
+    .login-footer {
+      text-align: center; margin-top: 20px;
+      font-size: 12px; color: #94a3b8;
+    }
+    .login-footer a { color: #3b82f6; text-decoration: none; }
+    .login-footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="login-logo">
+      <div class="badge">Aff Institution Admin</div>
+      <h1>계열사 기관 관리자</h1>
+      <p>배정받은 기관 관리자 계정으로 로그인하세요.</p>
+    </div>
+
+    <div th:if="${param.error}" class="error-box">
+      로그인 ID 또는 비밀번호가 올바르지 않습니다.
+    </div>
+
+    <form th:action="@{/aff/inst-loginAction}" method="post" id="loginForm">
+      <div class="form-group">
+        <label class="form-label" for="username">로그인 ID</label>
+        <input type="text" id="username" name="username"
+               class="form-control" placeholder="관리자 ID를 입력하세요"
+               autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">비밀번호</label>
+        <input type="password" id="password" name="password"
+               class="form-control" placeholder="비밀번호를 입력하세요"
+               autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="btn-login">로그인</button>
+    </form>
+
+    <p class="login-footer">
+      계열사 일반 직원이라면 <a th:href="@{/aff/login}">직원 로그인</a>으로 이동하세요.
+    </p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') document.getElementById('loginForm').submit();
+  });
+</script>
+</body>
+</html>
