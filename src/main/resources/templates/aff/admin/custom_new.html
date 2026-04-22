@@ -56,6 +56,15 @@
     .select2-selection__rendered { line-height:42px !important; font-size:14px; color:#333 !important; }
     .select2-selection__arrow { height:42px !important; }
 
+    /* 기존 대상 테이블 */
+    .target-table { width:100%; border-collapse:collapse; font-size:13px; margin-top:10px; }
+    .target-table th, .target-table td { padding:8px 10px; border:1px solid #e0e0e0; text-align:left; }
+    .target-table th { background:#f5f7fa; font-weight:600; color:#444; }
+    .target-table tr:hover td { background:#fafbfc; }
+    .btn-danger { background:#e53935; color:#fff; padding:5px 10px; font-size:12px; border:none; border-radius:4px; cursor:pointer; }
+    .btn-danger:hover { background:#c62828; }
+    .empty-msg { color:#888; font-style:italic; margin-top:8px; }
+
     /* 카드 등장 애니메이션 (선택) */
     @keyframes card-rise { from {opacity:0; transform: translateY(14px);} to {opacity:1; transform: none;} }
     .card { opacity:0; transform: translateY(14px); }
@@ -79,6 +88,44 @@
       <div class="card" th:if="${msg} or ${err}">
         <div th:if="${msg}" class="msg ok" th:text="${msg}" style="background:#e8f5e9;border:1px solid #a5d6a7;color:#1b5e20;padding:12px 16px;border-radius:6px;margin-bottom:10px;"></div>
         <div th:if="${err}" class="msg err" th:text="${err}" style="background:#ffebee;border:1px solid #ef9a9a;color:#b71c1c;padding:12px 16px;border-radius:6px;"></div>
+      </div>
+
+      <!-- 기존 커스텀 대상 카드 (평가자 선택 시만 노출) -->
+      <div class="card" th:if="${selectedUserId != null and !#strings.isEmpty(selectedUserId)}">
+        <h2>현재 등록된 커스텀 대상
+          <span style="font-size:14px;font-weight:normal;color:#666;" th:text="|(평가자: ${selectedUserId})|"></span>
+        </h2>
+        <div th:if="${existingTargets == null or existingTargets.isEmpty()}" class="empty-msg">
+          등록된 커스텀 대상이 없습니다.
+        </div>
+        <table class="target-table" th:if="${existingTargets != null and !existingTargets.isEmpty()}">
+          <thead>
+            <tr>
+              <th>대상자</th>
+              <th>소속부서</th>
+              <th>직위</th>
+              <th>평가유형</th>
+              <th>삭제</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="t : ${existingTargets}">
+              <td th:text="|${t.name} (${t.id})|">-</td>
+              <td th:text="${t.subName}">-</td>
+              <td th:text="${t.position}">-</td>
+              <td th:text="${t.evalTypeCode}">-</td>
+              <td>
+                <form th:action="@{/aff/admin/targets/custom/remove}" method="post"
+                      onsubmit="return confirm('이 커스텀 대상을 삭제하시겠습니까?');">
+                  <input type="hidden" name="userId"   th:value="${selectedUserId}" />
+                  <input type="hidden" name="year"     th:value="${year}" />
+                  <input type="hidden" name="targetId" th:value="${t.id}" />
+                  <button type="submit" class="btn btn-danger">삭제</button>
+                </form>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- 폼 카드 -->
@@ -195,6 +242,15 @@
           language: { noResults: () => '검색 결과 없음' },
           minimumInputLength: 0
         });
+      });
+
+      // 평가자 선택 변경 시 → 페이지 reload (기존 대상 목록 갱신)
+      $('#evaluator').on('change', function () {
+        const userId = $(this).val();
+        const year   = /*[[${year}]]*/ '';
+        if (userId) {
+          window.location.href = '/aff/admin/targets/new?year=' + year + '&userId=' + encodeURIComponent(userId);
+        }
       });
     });
   </script>

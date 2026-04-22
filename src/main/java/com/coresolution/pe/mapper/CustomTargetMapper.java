@@ -155,6 +155,22 @@ public interface CustomTargetMapper {
       """)
   List<UserPE> findCustomTargets(@Param("userId") String userId, @Param("year") String year);
 
+  // 커스텀 대상 상세 (부서명, 직위, 평가유형 포함)
+  @Select("""
+      SELECT u.*,
+             s.sub_name        AS subName,
+             c.eval_type_code  AS evalTypeCode
+        FROM personnel_evaluation.admin_custom_targets c
+        JOIN personnel_evaluation.users_${year} u
+          ON u.id = c.target_id AND u.eval_year = c.eval_year
+   LEFT JOIN personnel_evaluation.sub_management s
+          ON s.sub_code = u.sub_code AND s.eval_year = u.eval_year
+       WHERE c.eval_year = #{year}
+         AND c.user_id   = #{userId}
+         AND c.is_active = 1
+      """)
+  List<UserPE> findCustomTargetsDetailed(@Param("userId") String userId, @Param("year") String year);
+
   // 메타(유형/사유 등) 조회
   @Select("""
       SELECT c.target_id       AS targetId,

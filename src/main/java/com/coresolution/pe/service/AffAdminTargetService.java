@@ -297,4 +297,15 @@ public class AffAdminTargetService {
             // 이미 비활성 or 행 없음 → 무시
         }
     }
+
+    /** 커스텀 대상 비활성화 (userId 직접 지정 — admin custom_new 화면용) */
+    @Transactional
+    public void removeCustomByUserId(String userId, int year, String targetId, String reason) {
+        customTargetMapper.deactivateCustom(userId, year, targetId, reason);
+    }
+
+    /** 특정 평가자의 활성 커스텀 대상 목록 반환 */
+    public List<UserPE> getCustomTargetsList(String userId, int year) {
+        return customTargetMapper.findCustomTargetsDetailed(userId, year);
+    }
 }

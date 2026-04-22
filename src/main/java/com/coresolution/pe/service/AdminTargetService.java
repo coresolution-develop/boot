@@ -111,8 +111,18 @@ public class AdminTargetService {
         int updated = customTargetMapper.deactivateCustom(userId, year, targetId, reason);
         if (updated == 0) {
             // 이미 비활성화되었거나 행이 없는 경우: 굳이 실패로 보지 않아도 됨
-            // 필요하면 예외 던지기/무시 중 선택
         }
+    }
+
+    /** 커스텀 대상 비활성화 (userId 직접 — admin custom_new 화면용) */
+    @Transactional
+    public void removeCustomByUserId(String userId, String year, String targetId, String reason) {
+        customTargetMapper.deactivateCustom(userId, year, targetId, reason);
+    }
+
+    /** 특정 평가자의 활성 커스텀 대상 목록 (상세) */
+    public List<UserPE> getCustomTargetsList(String userId, String year) {
+        return customTargetMapper.findCustomTargetsDetailed(userId, year);
     }
 
     private static String nz(String s) {

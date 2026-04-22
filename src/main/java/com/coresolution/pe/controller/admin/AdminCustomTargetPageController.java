@@ -17,6 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.beans.factory.annotation.Value;
 
+import com.coresolution.pe.entity.UserPE;
 import com.coresolution.pe.service.AdminTargetService;
 
 import lombok.RequiredArgsConstructor;
@@ -36,8 +37,17 @@ public class AdminCustomTargetPageController {
     private int currentEvalYear;
 
     @GetMapping("/new")
-    public String newForm(@RequestParam(required = false) String year, Model model) {
+    public String newForm(@RequestParam(required = false) String year,
+                          @RequestParam(required = false) String userId,
+                          Model model) {
         if (year == null || year.isEmpty()) year = String.valueOf(currentEvalYear);
+
+        // 선택된 평가자의 기존 커스텀 대상 목록
+        List<UserPE> existingTargets = (userId != null && !userId.isBlank())
+                ? adminTargetService.getCustomTargetsList(userId, year)
+                : List.of();
+        model.addAttribute("existingTargets", existingTargets);
+        model.addAttribute("selectedUserId", userId);
         // 부서별로 묶인 사용자 목록 (select에 optgroup으로 렌더)
         var depts = adminTargetService.getDepartments(year); // List<DepartmentDto>
 
@@ -98,6 +108,20 @@ public class AdminCustomTargetPageController {
         adminTargetService.insertCustomOnly(userId, year, targetId, evalTypeCode, dataEv, dataType, reason);
         ra.addFlashAttribute("message", "커스텀 대상이 저장되었습니다.");
 
+        return "redirect:/admin/targets/new?year=" + year + "&userId=" + userId;
+    }
+
+    @PostMapping("/custom/remove")
+    @Transactional
+    public String removeCustomTarget(
+            @RequestParam String userId,
+            @RequestParam(required = false) String year,
+            @RequestParam String targetId,
+            @RequestParam(required = false, defaultValue = "관리자 수동 삭제") String reason,
+            RedirectAttributes ra) {
+        if (year == null || year.isEmpty()) year = String.valueOf(currentEvalYear);
+        adminTargetService.removeCustomByUserId(userId, year, targetId, reason);
+        ra.addFlashAttribute("message", "커스텀 평가 대상을 삭제했습니다.");
         return "redirect:/admin/targets/new?year=" + year + "&userId=" + userId;
     }
 }
