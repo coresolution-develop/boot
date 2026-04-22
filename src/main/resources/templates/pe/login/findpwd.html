@@ -11,202 +11,137 @@
 
     body {
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1b304a 100%);
       font-family: 'Pretendard', 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
       padding: 20px;
     }
 
-    .find-wrap {
-      width: 100%;
-      max-width: 440px;
-    }
-
-    .find-card {
-      background: #fff;
-      border-radius: 20px;
-      padding: 44px 40px 36px;
+    .find-wrap  { width: 100%; max-width: 440px; }
+    .find-card  {
+      background: #fff; border-radius: 20px;
+      padding: 40px 38px 34px;
       box-shadow: 0 24px 72px rgba(0,0,0,.36);
     }
 
     /* ── 헤더 ── */
-    .find-header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
+    .find-header { text-align: center; margin-bottom: 28px; }
     .find-badge {
-      display: inline-block;
-      background: #1b304a;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .1em;
-      padding: 4px 14px;
-      border-radius: 20px;
-      text-transform: uppercase;
+      display: inline-block; background: #1b304a; color: #fff;
+      font-size: 11px; font-weight: 700; letter-spacing: .1em;
+      padding: 4px 14px; border-radius: 20px; text-transform: uppercase;
       margin-bottom: 12px;
     }
-    .find-title {
-      font-size: 22px;
-      font-weight: 800;
-      color: #1e293b;
-      letter-spacing: -.02em;
+    .find-title    { font-size: 22px; font-weight: 800; color: #1e293b; letter-spacing: -.02em; }
+    .find-subtitle { font-size: 13px; color: #64748b; margin-top: 6px; }
+
+    /* ── 스텝 인디케이터 ── */
+    .step-indicator {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 28px;
     }
-    .find-subtitle {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 6px;
+    .step-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
     }
+    .step-circle {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+      background: #f1f5f9; color: #94a3b8;
+      border: 2px solid #e2e8f0;
+      transition: background .25s, border-color .25s, color .25s;
+    }
+    .step-label  { font-size: 11px; font-weight: 600; color: #94a3b8; transition: color .25s; white-space: nowrap; }
+    .step-line   { flex: 1; height: 2px; background: #e2e8f0; transition: background .25s; }
+
+    .step-item.active  .step-circle { background: #1b304a; border-color: #1b304a; color: #fff; }
+    .step-item.active  .step-label  { color: #1b304a; }
+    .step-item.done    .step-circle { background: #22c55e; border-color: #22c55e; color: #fff; }
+    .step-item.done    .step-label  { color: #16a34a; }
+    .step-line.done    { background: #22c55e; }
 
     /* ── 폼 ── */
     .form-group { margin-bottom: 14px; }
     .form-label {
-      display: block;
-      font-size: 12px;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 6px;
-      letter-spacing: .02em;
+      display: block; font-size: 12px; font-weight: 600;
+      color: #374151; margin-bottom: 6px; letter-spacing: .02em;
     }
     .form-control {
-      width: 100%;
-      padding: 11px 14px;
-      border: 1px solid #d1d5db;
-      border-radius: 9px;
-      font-size: 14px;
-      color: #1e293b;
-      background: #fafafa;
+      width: 100%; padding: 11px 14px;
+      border: 1px solid #d1d5db; border-radius: 9px;
+      font-size: 14px; color: #1e293b; background: #fafafa;
       transition: border-color .15s, box-shadow .15s;
     }
     .form-control:focus {
-      outline: none;
-      border-color: #1b304a;
-      box-shadow: 0 0 0 3px rgba(27,48,74,.1);
-      background: #fff;
+      outline: none; border-color: #1b304a;
+      box-shadow: 0 0 0 3px rgba(27,48,74,.1); background: #fff;
     }
     .form-control::placeholder { color: #9ca3af; }
-    .form-control.is-error {
-      border-color: #ef4444;
-      box-shadow: 0 0 0 3px rgba(239,68,68,.1);
-    }
+    .form-control.is-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
 
-    /* ── 에러 메시지 ── */
-    .error-msg {
-      display: none;
-      padding: 10px 14px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #dc2626;
-      margin-bottom: 14px;
+    /* ── 비밀번호 강도 ── */
+    .pwd-strength { margin-top: 8px; }
+    .pwd-bars     { display: flex; gap: 4px; margin-bottom: 4px; }
+    .pwd-bar {
+      flex: 1; height: 4px; border-radius: 2px;
+      background: #e2e8f0; transition: background .2s;
     }
-    .error-msg.show { display: block; }
+    .pwd-bar.weak   { background: #ef4444; }
+    .pwd-bar.medium { background: #f59e0b; }
+    .pwd-bar.strong { background: #22c55e; }
+    .pwd-strength-label { font-size: 11px; color: #94a3b8; }
+    .pwd-strength-label.weak   { color: #ef4444; }
+    .pwd-strength-label.medium { color: #f59e0b; }
+    .pwd-strength-label.strong { color: #22c55e; }
 
-    /* ── 성공 배너 ── */
-    .success-banner {
-      display: none;
-      padding: 10px 14px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 8px;
-      font-size: 13px;
-      color: #166534;
-      font-weight: 600;
-      margin-bottom: 14px;
+    /* ── 메시지 ── */
+    .msg-box {
+      display: none; padding: 10px 14px;
+      border-radius: 8px; font-size: 13px; margin-bottom: 14px;
     }
-    .success-banner.show { display: block; }
-
-    /* ── Step 구분 ── */
-    #step-reset {
-      display: none;
-    }
-    #step-reset.show {
-      display: block;
-    }
-
-    .divider {
-      border: none;
-      border-top: 1px solid #f1f5f9;
-      margin: 18px 0;
-    }
+    .msg-box.show { display: block; }
+    .msg-box.error   { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; }
+    .msg-box.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-weight: 600; }
 
     /* ── 버튼 ── */
     .btn-primary {
-      width: 100%;
-      padding: 13px;
-      background: #1b304a;
-      color: #fff;
-      border: none;
-      border-radius: 9px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: .02em;
-      transition: filter .15s, transform .08s;
-      margin-top: 4px;
+      width: 100%; padding: 13px;
+      background: #1b304a; color: #fff;
+      border: none; border-radius: 9px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 4px;
+      transition: filter .15s, transform .08s; letter-spacing: .02em;
     }
-    .btn-primary:hover { filter: brightness(1.15); }
+    .btn-primary:hover  { filter: brightness(1.15); }
     .btn-primary:active { transform: scale(.99); }
-    .btn-primary:disabled {
-      background: #94a3b8;
-      cursor: not-allowed;
-      filter: none;
-    }
+    .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; filter: none; }
 
-    /* ── 뒤로가기 ── */
+    .divider { border: none; border-top: 1px solid #f1f5f9; margin: 18px 0; }
+
     .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 16px;
-      font-size: 13px;
-      color: #64748b;
-      text-decoration: none;
+      display: block; text-align: center; margin-top: 16px;
+      font-size: 13px; color: #64748b; text-decoration: none;
     }
     .back-link:hover { color: #1e293b; }
 
     /* ── 문의사항 ── */
     .contact-box {
-      margin-top: 24px;
-      padding: 14px 16px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
+      margin-top: 24px; padding: 14px 16px;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
     }
-    .contact-box p.contact-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: #374151;
-      margin-bottom: 8px;
-    }
-    .contact-box ul {
-      list-style: none;
-      padding: 0; margin: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .contact-box li {
-      font-size: 12px;
-      color: #3b82f6;
-      line-height: 1.5;
-    }
-    .contact-box li.note {
-      color: #64748b;
-      font-size: 11px;
-      margin-top: 4px;
-    }
+    .contact-title { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 8px; }
+    .contact-list  { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .contact-list li      { font-size: 12px; color: #3b82f6; line-height: 1.5; }
+    .contact-list li.note { color: #64748b; font-size: 11px; margin-top: 4px; }
 
     @media (max-width: 480px) {
-      .find-card { padding: 34px 24px 28px; }
+      .find-card { padding: 34px 22px 28px; }
       .find-title { font-size: 19px; }
     }
   </style>
 </head>
 <body>
-
 <div class="find-wrap">
   <div class="find-card">
 
@@ -217,173 +152,223 @@
       <p class="find-subtitle">사번과 휴대폰번호로 본인확인 후 변경하세요</p>
     </div>
 
-    <!-- 에러 / 성공 메시지 -->
-    <div class="error-msg" id="errorMsg"></div>
-    <div class="success-banner" id="successBanner"></div>
+    <!-- 스텝 인디케이터 -->
+    <div class="step-indicator">
+      <div class="step-item active" id="si-1">
+        <div class="step-circle">1</div>
+        <span class="step-label">본인 확인</span>
+      </div>
+      <div class="step-line" id="sl-12"></div>
+      <div class="step-item" id="si-2">
+        <div class="step-circle">2</div>
+        <span class="step-label">비밀번호 변경</span>
+      </div>
+    </div>
+
+    <!-- 메시지 박스 -->
+    <div class="msg-box" id="msgBox"></div>
 
     <!-- Step 1: 본인확인 -->
-    <div id="step-find">
+    <div id="step1">
       <div class="form-group">
-        <label class="form-label" for="id">사번</label>
-        <input type="text" id="id" name="id" class="form-control"
+        <label class="form-label" for="userId">사번</label>
+        <input type="text" id="userId" class="form-control"
                placeholder="사번을 입력하세요" autocomplete="username">
       </div>
       <div class="form-group">
-        <label class="form-label" for="ph">휴대폰번호</label>
-        <input type="text" id="ph" name="ph" class="form-control"
-               placeholder="01012345678 (- 없이 입력)" autocomplete="tel"
-               maxlength="13">
+        <label class="form-label" for="phone">휴대폰번호</label>
+        <input type="text" id="phone" class="form-control"
+               placeholder="01012345678 (하이픈 없이)" autocomplete="tel" maxlength="13">
       </div>
-      <button type="button" id="find" class="btn-primary">정보 확인</button>
+      <button type="button" id="btnFind" class="btn-primary">본인 확인</button>
     </div>
 
-    <!-- Step 2: 새 비밀번호 입력 (정보확인 성공 후 노출) -->
-    <div id="step-reset">
+    <!-- Step 2: 비밀번호 변경 -->
+    <div id="step2" style="display:none">
       <hr class="divider">
       <div class="form-group">
         <label class="form-label" for="pwd">새 비밀번호</label>
-        <input type="password" id="pwd" name="pwd" class="form-control"
+        <input type="password" id="pwd" class="form-control"
                placeholder="새 비밀번호를 입력하세요" autocomplete="new-password">
+        <div class="pwd-strength" id="pwdStrength" style="display:none">
+          <div class="pwd-bars">
+            <div class="pwd-bar" id="bar1"></div>
+            <div class="pwd-bar" id="bar2"></div>
+            <div class="pwd-bar" id="bar3"></div>
+            <div class="pwd-bar" id="bar4"></div>
+          </div>
+          <span class="pwd-strength-label" id="strengthLabel">비밀번호를 입력하세요</span>
+        </div>
       </div>
       <div class="form-group">
         <label class="form-label" for="pwd2">비밀번호 확인</label>
-        <input type="password" id="pwd2" name="pwd2" class="form-control"
+        <input type="password" id="pwd2" class="form-control"
                placeholder="비밀번호를 다시 입력하세요" autocomplete="new-password">
       </div>
-      <button type="button" id="pwdAct" class="btn-primary">비밀번호 변경</button>
+      <button type="button" id="btnChange" class="btn-primary">비밀번호 변경</button>
     </div>
 
     <a href="/login" class="back-link">← 로그인으로 돌아가기</a>
 
     <!-- 문의사항 -->
     <div class="contact-box">
-      <p class="contact-title">📞 문의사항</p>
-      <ul>
+      <p class="contact-title">문의사항</p>
+      <ul class="contact-list">
         <li>코어솔루션 전준호 팀장 063-250-4506</li>
         <li>코어솔루션 이수민 주임 063-250-4545</li>
         <li>비상연락처 (전준호) 010-4454-8201</li>
-        <li class="note">※ 문자로 내용(소속·부서·사원명 포함) 남겨주시면 확인 후 바로 조치하겠습니다.</li>
+        <li class="note">문자로 소속·부서·사원명을 남겨주시면 확인 후 바로 조치하겠습니다.</li>
       </ul>
     </div>
 
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
 <script th:inline="javascript">
 /*<![CDATA[*/
-const URL_FIND   = /*[[@{/pwd/find-ajax}]]*/ '/pwd/find-ajax';
-const YEAR       = /*[[${year} ?: 2025]]*/ 2025;
-const URL_PWDACT = /*[[@{/pwd/act/}]]*/ '/pwd/act/';
-const URL_LOGIN  = /*[[@{/login}]]*/ '/login';
+var URL_FIND   = /*[[@{/pwd/find-ajax}]]*/ '/pwd/find-ajax';
+var YEAR       = /*[[${year}]]*/ 2026;
+var URL_PWDACT = /*[[@{/pwd/act/}]]*/ '/pwd/act/';
+var URL_LOGIN  = /*[[@{/login}]]*/ '/login';
+var foundUserId = '';
 
-$(function () {
+/* ── DOM 참조 ── */
+var elMsg      = document.getElementById('msgBox');
+var elStep1    = document.getElementById('step1');
+var elStep2    = document.getElementById('step2');
+var elUserId   = document.getElementById('userId');
+var elPhone    = document.getElementById('phone');
+var elPwd      = document.getElementById('pwd');
+var elPwd2     = document.getElementById('pwd2');
+var elBtnFind  = document.getElementById('btnFind');
+var elBtnChg   = document.getElementById('btnChange');
+var elStrBox   = document.getElementById('pwdStrength');
+var elStrLbl   = document.getElementById('strengthLabel');
+var bars       = [document.getElementById('bar1'), document.getElementById('bar2'),
+                  document.getElementById('bar3'), document.getElementById('bar4')];
+var si1 = document.getElementById('si-1');
+var si2 = document.getElementById('si-2');
+var sl  = document.getElementById('sl-12');
 
-  /* ── 유틸 ── */
-  function showError(msg) {
-    $('#errorMsg').text(msg).addClass('show');
-    $('#successBanner').removeClass('show');
-  }
-  function showSuccess(msg) {
-    $('#successBanner').text(msg).addClass('show');
-    $('#errorMsg').removeClass('show');
-  }
-  function clearMessages() {
-    $('#errorMsg').removeClass('show');
-    $('#successBanner').removeClass('show');
-    $('#id, #ph').removeClass('is-error');
-  }
+/* ── 메시지 유틸 ── */
+function showMsg(msg, type) {
+  elMsg.textContent = msg;
+  elMsg.className = 'msg-box show ' + (type || 'error');
+}
+function clearMsg() {
+  elMsg.className = 'msg-box';
+  [elUserId, elPhone, elPwd, elPwd2].forEach(function(el){ el.classList.remove('is-error'); });
+}
 
-  /* ── 입력 포커스 시 에러 초기화 ── */
-  $('#id, #ph').on('focus', function () {
-    clearMessages();
-    $('#step-reset').removeClass('show');
+/* ── 스텝 전환 ── */
+function goStep2() {
+  si1.className = 'step-item done';
+  sl.className  = 'step-line done';
+  si2.className = 'step-item active';
+  elStep1.style.display = 'none';
+  elStep2.style.display = 'block';
+  elPwd.focus();
+}
+
+/* ── 비밀번호 강도 ── */
+function measureStrength(val) {
+  var score = 0;
+  if (val.length >= 8)  score++;
+  if (/[A-Z]/.test(val)) score++;
+  if (/[0-9]/.test(val)) score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
+  return score;
+}
+elPwd.addEventListener('input', function() {
+  var val = this.value;
+  if (!val) { elStrBox.style.display = 'none'; return; }
+  elStrBox.style.display = 'block';
+  var score = measureStrength(val);
+  var cls   = score <= 1 ? 'weak' : score <= 2 ? 'medium' : 'strong';
+  var label = score <= 1 ? '약함' : score <= 2 ? '보통' : '강함';
+  bars.forEach(function(b, i) {
+    b.className = 'pwd-bar' + (i < score ? ' ' + cls : '');
   });
-
-  /* ── 정보 확인 ── */
-  $('#find').on('click', function () {
-    clearMessages();
-
-    const id = $('#id').val().trim();
-    let ph    = $('#ph').val().trim().replace(/-/g, '');
-
-    if (!id) { showError('사번을 입력해주세요.'); $('#id').focus(); return; }
-    if (!ph)  { showError('휴대폰번호를 입력해주세요.'); $('#ph').focus(); return; }
-
-    // 하이픈 포맷 통일
-    if (ph.length === 11) ph = ph.slice(0,3) + '-' + ph.slice(3,7) + '-' + ph.slice(7);
-
-    const $btn = $(this).prop('disabled', true).text('확인 중…');
-
-    $.ajax({
-      url: URL_FIND,
-      type: 'POST',
-      dataType: 'json',
-      data: { id, ph, year: YEAR },
-      success: function (res) {
-        if (res.success === true) {
-          showSuccess('✅ 본인 확인이 완료되었습니다. 새 비밀번호를 입력해주세요.');
-          $('#step-reset').addClass('show');
-          $('#pwd').focus();
-        } else {
-          showError('검색된 정보가 없습니다. 사번과 휴대폰번호를 확인해주세요.');
-          $('#id, #ph').addClass('is-error');
-        }
-      },
-      error: function () {
-        showError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      },
-      complete: function () {
-        $btn.prop('disabled', false).text('정보 확인');
-      }
-    });
-  });
-
-  /* ── 비밀번호 변경 ── */
-  $(document).on('click', '#pwdAct', function () {
-    clearMessages();
-
-    const id   = $('#id').val().trim();
-    const pwd  = $('#pwd').val();
-    const pwd2 = $('#pwd2').val();
-
-    if (!pwd)           { showError('새 비밀번호를 입력해주세요.'); $('#pwd').focus(); return; }
-    if (!pwd2)          { showError('비밀번호 확인을 입력해주세요.'); $('#pwd2').focus(); return; }
-    if (pwd !== pwd2)   { showError('비밀번호가 일치하지 않습니다.'); $('#pwd2').addClass('is-error').focus(); return; }
-
-    const $btn = $(this).prop('disabled', true).text('변경 중…');
-
-    $.ajax({
-      url: URL_PWDACT + encodeURIComponent(id),
-      type: 'POST',
-      dataType: 'json',
-      data: { id, pwd },
-      success: function (res) {
-        if (res.result === 'Y') {
-          showSuccess('✅ 비밀번호가 변경되었습니다. 변경된 비밀번호로 로그인해주세요.');
-          $('#step-reset').removeClass('show');
-          setTimeout(function () { location.replace(URL_LOGIN); }, 1800);
-        } else {
-          showError('비밀번호 변경 중 오류가 발생했습니다. 관리자에게 문의하세요.');
-          $btn.prop('disabled', false).text('비밀번호 변경');
-        }
-      },
-      error: function () {
-        showError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-        $btn.prop('disabled', false).text('비밀번호 변경');
-      }
-    });
-  });
-
-  /* ── Enter 키 지원 ── */
-  $('#id, #ph').on('keydown', function (e) {
-    if (e.key === 'Enter') $('#find').trigger('click');
-  });
-  $(document).on('keydown', '#pwd, #pwd2', function (e) {
-    if (e.key === 'Enter') $('#pwdAct').trigger('click');
-  });
-
+  elStrLbl.className = 'pwd-strength-label ' + cls;
+  elStrLbl.textContent = label;
 });
+
+/* ── 본인 확인 ── */
+function doFind() {
+  clearMsg();
+  var id = elUserId.value.trim();
+  var ph = elPhone.value.trim().replace(/-/g, '');
+  if (!id) { showMsg('사번을 입력해주세요.'); elUserId.classList.add('is-error'); elUserId.focus(); return; }
+  if (!ph) { showMsg('휴대폰번호를 입력해주세요.'); elPhone.classList.add('is-error'); elPhone.focus(); return; }
+  if (ph.length === 11) ph = ph.slice(0,3) + '-' + ph.slice(3,7) + '-' + ph.slice(7);
+
+  elBtnFind.disabled = true;
+  elBtnFind.textContent = '확인 중...';
+
+  var params = new URLSearchParams({ id: id, ph: ph, year: YEAR });
+  fetch(URL_FIND, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.success === true) {
+        foundUserId = id;
+        showMsg('본인 확인이 완료되었습니다. 새 비밀번호를 입력해주세요.', 'success');
+        goStep2();
+      } else {
+        showMsg('사번과 휴대폰번호가 일치하는 정보가 없습니다.');
+        elUserId.classList.add('is-error');
+        elPhone.classList.add('is-error');
+      }
+    })
+    .catch(function() { showMsg('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.'); })
+    .finally(function() {
+      elBtnFind.disabled = false;
+      elBtnFind.textContent = '본인 확인';
+    });
+}
+
+/* ── 비밀번호 변경 ── */
+function doChange() {
+  clearMsg();
+  var pwd  = elPwd.value;
+  var pwd2 = elPwd2.value;
+  if (!pwd)         { showMsg('새 비밀번호를 입력해주세요.'); elPwd.classList.add('is-error'); elPwd.focus(); return; }
+  if (pwd.length < 6) { showMsg('비밀번호는 6자 이상 입력해주세요.'); elPwd.classList.add('is-error'); elPwd.focus(); return; }
+  if (!pwd2)        { showMsg('비밀번호 확인을 입력해주세요.'); elPwd2.classList.add('is-error'); elPwd2.focus(); return; }
+  if (pwd !== pwd2) { showMsg('비밀번호가 일치하지 않습니다.'); elPwd2.classList.add('is-error'); elPwd2.focus(); return; }
+
+  elBtnChg.disabled = true;
+  elBtnChg.textContent = '변경 중...';
+
+  var params = new URLSearchParams({ pwd: pwd, year: YEAR });
+  fetch(URL_PWDACT + encodeURIComponent(foundUserId), { method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      if (res.result === 'Y') {
+        showMsg('비밀번호가 변경되었습니다. 변경된 비밀번호로 로그인해주세요.', 'success');
+        elStep2.style.display = 'none';
+        setTimeout(function() { location.replace(URL_LOGIN); }, 1800);
+      } else {
+        showMsg('비밀번호 변경 중 오류가 발생했습니다. 관리자에게 문의하세요.');
+        elBtnChg.disabled = false;
+        elBtnChg.textContent = '비밀번호 변경';
+      }
+    })
+    .catch(function() {
+      showMsg('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      elBtnChg.disabled = false;
+      elBtnChg.textContent = '비밀번호 변경';
+    });
+}
+
+/* ── 이벤트 바인딩 ── */
+elBtnFind.addEventListener('click', doFind);
+elBtnChg.addEventListener('click', doChange);
+
+elUserId.addEventListener('keydown', function(e) { if (e.key === 'Enter') doFind(); });
+elPhone.addEventListener('keydown',  function(e) { if (e.key === 'Enter') doFind(); });
+elPwd.addEventListener('keydown',    function(e) { if (e.key === 'Enter') doChange(); });
+elPwd2.addEventListener('keydown',   function(e) { if (e.key === 'Enter') doChange(); });
 /*]]>*/
 </script>
 </body>

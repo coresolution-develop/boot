@@ -394,8 +394,8 @@ public class AffPageController {
     }
 
     @GetMapping("pwdfind")
-    public String pwdFind() {
-        System.out.println("비밀번호 찾기 페이지");
+    public String pwdFind(Model model) {
+        model.addAttribute("year", currentEvalYear);
         return "aff/login/findpwd";
     }
 
