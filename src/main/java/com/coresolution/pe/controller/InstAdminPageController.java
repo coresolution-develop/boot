@@ -390,11 +390,11 @@ public class InstAdminPageController {
                 Integer.parseInt(year), institutionName, "ALL",
                 q, sort, usersTable);
 
-        // 요약 통계
+        // 요약 통계 (needPairs == 0 인 "대상 없음" 직원은 미시작에서 제외)
         int totalMembers   = members.size();
         int doneAll        = (int) members.stream().filter(m -> m.getNeedPairs() > 0 && m.getPendingPairs() == 0).count();
         int inProgress     = (int) members.stream().filter(m -> m.getDonePairs() > 0 && m.getPendingPairs() > 0).count();
-        int notStarted     = (int) members.stream().filter(m -> m.getDonePairs() == 0).count();
+        int notStarted     = (int) members.stream().filter(m -> m.getNeedPairs() > 0 && m.getDonePairs() == 0).count();
         int totalPairs     = members.stream().mapToInt(OrgMemberProgressRow::getNeedPairs).sum();
         int completedPairs = members.stream().mapToInt(OrgMemberProgressRow::getDonePairs).sum();
 

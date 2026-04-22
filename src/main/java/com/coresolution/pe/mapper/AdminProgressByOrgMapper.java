@@ -247,12 +247,14 @@ public interface AdminProgressByOrgMapper {
       FROM agg
       ORDER BY
         <choose>
-          <when test="sort == 'dept_asc'"> deptName ASC, teamCode ASC, targetName ASC </when>
-          <when test="sort == 'dept_desc'"> deptName DESC, teamCode ASC, targetName ASC </when>
-          <when test="sort == 'team_asc'"> teamCode ASC, targetName ASC </when>
-          <when test="sort == 'name_asc'"> targetName ASC </when>
-          <when test="sort == 'name_desc'"> targetName DESC </when>
-          <when test="sort == 'progress_asc'"> progress ASC, targetName ASC </when>
+          <when test="sort == 'name_asc'">      targetName ASC </when>
+          <when test="sort == 'name_desc'">     targetName DESC </when>
+          <when test="sort == 'progress_asc'">  progress ASC,      targetName ASC </when>
+          <when test="sort == 'progress_desc'"> progress DESC,     targetName ASC </when>
+          <when test="sort == 'pending_asc'">   pendingPairs ASC,  targetName ASC </when>
+          <when test="sort == 'pending_desc'">  pendingPairs DESC, targetName ASC </when>
+          <when test="sort == 'dept_asc'">      deptName ASC,  targetName ASC </when>
+          <when test="sort == 'dept_desc'">     deptName DESC, targetName ASC </when>
           <otherwise> deptName ASC, progress DESC, targetName ASC </otherwise>
         </choose>
       </script>
