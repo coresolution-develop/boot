@@ -184,7 +184,7 @@ public class AffPageController {
     public String login(@CookieValue(value = "aff_savedId", defaultValue = "") String savedId,
             @CookieValue(value = "aff_savedLoginType", defaultValue = "byName") String savedLoginType,
             @RequestParam(value = "error", required = false) String error, Model model) throws Exception {
-        System.out.println("로그인 페이지");
+        log.debug("로그인 페이지");
         // URL 디코딩 (인코딩해서 저장했을 경우)
         model.addAttribute("aff_savedId", URLDecoder.decode(savedId, "UTF-8"));
         model.addAttribute("aff_savedLoginType", savedLoginType);
@@ -344,15 +344,15 @@ public class AffPageController {
     @RequestMapping("admin/userDataUpload")
     public String userDataUpload(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("사용자 데이터 업로드 페이지");
+        log.debug("사용자 데이터 업로드 페이지");
         // 사용자 데이터 업로드 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("userDataUpload - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("userDataUpload - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("userDataUpload - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("userDataUpload - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("userDataUpload - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("userDataUpload - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         model.addAttribute("year", year);
         return "aff/admin/userDataUpload";
@@ -361,19 +361,19 @@ public class AffPageController {
     @RequestMapping("admin/subManagement")
     public String subManagement(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("부서 관리 페이지");
+        log.debug("부서 관리 페이지");
         // 부서 관리 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("subManagement - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("subManagement - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("subManagement - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("subManagement - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("subManagement - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("subManagement - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         List<SubManagement> subList = pe.getSubManagement(year);
         model.addAttribute("subList", subList);
-        System.out.println("부서 목록: " + subList);
+        log.debug("부서 목록: " + subList);
         model.addAttribute("year", year);
 
         return "aff/admin/subManagement";
@@ -381,13 +381,13 @@ public class AffPageController {
 
     @RequestMapping("pwd/{idx}")
     public String pwdSetting(@PathVariable("idx") Integer idx, Model model) {
-        System.out.println("비밀번호 설정 페이지");
+        log.debug("비밀번호 설정 페이지");
         // idx를 이용하여 사용자 정보를 조회하고 모델에 추가
         UserPE userInfo = pe.findUserInfoByIdx(idx);
         model.addAttribute("id", userInfo.getId());
         model.addAttribute("idx", userInfo.getIdx());
         model.addAttribute("name", userInfo.getName());
-        System.out.println(
+        log.debug(
                 "비밀번호 설정 페이지: idx=" + userInfo.getIdx() + ", id=" + userInfo.getId() + ", name=" + userInfo.getName());
         // 비밀번호 설정 페이지로 이동
         return "aff/login/pwd";
@@ -404,7 +404,7 @@ public class AffPageController {
     public Map<String, Object> findAjax(@RequestParam String id, @RequestParam String ph, @RequestParam int year) {
         Map<String, Object> response = new HashMap<>();
         UserPE user = pe.findByUserIdWithNames(id, year);
-        System.out.println("user = " + user);
+        log.debug("user = " + user);
         boolean exists = pe.existsByUserIdAndPhone(id, year, ph);
 
         if (!exists) {
@@ -416,7 +416,7 @@ public class AffPageController {
         // 여기서부터는 “존재하는 경우” 처리 (임시비밀번호 발급 등)
         response.put("success", true);
         response.put("message", "인증이 완료되었습니다.");
-        System.out.println("response: " + response);
+        log.debug("response: " + response);
         return response;
     }
 
@@ -435,7 +435,7 @@ public class AffPageController {
         }
 
         String encoded = passwordEncoder.encode(rawPassword);
-        System.out.println("비밀번호 변경 시도: userId=" + userId + ", year=" + year + ", encodedPwd=" + encoded);
+        log.debug("비밀번호 변경 시도: userId=" + userId + ", year=" + year + ", encodedPwd=" + encoded);
         try {
             boolean ok = pe.changePasswordByUserIdAndYear(userId, year, encoded);
             if (ok) {
@@ -457,18 +457,18 @@ public class AffPageController {
     @RequestMapping("admin/target")
     public String target(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year, Authentication auth) {
-        System.out.println("평가 대상 메칭 페이지");
+        log.debug("평가 대상 메칭 페이지");
         // 목표 관리 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("target - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("target - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("target - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("target - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("target - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("target - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         // 인증·권한 로그 (ROLE_ADMIN 여부 확인)
-        System.out.println("관리자: " + auth.getName() + ", 권한=" + auth.getAuthorities());
+        log.debug("관리자: " + auth.getName() + ", 권한=" + auth.getAuthorities());
 
         model.addAttribute("year", year);
         return "aff/admin/target";
@@ -694,20 +694,20 @@ public class AffPageController {
     @RequestMapping("admin/evaluation")
     public String eval(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("관리자 페이지");
+        log.debug("관리자 페이지");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("adminPage - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("adminPage - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         List<Evaluation> eval = pe.getEvaluation(year);
         model.addAttribute("eval", eval);
-        System.out.println("평가 목록: " + eval);
+        log.debug("평가 목록: " + eval);
         return "aff/admin/evaluation";
     }
 
@@ -734,7 +734,7 @@ public class AffPageController {
     public String userForm(Model model, Authentication auth, @RequestParam("targetId") String targetId,
             @RequestParam("type") String dataType, @RequestParam("ev") String dataEv,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") int year) {
-        System.out.println(" 페이지");
+        log.debug(" 페이지");
         // 사용자 정보 수정 페이지로 이동
         // 1) 로그인한 사용자 ID
         String evaluatorId = auth.getName();
@@ -833,15 +833,15 @@ public class AffPageController {
 
     @RequestMapping("admin/notice")
     public String notice(Model model) {
-        System.out.println("관리자 페이지(공지사항)");
+        log.debug("관리자 페이지(공지사항)");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("admin - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("admin - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("admin - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("admin - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("admin - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("admin - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         return "aff/admin/notice";
     }
@@ -1359,7 +1359,7 @@ public class AffPageController {
 
     @RequestMapping("Logout")
     public String logout() {
-        System.out.println("로그아웃 처리");
+        log.debug("로그아웃 처리");
         SecurityContextHolder.clearContext(); // 스프링 시큐리티 컨텍스트 초기화
         return "redirect:/aff/login"; // 로그인 페이지로 리다이렉트
     }

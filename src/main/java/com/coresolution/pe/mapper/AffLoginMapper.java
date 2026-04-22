@@ -3,6 +3,7 @@ package com.coresolution.pe.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
@@ -295,4 +296,128 @@ public interface AffLoginMapper {
 
   @Update("UPDATE personnel_evaluation_aff.users_${year} SET pwd = #{encoded} WHERE id = #{userId} and eval_year = #{year}")
   int changePasswordByUserIdAndYear(String userId, String year, String encoded);
+
+  // ── 기관 관리자 전용 ──────────────────────────────────
+
+  /** idx + 기관명으로 직원 조회 (기관 범위 보안 체크) */
+  @Select("""
+      SELECT u.idx, u.c_name AS cName, u.c_name2 AS cName2,
+             u.id, u.name, u.position, u.phone,
+             u.sub_code AS subCode, u.team_code AS teamCode,
+             u.del_yn AS delYn, u.eval_year AS evalYear,
+             u.pwd,
+             CASE WHEN COALESCE(u.pwd,'') <> '' THEN 1 ELSE 0 END AS passwordSet,
+             s.sub_name AS subName, t.team_name AS teamName,
+             (SELECT GROUP_CONCAT(r.role ORDER BY r.role SEPARATOR ',')
+              FROM personnel_evaluation_aff.user_roles_${year} r
+              WHERE r.user_id = u.id AND r.eval_year = #{year}) AS rolesCsv
+      FROM personnel_evaluation_aff.users_${year} u
+      LEFT JOIN personnel_evaluation_aff.sub_management s
+             ON s.sub_code = u.sub_code AND s.eval_year = u.eval_year
+      LEFT JOIN personnel_evaluation_aff.team t
+             ON t.team_code = u.team_code AND t.eval_year = u.eval_year
+      WHERE u.idx       = #{idx}
+        AND u.eval_year = #{year}
+        AND u.c_name    = #{org}
+      LIMIT 1
+      """)
+  UserPE findUserByIdxAndOrg(
+      @Param("idx") int idx,
+      @Param("year") String year,
+      @Param("org") String org);
+
+  /** 평가제외 여부 업데이트 */
+  @Update("UPDATE personnel_evaluation_aff.users_${year} SET del_yn = #{delYn} WHERE idx = #{idx} AND eval_year = #{year}")
+  int updateDelYn(
+      @Param("idx") int idx,
+      @Param("year") String year,
+      @Param("delYn") String delYn);
+
+  /** 비밀번호 초기화 (NULL) */
+  @Update("UPDATE personnel_evaluation_aff.users_${year} SET pwd = NULL WHERE idx = #{idx} AND eval_year = #{year}")
+  int resetPasswordByIdx(
+      @Param("idx") int idx,
+      @Param("year") String year);
+
+  /** 특정 직원의 역할 전체 삭제 */
+  @Delete("DELETE FROM personnel_evaluation_aff.user_roles_${year} WHERE user_id = #{userId} AND eval_year = #{year}")
+  int deleteRolesByUserId(
+      @Param("userId") String userId,
+      @Param("year") String year);
+
+  /** 역할 단건 추가 */
+  @Insert("""
+      INSERT INTO personnel_evaluation_aff.user_roles_${year}
+        (user_id, role, eval_year)
+      VALUES
+        (#{userId}, #{role}, #{year})
+      """)
+  int insertRoleForUser(
+      @Param("userId") String userId,
+      @Param("role") String role,
+      @Param("year") String year);
+
+  /** 기관 소속 직원 + 역할(rolesCsv) 조회 (targets 자동 생성용) */
+  @Select("""
+      SELECT
+          u.idx        AS idx,
+          u.c_name     AS cName,
+          u.sub_code   AS subCode,
+          u.team_code  AS teamCode,
+          u.id         AS id,
+          u.name       AS name,
+          u.position   AS position,
+          s.sub_name   AS subName,
+          (SELECT GROUP_CONCAT(r.role ORDER BY r.role SEPARATOR ',')
+           FROM personnel_evaluation_aff.user_roles_${year} r
+           WHERE r.user_id = u.id AND r.eval_year = u.eval_year) AS rolesCsv
+      FROM personnel_evaluation_aff.users_${year} u
+      LEFT JOIN personnel_evaluation_aff.sub_management s
+             ON s.sub_code  = u.sub_code
+            AND s.eval_year = u.eval_year
+      WHERE u.eval_year = #{year}
+        AND u.del_yn    = 'N'
+        AND u.c_name    = #{orgName}
+      ORDER BY s.sub_name, u.name
+      """)
+  List<UserPE> getUsersWithRolesByOrg(
+      @Param("year") String year,
+      @Param("orgName") String orgName);
+
+  /** 특정 기관의 모든 평가 대상 비활성화 (targets 초기화용) */
+  @Update("""
+      UPDATE personnel_evaluation_aff.admin_custom_targets ct
+      INNER JOIN personnel_evaluation_aff.users_${year} u
+             ON  u.id = ct.user_id AND u.eval_year = ct.eval_year
+         SET ct.is_active = 0, ct.updated_at = NOW()
+       WHERE ct.eval_year = #{year}
+         AND u.c_name     = #{orgName}
+      """)
+  int deactivateTargetsByOrg(
+      @Param("year") int year,
+      @Param("orgName") String orgName);
+
+  /** 특정 기관(c_name)의 역할 전체 삭제 */
+  @Delete("""
+      DELETE r
+      FROM   personnel_evaluation_aff.user_roles_${year} r
+      JOIN   personnel_evaluation_aff.users_${year} u
+             ON  u.id        = r.user_id
+             AND u.eval_year = r.eval_year
+      WHERE  u.c_name    = #{orgName}
+        AND  u.eval_year = #{year}
+      """)
+  int deleteRolesByOrg(
+      @Param("year") int year,
+      @Param("orgName") String orgName);
+
+  /** 특정 기관(c_name)의 직원 전체 삭제 */
+  @Delete("""
+      DELETE FROM personnel_evaluation_aff.users_${year}
+      WHERE c_name    = #{orgName}
+        AND eval_year = #{year}
+      """)
+  int deleteUsersByOrg(
+      @Param("year") int year,
+      @Param("orgName") String orgName);
 }

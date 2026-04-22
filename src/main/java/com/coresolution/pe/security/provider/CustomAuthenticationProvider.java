@@ -16,8 +16,11 @@ import com.coresolution.pe.entity.UserPE;
 import com.coresolution.pe.security.token.CustomAuthenticationToken;
 import com.coresolution.pe.service.CustomUserDetailsService;
 import com.coresolution.pe.service.PeService;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+
+@Slf4j
 public class CustomAuthenticationProvider
         implements AuthenticationProvider {
 
@@ -44,7 +47,7 @@ public class CustomAuthenticationProvider
         String rawCred = token.getCredentials().toString();
         String loginType = token.getLoginType();
 
-        System.out.println("CustomAuthenticationProvider - Authenticating id: " + id + ", loginType: " + loginType);
+        log.debug("CustomAuthenticationProvider - Authenticating id: " + id + ", loginType: " + loginType);
 
         if ("byName".equals(loginType)) {
             int result = peService.login(id, rawCred, loginType);

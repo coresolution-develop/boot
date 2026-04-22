@@ -16,8 +16,11 @@ import com.coresolution.pe.entity.UserPE;
 import com.coresolution.pe.mapper.AffAdminMapper;
 import com.coresolution.pe.mapper.AffExcelMapper;
 import com.coresolution.pe.mapper.AffLoginMapper;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+
+@Slf4j
 public class PeAffService {
 
     private final AffLoginMapper loginMapper;
@@ -72,10 +75,10 @@ public class PeAffService {
         // 사번으로 유저 정보 조회 (연도별 테이블)
         UserPE user = loginMapper.findById(id, year);
         if (user == null) {
-            System.out.println("사용자를 찾을 수 없습니다: " + id);
+            log.debug("사용자를 찾을 수 없습니다: " + id);
             return null;
         }
-        System.out.println("사용자 정보 조회: " + user + " from ");
+        log.debug("사용자 정보 조회: " + user + " from ");
         return user;
     }
 
@@ -121,7 +124,7 @@ public class PeAffService {
 
     public void resetAutoIncrement() {
         loginMapper.resetAutoIncrement();
-        System.out.println("AUTO_INCREMENT가 초기화되었습니다.");
+        log.debug("AUTO_INCREMENT가 초기화되었습니다.");
     }
 
     public UserPE findUserInfoByIdx(int idx) {
@@ -131,7 +134,7 @@ public class PeAffService {
     // 사용중 (year정보 없음)
     public int updateUserPassword(UserPE user) {
         int result = loginMapper.updateUserPassword(user);
-        System.out.println("비밀번호 업데이트: " + user.getId() + ", 새로운 비밀번호: " + user.getPwd());
+        log.debug("비밀번호 업데이트: " + user.getId() + ", 새로운 비밀번호: " + user.getPwd());
         return result;
     }
 
@@ -143,10 +146,10 @@ public class PeAffService {
         // 사번으로 유저 정보 조회 (연도별 테이블) + 이름 필드 추가
         UserPE user = loginMapper.findByIdWithNames(userId, year);
         if (user == null) {
-            System.out.println("사용자를 찾을 수 없습니다: " + userId);
+            log.debug("사용자를 찾을 수 없습니다: " + userId);
             return null;
         }
-        System.out.println("findByUserIdWithNames 사용자 정보 조회: " + user + " from year: " + year);
+        log.debug("findByUserIdWithNames 사용자 정보 조회: " + user + " from year: " + year);
         return user;
     }
 

@@ -208,7 +208,7 @@ public class PageController {
     public String login(@CookieValue(value = "savedId", defaultValue = "") String savedId,
             @CookieValue(value = "savedLoginType", defaultValue = "byName") String savedLoginType,
             @RequestParam(value = "error", required = false) String error, Model model) throws Exception {
-        System.out.println("로그인 페이지");
+        log.debug("로그인 페이지");
         // URL 디코딩 (인코딩해서 저장했을 경우)
         model.addAttribute("savedId", URLDecoder.decode(savedId, "UTF-8"));
         model.addAttribute("savedLoginType", savedLoginType);
@@ -217,7 +217,7 @@ public class PageController {
         }
         List<NoticeVo> noticeList = pe.notice();
         model.addAttribute("notice", noticeList);
-        System.out.println("공지사항: " + noticeList);
+        log.debug("공지사항: " + noticeList);
         model.addAttribute("noticeV2List", noticeservice.getActiveNotices(currentEvalYear));
         model.addAttribute("currentEvalYear", currentEvalYear);
         return "pe/login/login";
@@ -225,13 +225,13 @@ public class PageController {
 
     @RequestMapping("pwd/{idx}")
     public String pwdSetting(@PathVariable("idx") Integer idx, Model model) {
-        System.out.println("비밀번호 설정 페이지");
+        log.debug("비밀번호 설정 페이지");
         // idx를 이용하여 사용자 정보를 조회하고 모델에 추가
         UserPE userInfo = pe.findUserInfoByIdx(idx);
         model.addAttribute("id", userInfo.getId());
         model.addAttribute("idx", userInfo.getIdx());
         model.addAttribute("name", userInfo.getName());
-        System.out.println(
+        log.debug(
                 "비밀번호 설정 페이지: idx=" + userInfo.getIdx() + ", id=" + userInfo.getId() + ", name=" + userInfo.getName());
         // 비밀번호 설정 페이지로 이동
         return "pe/login/pwd";
@@ -253,7 +253,7 @@ public class PageController {
     public Map<String, Object> findAjax(@RequestParam String id, @RequestParam String ph, @RequestParam String year) {
         Map<String, Object> response = new HashMap<>();
         UserPE user = pe.findByUserIdWithNames(id, year);
-        System.out.println("user = " + user);
+        log.debug("user = " + user);
         boolean exists = pe.existsByUserIdAndPhone(id, year, ph);
 
         if (!exists) {
@@ -265,7 +265,7 @@ public class PageController {
         // 여기서부터는 “존재하는 경우” 처리 (임시비밀번호 발급 등)
         response.put("success", true);
         response.put("message", "인증이 완료되었습니다.");
-        System.out.println("response: " + response);
+        log.debug("response: " + response);
         return response;
     }
 
@@ -284,7 +284,7 @@ public class PageController {
         }
 
         String encoded = passwordEncoder.encode(rawPassword);
-        System.out.println("비밀번호 변경 시도: userId=" + userId + ", year=" + year + ", encodedPwd=" + encoded);
+        log.debug("비밀번호 변경 시도: userId=" + userId + ", year=" + year + ", encodedPwd=" + encoded);
         try {
             boolean ok = pe.changePasswordByUserIdAndYear(userId, year, encoded);
             if (ok) {
@@ -452,7 +452,7 @@ public class PageController {
         // 진행률 등 부가 정보가 있으면 그대로
         Map<String, Progress> progressMap = userInfoPageService.buildProgressMap(userId, year, buckets);
         progressMap.forEach((k, v) -> {
-            System.out.println("[PROGRESS] key=" + k
+            log.debug("[PROGRESS] key=" + k
                     + ", answered=" + v.getAnswered()
                     + ", total=" + v.getTotal()
                     + ", completed=" + v.isCompleted());
@@ -1499,7 +1499,7 @@ public class PageController {
             @RequestParam("type") String dataType, @RequestParam("ev") String dataEv,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year,
             org.springframework.web.servlet.mvc.support.RedirectAttributes ra) {
-        System.out.println(" 페이지");
+        log.debug(" 페이지");
 
         year = String.valueOf(currentEvalYear);
         // 사용자 정보 수정 페이지로 이동
@@ -1608,8 +1608,8 @@ public class PageController {
         model.addAttribute("nameMap", payload.getNameMap());
 
         // ★ 입력 name 매핑(예: 섬33, 배36, t43 …)
-        System.out.println("nameMap: " + payload.getNameMap());
-        System.out.println("answersBundleJson: " + payload.getAnswersBundleJson());
+        log.debug("nameMap: " + payload.getNameMap());
+        log.debug("answersBundleJson: " + payload.getAnswersBundleJson());
         return "pe/user/edit";
     }
 
@@ -1759,30 +1759,30 @@ public class PageController {
 
     @RequestMapping("admin/admin")
     public String admin(Model model) {
-        System.out.println("관리자 페이지");
+        log.debug("관리자 페이지");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("admin - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("admin - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("admin - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("admin - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("admin - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("admin - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         return "pe/admin/admin";
     }
 
     @RequestMapping("admin/notice")
     public String notice(Model model) {
-        System.out.println("관리자 페이지(공지사항)");
+        log.debug("관리자 페이지(공지사항)");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("admin - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("admin - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("admin - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("admin - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("admin - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("admin - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         return "pe/admin/notice";
     }
@@ -1823,28 +1823,28 @@ public class PageController {
     // public String adminPage(Model model,
     // @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String
     // year) {
-    // System.out.println("관리자 페이지");
+    // log.debug("관리자 페이지");
     // // 관리자 페이지로 이동
     // Authentication authentication =
     // SecurityContextHolder.getContext().getAuthentication();
 
     // if (authentication != null && authentication.isAuthenticated()) {
-    // System.out.println("adminPage - 현재 인증된 사용자: " + authentication.getName());
-    // System.out.println("adminPage - 현재 사용자 권한: " +
+    // log.debug("adminPage - 현재 인증된 사용자: " + authentication.getName());
+    // log.debug("adminPage - 현재 사용자 권한: " +
     // authentication.getAuthorities());
     // // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
     // } else {
-    // System.out.println("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다.
+    // log.debug("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다.
     // (403 원인)");
     // }
 
     // List<NoticeVo> noticeList = pe.notice();
     // model.addAttribute("notice", noticeList);
-    // System.out.println("공지사항: " + noticeList);
+    // log.debug("공지사항: " + noticeList);
 
     // List<UserPE> userList = pe.getUserList(year);
     // model.addAttribute("userList", userList);
-    // System.out.println("사용자 목록: " + userList);
+    // log.debug("사용자 목록: " + userList);
     // model.addAttribute("year", year);
     // return "pe/admin/userList";
     // }
@@ -1907,19 +1907,19 @@ public class PageController {
     @RequestMapping("admin/subManagement")
     public String subManagement(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("부서 관리 페이지");
+        log.debug("부서 관리 페이지");
         // 부서 관리 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("subManagement - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("subManagement - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("subManagement - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("subManagement - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("subManagement - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("subManagement - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         List<SubManagement> subList = pe.getSubManagement(year);
         model.addAttribute("subList", subList);
-        System.out.println("부서 목록: " + subList);
+        log.debug("부서 목록: " + subList);
         model.addAttribute("year", year);
 
         return "pe/admin/subManagement";
@@ -1928,15 +1928,15 @@ public class PageController {
     @RequestMapping("admin/userDataUpload")
     public String userDataUpload(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("사용자 데이터 업로드 페이지");
+        log.debug("사용자 데이터 업로드 페이지");
         // 사용자 데이터 업로드 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("userDataUpload - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("userDataUpload - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("userDataUpload - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("userDataUpload - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("userDataUpload - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("userDataUpload - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         model.addAttribute("year", year);
         return "pe/admin/userDataUpload";
@@ -1945,18 +1945,18 @@ public class PageController {
     @RequestMapping("admin/target")
     public String target(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year, Authentication auth) {
-        System.out.println("평가 대상 메칭 페이지");
+        log.debug("평가 대상 메칭 페이지");
         // 목표 관리 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("target - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("target - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("target - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("target - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("target - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("target - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         // 인증·권한 로그 (ROLE_ADMIN 여부 확인)
-        System.out.println("관리자: " + auth.getName() + ", 권한=" + auth.getAuthorities());
+        log.debug("관리자: " + auth.getName() + ", 권한=" + auth.getAuthorities());
 
         // // 1) 부서별 DTO
         // List<DepartmentDto> departments = evaluationService.getDepartments(year);
@@ -2012,59 +2012,59 @@ public class PageController {
     @RequestMapping("admin/evaluation")
     public String eval(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("관리자 페이지");
+        log.debug("관리자 페이지");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("adminPage - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("adminPage - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         List<Evaluation> eval = pe.getEvaluation(year);
         model.addAttribute("eval", eval);
-        System.out.println("평가 목록: " + eval);
+        log.debug("평가 목록: " + eval);
         return "pe/admin/evaluation";
     }
 
     @RequestMapping("evdata/{inst}")
     public String status(Model model, @PathVariable("inst") String inst,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("관리자 페이지");
+        log.debug("관리자 페이지");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("adminPage - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("adminPage - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
         List<Evaluation> eval = pe.getEvaluation(year);
         model.addAttribute("eval", eval);
-        System.out.println("평가 목록: " + eval);
+        log.debug("평가 목록: " + eval);
         return "pe/admin/evdata";
     }
 
     @RequestMapping("release")
     public String release(Model model,
             @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
-        System.out.println("관리자 페이지");
+        log.debug("관리자 페이지");
         // 관리자 페이지로 이동
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            System.out.println("adminPage - 현재 인증된 사용자: " + authentication.getName());
-            System.out.println("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
+            log.debug("adminPage - 현재 인증된 사용자: " + authentication.getName());
+            log.debug("adminPage - 현재 사용자 권한: " + authentication.getAuthorities());
             // 이곳에 ROLE_ADMIN이 출력되어야 합니다!
         } else {
-            System.out.println("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
+            log.debug("adminPage - SecurityContextHolder에 인증 정보가 없거나 인증되지 않았습니다. (403 원인)");
         }
-        model.addAttribute("year", year);
-        System.out.println("평가 목록: " + year);
+        model.addAttribute("year",        year);
+        model.addAttribute("currentYear", currentEvalYear);
 
         return "pe/admin/release";
     }
@@ -2396,7 +2396,7 @@ public class PageController {
 
     @RequestMapping("Logout")
     public String logout() {
-        System.out.println("로그아웃 처리");
+        log.debug("로그아웃 처리");
         SecurityContextHolder.clearContext(); // 스프링 시큐리티 컨텍스트 초기화
         return "redirect:/pe/login"; // 로그인 페이지로 리다이렉트
     }

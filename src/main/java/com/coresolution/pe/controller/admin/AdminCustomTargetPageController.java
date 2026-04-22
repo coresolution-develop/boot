@@ -20,11 +20,14 @@ import org.springframework.beans.factory.annotation.Value;
 import com.coresolution.pe.service.AdminTargetService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/admin/targets")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
+
+@Slf4j
 public class AdminCustomTargetPageController {
 
     private final AdminTargetService adminTargetService;
@@ -38,7 +41,7 @@ public class AdminCustomTargetPageController {
         // 부서별로 묶인 사용자 목록 (select에 optgroup으로 렌더)
         var depts = adminTargetService.getDepartments(year); // List<DepartmentDto>
 
-        System.out.println(depts);
+        log.debug("부서 목록: {}", depts);
         model.addAttribute("departments", depts);
         model.addAttribute("hasDepartments", depts != null && !depts.isEmpty());
 

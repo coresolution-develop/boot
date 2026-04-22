@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/aff-inst-admin-layout :: head('평가 대상 설정')}"></head>
+<body>
+<div th:replace="~{Include/aff-inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/aff-inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:1100px; margin:0 auto; padding:24px 20px;">
+
+<style>
+.card{background:#fff;border:1px solid #e5e9ef;border-radius:12px;padding:20px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-title{font-size:16px;font-weight:700;color:#1e293b;margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.chip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.chip-blue{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.chip-green{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.chip-warn{background:#fef9c3;color:#854d0e;border:1px solid #fde68a}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid;text-decoration:none}
+.btn-primary{background:#1b304a;border-color:#1b304a;color:#fff}
+.btn-primary:hover{filter:brightness(1.15)}
+.btn-danger{background:#fff;border-color:#fca5a5;color:#dc2626}
+.btn-danger:hover{background:#fef2f2}
+.btn-sm{height:30px;padding:0 12px;font-size:12px}
+.form-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:8px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:#64748b}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:10px}
+.check-item{display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:#374151;background:#fff;transition:all .15s}
+.check-item:hover{border-color:#93c5fd;background:#eff6ff}
+.check-item input{accent-color:#1d4ed8}
+.check-item.checked{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8}
+.rule-section{margin-bottom:18px;padding:14px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px}
+.rule-section-title{font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.rule-type-badge{font-size:11px;font-weight:400;color:#64748b;background:#e2e8f0;padding:2px 8px;border-radius:10px}
+.tbl-wrap{border:1px solid #e5e9ef;border-radius:10px;overflow:hidden}
+.tbl-scroll{max-height:55vh;overflow:auto}
+.tbl-scroll::-webkit-scrollbar{width:4px}
+.tbl-scroll::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table thead th{position:sticky;top:0;z-index:2;background:#f3f6fa;font-weight:600;color:#374151;border-bottom:2px solid #dfe4ea;padding:9px 12px;text-align:left}
+.data-table tbody td{padding:8px 12px;border-bottom:1px solid #f1f4f8;color:#1e293b;vertical-align:middle}
+.data-table tbody tr:hover td{background:#f5f8ff}
+.data-table tbody tr:last-child td{border-bottom:none}
+.badge-count{display:inline-block;min-width:24px;text-align:center;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+.badge-none{background:#f1f5f9;color:#94a3b8}
+.badge-some{background:#dcfce7;color:#166534}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+select.form-select{height:34px;padding:0 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#374151;background:#fff}
+</style>
+
+<!-- 페이지 헤더 -->
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+  <h1 style="font-size:20px;font-weight:700;color:#1e293b;margin:0">평가 대상 설정</h1>
+  <span class="chip chip-blue" th:text="${institutionName}">기관명</span>
+  <span class="chip chip-green"
+        th:text="|총 ${totalPairs}개 평가 쌍|">0쌍</span>
+</div>
+
+<!-- 플래시 메시지 -->
+<div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+<div class="alert alert-error"   th:if="${error}"   th:text="${error}"></div>
+
+<!-- 자동 생성 카드 -->
+<div class="card">
+  <p class="card-title">자동 생성</p>
+  <p style="font-size:12px;color:#64748b;margin:0 0 14px">
+    부서별 역할 기반으로 평가 쌍을 자동 생성합니다.<br>
+    각 직원의 역할은 직원명부에서 설정하세요.
+  </p>
+
+  <form th:action="@{/aff/inst-admin/targets/generate}" method="post">
+    <input type="hidden" name="year" th:value="${year}"/>
+
+    <!-- ── 부서 평가 ── -->
+    <div class="rule-section">
+      <div class="rule-section-title">부서 평가</div>
+      <div class="checkbox-group">
+        <label class="check-item" id="lbl-m2h">
+          <input type="checkbox" name="rules" value="SUB_MEMBER_TO_HEAD"
+                 onchange="toggleCheck(this,'lbl-m2h')"> 부서원 → 부서장
+        </label>
+        <label class="check-item" id="lbl-h2m">
+          <input type="checkbox" name="rules" value="SUB_HEAD_TO_MEMBER"
+                 onchange="toggleCheck(this,'lbl-h2m')"> 부서장 → 부서원
+        </label>
+        <label class="check-item" id="lbl-m2m">
+          <input type="checkbox" name="rules" value="SUB_MEMBER_TO_MEMBER"
+                 onchange="toggleCheck(this,'lbl-m2m')"> 부서원 ↔ 부서원
+        </label>
+      </div>
+      <div class="form-group" style="margin-top:10px">
+        <label>부서 평가 양식</label>
+        <select name="subDataType" class="form-select">
+          <option value="AA">AA — 10문항</option>
+          <option value="AB">AB — 20문항</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ── 경혁팀 평가 ── -->
+    <div class="rule-section">
+      <div class="rule-section-title">경혁팀 평가 <span class="rule-type-badge">ev: B/C/D · AA 고정</span></div>
+      <div class="checkbox-group">
+        <label class="check-item" id="lbl-gh2gh">
+          <input type="checkbox" name="rules" value="GH_TO_GH"
+                 onchange="toggleCheck(this,'lbl-gh2gh')"> 경혁팀 → 경혁팀
+        </label>
+        <label class="check-item" id="lbl-gh2med">
+          <input type="checkbox" name="rules" value="GH_TO_MEDICAL"
+                 onchange="toggleCheck(this,'lbl-gh2med')"> 경혁팀 → 진료부
+        </label>
+        <label class="check-item" id="lbl-med2gh">
+          <input type="checkbox" name="rules" value="MEDICAL_TO_GH"
+                 onchange="toggleCheck(this,'lbl-med2gh')"> 진료부 → 경혁팀
+        </label>
+      </div>
+    </div>
+
+    <!-- ── 의료진(진료부) 평가 ── -->
+    <div class="rule-section">
+      <div class="rule-section-title">의료진(진료부) 평가 <span class="rule-type-badge">ev: A · AB 고정</span></div>
+      <div class="checkbox-group">
+        <label class="check-item" id="lbl-medldr">
+          <input type="checkbox" name="rules" value="MEDICAL_LEADER_TO_MEDICAL"
+                 onchange="toggleCheck(this,'lbl-medldr')"> 진료팀장 → 진료부원 (같은 부서)
+        </label>
+      </div>
+    </div>
+
+    <!-- ── 옵션 / 제출 ── -->
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:4px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#64748b">
+        <input type="checkbox" name="clearFirst" value="true">
+        기존 대상 삭제 후 생성
+      </label>
+      <button type="submit" class="btn btn-primary"
+              data-confirm="선택한 규칙으로 평가 대상을 자동 생성합니까?">
+        자동 생성
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- 현재 평가 대상 현황 -->
+<div class="card" style="padding:0">
+  <div style="padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <p class="card-title" style="margin:0">평가자별 현황</p>
+    <form th:action="@{/aff/inst-admin/targets/clear}" method="post"
+          style="display:inline">
+      <input type="hidden" name="year" th:value="${year}"/>
+      <button type="submit" class="btn btn-danger btn-sm"
+              data-confirm="모든 평가 대상 설정을 삭제합니까? 이 작업은 되돌릴 수 없습니다."
+              data-confirm-danger>
+        전체 초기화
+      </button>
+    </form>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>부서</th>
+            <th>이름</th>
+            <th>직책</th>
+            <th style="text-align:center">평가 대상 수</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:if="${evaluators == null or #lists.isEmpty(evaluators)}">
+            <td colspan="5" style="text-align:center;color:#94a3b8;padding:28px">
+              등록된 평가 대상이 없습니다. 위 자동 생성 기능을 이용하세요.
+            </td>
+          </tr>
+          <tr th:each="u, stat : ${evaluators}">
+            <td th:text="${stat.count}" style="color:#94a3b8;font-size:11px">1</td>
+            <td th:text="${u.subName ?: '-'}">부서</td>
+            <td style="font-weight:600" th:text="${u.name}">이름</td>
+            <td th:text="${u.position ?: '-'}" style="color:#64748b">직책</td>
+            <td style="text-align:center">
+              <span th:if="${u.targetCount == 0}" class="badge-count badge-none">0</span>
+              <span th:if="${u.targetCount > 0}"  class="badge-count badge-some"
+                    th:text="${u.targetCount}">N</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 역할 안내 -->
+<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;font-size:12px;color:#64748b;line-height:1.7">
+  <strong style="color:#374151">역할 안내</strong><br>
+  • <strong>SUB_HEAD</strong>: 부서장 — 부서원을 평가하거나 부서원에게 평가받는 역할<br>
+  • <strong>SUB_MEMBER</strong>: 부서원 — 부서장을 평가하거나 동료를 상호 평가하는 역할<br>
+  • 역할이 없는 직원은 자동 생성 대상에서 제외됩니다.<br>
+  • 직원 역할은 <a th:href="@{/aff/inst-admin/userList(year=${year})}"
+                  style="color:#1d4ed8;font-weight:600">직원명부</a>에서 개별 설정하세요.
+</div>
+
+</div>
+</div>
+
+<div th:replace="~{Include/aff-inst-admin-layout :: scripts}"></div>
+<script>
+function toggleCheck(cb, lblId) {
+  const lbl = document.getElementById(lblId);
+  if (cb.checked) lbl.classList.add('checked');
+  else lbl.classList.remove('checked');
+}
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+});
+</script>
+</body>
+</html>

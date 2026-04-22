@@ -11,7 +11,9 @@ import com.coresolution.pe.security.token.CustomAuthenticationToken;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     public CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
@@ -44,7 +46,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 credential,
                 loginType);
 
-        System.out.println("CustomAuthenticationFilter - loginType: " + loginType + ", credential: " + credential);
+        log.debug("CustomAuthenticationFilter - loginType: " + loginType + ", credential: " + credential);
         // --- 이 부분이 핵심 변경 사항입니다 ---
         // AuthenticationManager를 통해 인증을 시도하고 결과를 받습니다.
         Authentication authenticatedToken = this.getAuthenticationManager().authenticate(token);

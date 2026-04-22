@@ -9,8 +9,10 @@ import org.springframework.stereotype.Component;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class CustomSecurityContextRepository implements SecurityContextRepository {
 
     private final HttpSessionSecurityContextRepository delegate = new HttpSessionSecurityContextRepository();
@@ -26,14 +28,14 @@ public class CustomSecurityContextRepository implements SecurityContextRepositor
      */
     @Override
     public SecurityContext loadContext(HttpRequestResponseHolder holder) {
-        System.out.println("CustomSecurityContextRepository: loadContext 호출됨.");
+        log.debug("CustomSecurityContextRepository: loadContext 호출됨.");
         SecurityContext context = delegate.loadContext(holder);
 
         if (context.getAuthentication() != null) {
-            System.out.println("CustomSecurityContextRepository: 인증 정보 로드 성공 - "
+            log.debug("CustomSecurityContextRepository: 인증 정보 로드 성공 - "
                     + context.getAuthentication().getName());
         } else {
-            System.out.println("CustomSecurityContextRepository: 세션에서 인증 정보 로드 실패 (또는 없음).");
+            log.debug("CustomSecurityContextRepository: 세션에서 인증 정보 로드 실패 (또는 없음).");
         }
         return context;
     }
@@ -45,20 +47,20 @@ public class CustomSecurityContextRepository implements SecurityContextRepositor
     public void saveContext(SecurityContext context,
             HttpServletRequest request,
             HttpServletResponse response) {
-        System.out.println("CustomSecurityContextRepository: saveContext 호출됨.");
+        log.debug("CustomSecurityContextRepository: saveContext 호출됨.");
         delegate.saveContext(context, request, response);
 
         if (context.getAuthentication() != null) {
-            System.out.println("CustomSecurityContextRepository: 인증 정보 저장 성공 - "
+            log.debug("CustomSecurityContextRepository: 인증 정보 저장 성공 - "
                     + context.getAuthentication().getName());
         } else {
-            System.out.println("CustomSecurityContextRepository: 저장할 인증 정보 없음.");
+            log.debug("CustomSecurityContextRepository: 저장할 인증 정보 없음.");
         }
     }
 
     @Override
     public boolean containsContext(HttpServletRequest request) {
-        System.out.println("CustomSecurityContextRepository: containsContext 호출됨.");
+        log.debug("CustomSecurityContextRepository: containsContext 호출됨.");
         return delegate.containsContext(request);
     }
 }

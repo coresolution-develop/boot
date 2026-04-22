@@ -71,4 +71,20 @@ public interface AffEvaluationMapper {
             """)
     int countRadioByType(@Param("year") int year,
             @Param("dataType") String dataType);
+
+    /** 연도 + 유형(AA/AB)으로 문항 조회 (inst-admin 화면용) */
+    @Select("""
+              SELECT
+                e.idx,
+                e.d1,
+                e.d2,
+                e.d3,
+                e.eval_year AS evalYear
+              FROM personnel_evaluation_aff.evaluation e
+              WHERE e.eval_year = #{year}
+                AND e.d2       = #{type}
+              ORDER BY e.idx
+            """)
+    List<Evaluation> findByYearAndType(@Param("year") String year,
+            @Param("type") String type);
 }

@@ -132,6 +132,165 @@ public class AffAdminTargetService {
     }
 
     @Transactional
+    /** 기관 소속 평가자별 현재 활성 대상 수 목록 */
+    public List<UserPE> getEvaluatorSummary(String orgName, int year) {
+        return customTargetMapper.getEvaluatorsWithTargetCount(String.valueOf(year), orgName);
+    }
+
+    /** 기관 전체 활성 평가 쌍 수 */
+    public int countTargets(String orgName, int year) {
+        return customTargetMapper.countTargetsByOrg(String.valueOf(year), orgName);
+    }
+
+    /** 기관의 모든 평가 대상 비활성화 */
+    @Transactional
+    public int clearTargets(String orgName, int year) {
+        return loginMapper.deactivateTargetsByOrg(year, orgName);
+    }
+
+    /**
+     * 부서별 역할 기반 평가 대상 자동 생성.
+     */
+    @Transactional
+    public int generateTargets(String orgName, int year,
+                               java.util.List<String> rules, String subDataType,
+                               boolean clearFirst) {
+        if (clearFirst) {
+            loginMapper.deactivateTargetsByOrg(year, orgName);
+        }
+
+        java.util.List<UserPE> allUsers = loginMapper.getUsersWithRolesByOrg(String.valueOf(year), orgName);
+
+        java.util.List<UserPE> ghTeam = allUsers.stream()
+                .filter(u -> "GH_TEAM".equalsIgnoreCase(u.getTeamCode()))
+                .collect(java.util.stream.Collectors.toList());
+
+        java.util.List<UserPE> medicalAll = allUsers.stream()
+                .filter(u -> u.getSubCode() != null && u.getSubCode().startsWith("A"))
+                .collect(java.util.stream.Collectors.toList());
+
+        java.util.Map<String, java.util.List<UserPE>> byDept = allUsers.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        u -> u.getSubCode() != null ? u.getSubCode() : "__NO_DEPT__"));
+
+        String yearStr = String.valueOf(year);
+        int count = 0;
+
+        for (java.util.List<UserPE> deptUsers : byDept.values()) {
+            java.util.List<UserPE> heads = deptUsers.stream()
+                    .filter(u -> hasRole(u.getRolesCsv(), "SUB_HEAD"))
+                    .collect(java.util.stream.Collectors.toList());
+            java.util.List<UserPE> members = deptUsers.stream()
+                    .filter(u -> hasRole(u.getRolesCsv(), "SUB_MEMBER"))
+                    .collect(java.util.stream.Collectors.toList());
+
+            if (rules.contains("SUB_MEMBER_TO_HEAD")) {
+                for (UserPE member : members) {
+                    for (UserPE head : heads) {
+                        if (!member.getId().equals(head.getId())) {
+                            customTargetMapper.upsertCustomAdd(
+                                    member.getId(), yearStr, head.getId(),
+                                    "SUB_MEMBER_TO_HEAD", "F", subDataType, null);
+                            count++;
+                        }
+                    }
+                }
+            }
+
+            if (rules.contains("SUB_HEAD_TO_MEMBER")) {
+                for (UserPE head : heads) {
+                    for (UserPE member : members) {
+                        if (!head.getId().equals(member.getId())) {
+                            customTargetMapper.upsertCustomAdd(
+                                    head.getId(), yearStr, member.getId(),
+                                    "SUB_HEAD_TO_MEMBER", "E", subDataType, null);
+                            count++;
+                        }
+                    }
+                }
+            }
+
+            if (rules.contains("SUB_MEMBER_TO_MEMBER")) {
+                for (UserPE m1 : members) {
+                    for (UserPE m2 : members) {
+                        if (!m1.getId().equals(m2.getId())) {
+                            customTargetMapper.upsertCustomAdd(
+                                    m1.getId(), yearStr, m2.getId(),
+                                    "SUB_MEMBER_TO_MEMBER", "G", subDataType, null);
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (rules.contains("GH_TO_GH")) {
+            for (UserPE ev : ghTeam) {
+                for (UserPE tg : ghTeam) {
+                    if (!ev.getId().equals(tg.getId())) {
+                        customTargetMapper.upsertCustomAdd(ev.getId(), yearStr, tg.getId(),
+                                "GH_TO_GH", "D", "AA", null);
+                        count++;
+                    }
+                }
+            }
+        }
+
+        if (rules.contains("GH_TO_MEDICAL")) {
+            for (UserPE ev : ghTeam) {
+                for (UserPE tg : medicalAll) {
+                    if (!ev.getId().equals(tg.getId())) {
+                        customTargetMapper.upsertCustomAdd(ev.getId(), yearStr, tg.getId(),
+                                "GH_TO_MEDICAL", "C", "AA", null);
+                        count++;
+                    }
+                }
+            }
+        }
+
+        if (rules.contains("MEDICAL_TO_GH")) {
+            for (UserPE ev : medicalAll) {
+                for (UserPE tg : ghTeam) {
+                    if (!ev.getId().equals(tg.getId())) {
+                        customTargetMapper.upsertCustomAdd(ev.getId(), yearStr, tg.getId(),
+                                "MEDICAL_TO_GH", "B", "AA", null);
+                        count++;
+                    }
+                }
+            }
+        }
+
+        if (rules.contains("MEDICAL_LEADER_TO_MEDICAL")) {
+            java.util.Map<String, java.util.List<UserPE>> medByDept = medicalAll.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            u -> u.getSubCode() != null ? u.getSubCode() : "__NO_DEPT__"));
+            for (java.util.List<UserPE> deptUsers : medByDept.values()) {
+                java.util.List<UserPE> leaders = deptUsers.stream()
+                        .filter(u -> hasRole(u.getRolesCsv(), "MEDICAL_LEADER"))
+                        .collect(java.util.stream.Collectors.toList());
+                for (UserPE leader : leaders) {
+                    for (UserPE tg : deptUsers) {
+                        if (!leader.getId().equals(tg.getId())) {
+                            customTargetMapper.upsertCustomAdd(leader.getId(), yearStr, tg.getId(),
+                                    "SUB_HEAD_TO_MEMBER", "A", "AB", null);
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return count;
+    }
+
+    private boolean hasRole(String rolesCsv, String role) {
+        if (rolesCsv == null || rolesCsv.isBlank()) return false;
+        for (String r : rolesCsv.split(",")) {
+            if (r.trim().equalsIgnoreCase(role)) return true;
+        }
+        return false;
+    }
+
     public void removeCustomAddByIdx(int idx, int year, String targetId, String reason) {
         // idx -> userId
         UserPE user = loginMapper.findUserInfoByIdx(idx, currentEvalYear);

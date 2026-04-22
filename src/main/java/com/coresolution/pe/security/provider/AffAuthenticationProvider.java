@@ -16,8 +16,11 @@ import com.coresolution.pe.entity.UserPE;
 import com.coresolution.pe.security.token.CustomAuthenticationToken;
 import com.coresolution.pe.service.AffUserService;
 import com.coresolution.pe.service.CustomAffUserDetailsService;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+
+@Slf4j
 public class AffAuthenticationProvider implements AuthenticationProvider {
 
     private final AffUserService peService; // ← aff 전용 서비스/매퍼
@@ -42,7 +45,7 @@ public class AffAuthenticationProvider implements AuthenticationProvider {
         String rawCred = token.getCredentials().toString();
         String loginType = token.getLoginType();
 
-        System.out.println("CustomAuthenticationProvider - Authenticating id: " + id + ", loginType: " + loginType);
+        log.debug("CustomAuthenticationProvider - Authenticating id: " + id + ", loginType: " + loginType);
 
         if ("byName".equals(loginType)) {
             int result = peService.login(id, rawCred, loginType);
@@ -75,7 +78,7 @@ public class AffAuthenticationProvider implements AuthenticationProvider {
 
             // 인증 성공 → UserDetailsService 로 권한까지 가져와서 3‑arg 토큰 생성
             UserDetails ud = userDetailsService.loadUserByUsername(id);
-            System.out.println("byPwd 로그인 성공 - UserDetails 권한: " + ud.getAuthorities());
+            log.debug("byPwd 로그인 성공 - UserDetails 권한: " + ud.getAuthorities());
             return new UsernamePasswordAuthenticationToken(
                     ud, // principal
                     ud.getPassword(), // credentials (인증 후에는 보통 null 또는 "N/A" 처리되지만, 여기서는 ud.getPassword() 그대로 사용)

@@ -48,10 +48,12 @@ import com.coresolution.pe.service.PeService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@Slf4j
 public class SecurityConfig {
 
         // 1) 비밀번호 암호화 빈
@@ -128,7 +130,7 @@ public class SecurityConfig {
                                 result = "0";
                         }
 
-                        System.out.println("AuthenticationFailureHandler - 로그인 실패. Result: " + result
+                        log.debug("AuthenticationFailureHandler - 로그인 실패. Result: " + result
                                         + ", Exception: " + exception.getMessage());
 
                         // ★★★ 실패해도 '방금 입력한 값'을 쿠키에 저장 ★★★
@@ -370,6 +372,8 @@ public class SecurityConfig {
                                                                 "/favicon/**",
                                                                 "/error", "/ping")
                                                 .permitAll()
+                                                .requestMatchers("/aff/admin/**", "/aff/api/admin/**")
+                                                .hasRole("ADMIN")
                                                 .anyRequest().authenticated())
                                 .logout(l -> l.logoutUrl("/aff/logout").logoutSuccessUrl("/aff/login"))
                                 .formLogin(AbstractHttpConfigurer::disable);
