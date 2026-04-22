@@ -55,12 +55,23 @@
 
   /* ── hero ────────────────────────────────────────────────── */
   .hero-card {
-    background: linear-gradient(135deg, #1b304a 0%, #2d4f72 100%);
+    position: relative; overflow: hidden;
     border-radius: 16px; padding: 36px 28px; text-align: center;
     color: #fff; margin-bottom: 20px;
     box-shadow: 0 8px 28px rgba(27,48,74,.3);
+    background: linear-gradient(135deg, #1b304a 0%, #2d4f72 100%);
   }
-  .hero-icon { font-size: 48px; margin-bottom: 14px; }
+  .hero-card .hero-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    z-index: 0;
+  }
+  .hero-card .hero-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(0,0,0,.45);
+  }
+  .hero-card > *:not(.hero-bg) { position: relative; z-index: 1; }
+  .hero-icon { margin-bottom: 14px; }
   .hero-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
   .hero-title strong { color: #7dd3fc; }
   .hero-sub   { font-size: 14px; color: #94a3b8; }
@@ -151,6 +162,11 @@
 
     <!-- hero -->
     <div class="hero-card">
+      <!-- 배경 이미지 (기관 관리자가 설정한 경우) -->
+      <div th:if="${letter != null and letter.bgImageUrl != null and !#strings.isEmpty(letter.bgImageUrl)}"
+           class="hero-bg"
+           th:style="|background-image:url('${letter.bgImageUrl}')|"></div>
+
       <div class="hero-icon">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>

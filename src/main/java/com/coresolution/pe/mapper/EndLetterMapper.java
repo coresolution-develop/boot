@@ -12,7 +12,7 @@ public interface EndLetterMapper {
 
     @Select("""
             SELECT id, eval_year AS evalYear, institution_name AS institutionName,
-                   content, updated_at AS updatedAt
+                   content, bg_image_url AS bgImageUrl, updated_at AS updatedAt
               FROM personnel_evaluation.end_letter
              WHERE eval_year = #{year}
                AND institution_name = #{institution}
@@ -23,11 +23,12 @@ public interface EndLetterMapper {
 
     @Insert("""
             INSERT INTO personnel_evaluation.end_letter
-                   (eval_year, institution_name, content)
-            VALUES (#{evalYear}, #{institutionName}, #{content})
+                   (eval_year, institution_name, content, bg_image_url)
+            VALUES (#{evalYear}, #{institutionName}, #{content}, #{bgImageUrl})
             ON DUPLICATE KEY UPDATE
-                   content     = VALUES(content),
-                   updated_at  = CURRENT_TIMESTAMP
+                   content      = VALUES(content),
+                   bg_image_url = VALUES(bg_image_url),
+                   updated_at   = CURRENT_TIMESTAMP
             """)
     int upsert(EndLetter letter);
 }

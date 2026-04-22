@@ -1,16 +1,25 @@
 package com.coresolution.pe.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.coresolution.pe.entity.Department;
@@ -54,6 +63,10 @@ public class InstAdminPageController {
 
     @Value("${app.current.eval-year}")
     private int currentEvalYear;
+
+    /** 배경 이미지 저장 경로 — application.properties 에서 주입, 없으면 static/uploads/bg */
+    @Value("${app.upload.bg-dir:src/main/resources/static/uploads/bg}")
+    private String bgUploadDir;
 
     // ── 세션에서 기관명 추출 헬퍼 ──────────────────────────
 
@@ -430,11 +443,12 @@ public class InstAdminPageController {
         return "pe/inst-admin/end-letter";
     }
 
-    /** 편지 저장 */
+    /** 편지 저장 (본문 + 배경 이미지 URL) */
     @PostMapping("/end-letter/save")
     public String endLetterSave(HttpServletRequest request,
                                 @RequestParam String year,
                                 @RequestParam(required = false) String content,
+                                @RequestParam(required = false) String bgImageUrl,
                                 RedirectAttributes ra) {
         String institutionName = resolveInstitutionName(request);
 
@@ -442,6 +456,7 @@ public class InstAdminPageController {
         letter.setEvalYear(Integer.parseInt(year));
         letter.setInstitutionName(institutionName);
         letter.setContent(content != null ? content.trim() : "");
+        letter.setBgImageUrl(bgImageUrl != null && !bgImageUrl.isBlank() ? bgImageUrl.trim() : null);
         try {
             endLetterMapper.upsert(letter);
             ra.addFlashAttribute("success", "평가완료 메시지가 저장되었습니다.");
@@ -450,5 +465,65 @@ public class InstAdminPageController {
             ra.addFlashAttribute("error", "저장에 실패했습니다. end_letter 테이블이 생성되었는지 확인하세요.");
         }
         return "redirect:/pe/inst-admin/end-letter?year=" + year;
+    }
+
+    /** 배경 이미지 업로드 — JSON { "url": "/uploads/bg/xxx.jpg" } 반환 */
+    @PostMapping("/end-letter/upload-bg")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> uploadBg(
+            @RequestParam("file") MultipartFile file) {
+
+        // 허용 MIME 타입 체크
+        String mime = file.getContentType();
+        if (mime == null || !mime.startsWith("image/")) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "error", "이미지 파일만 업로드할 수 있습니다."));
+        }
+        // 크기 제한 10MB
+        if (file.getSize() > 10 * 1024 * 1024L) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "error", "파일 크기는 10MB 이하만 허용됩니다."));
+        }
+
+        try {
+            // 저장 디렉터리 생성
+            Path dir = Paths.get(bgUploadDir);
+            Files.createDirectories(dir);
+
+            // 고유 파일명 생성
+            String ext = "";
+            String orig = file.getOriginalFilename();
+            if (orig != null && orig.contains(".")) {
+                ext = orig.substring(orig.lastIndexOf('.'));
+            }
+            String filename = UUID.randomUUID().toString().replace("-", "") + ext;
+            Path dest = dir.resolve(filename);
+            file.transferTo(dest.toFile());
+
+            String url = "/uploads/bg/" + filename;
+            return ResponseEntity.ok(Map.of("ok", true, "url", url));
+
+        } catch (IOException e) {
+            log.error("[end-letter] 배경 이미지 업로드 실패: {}", e.getMessage());
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("ok", false, "error", "업로드 중 오류가 발생했습니다."));
+        }
+    }
+
+    /** 배경 이미지 삭제 */
+    @PostMapping("/end-letter/delete-bg")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteBg(@RequestParam String url) {
+        try {
+            if (url != null && url.startsWith("/uploads/bg/")) {
+                String filename = url.substring("/uploads/bg/".length());
+                Path file = Paths.get(bgUploadDir).resolve(filename);
+                Files.deleteIfExists(file);
+            }
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (IOException e) {
+            log.warn("[end-letter] 배경 이미지 삭제 실패: {}", e.getMessage());
+            return ResponseEntity.ok(Map.of("ok", false, "error", e.getMessage()));
+        }
     }
 }
