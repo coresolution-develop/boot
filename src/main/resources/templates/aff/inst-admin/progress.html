@@ -155,6 +155,98 @@
   .data-table td.hide-sm { display: none; }
   .summary-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ── 상세 버튼 ── */
+.detail-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 26px; padding: 0 10px; border-radius: 6px; border: 1.5px solid #e2e8f0;
+  background: #fff; color: #475569; font-size: 11px; font-weight: 600;
+  cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+  white-space: nowrap;
+}
+.detail-btn:hover { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.detail-btn.has-pending { border-color: #fde68a; color: #92400e; background: #fffbeb; }
+.detail-btn.has-pending:hover { background: #fef3c7; border-color: #fbbf24; }
+
+/* ── 드로어 오버레이 ── */
+.drawer-ov {
+  position: fixed; inset: 0; z-index: 1200;
+  background: rgba(15,23,42,.35); backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity .22s ease;
+}
+.drawer-ov.open { opacity: 1; pointer-events: auto; }
+
+/* ── 드로어 패널 ── */
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 1300;
+  width: 420px; max-width: 95vw;
+  background: #fff; box-shadow: -8px 0 40px rgba(0,0,0,.15);
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .25s cubic-bezier(.4,0,.2,1);
+}
+.drawer.open { transform: translateX(0); }
+
+/* ── 드로어 헤더 ── */
+.dw-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 22px 22px 16px; border-bottom: 1px solid #f1f5f9; flex-shrink: 0;
+}
+.dw-head-info { display: flex; flex-direction: column; gap: 4px; }
+.dw-name { font-size: 16px; font-weight: 800; color: #1e293b; }
+.dw-meta { font-size: 12px; color: #64748b; }
+.dw-close {
+  width: 32px; height: 32px; border: none; background: transparent;
+  border-radius: 8px; cursor: pointer; color: #94a3b8; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s; margin-left: 10px; margin-top: -2px;
+}
+.dw-close:hover { background: #fee2e2; color: #dc2626; }
+
+/* ── 드로어 바디 ── */
+.dw-body { flex: 1; overflow-y: auto; padding: 18px 22px 24px; }
+.dw-section-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: #94a3b8; margin: 0 0 10px;
+}
+.dw-empty { text-align: center; padding: 40px 0; color: #94a3b8; font-size: 13px; }
+
+/* ── 미완료 쌍 카드 ── */
+.pair-list { display: flex; flex-direction: column; gap: 8px; }
+.pair-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px; border-radius: 10px;
+  border: 1px solid #f1f5f9; background: #fafbfc;
+}
+.pair-ev-badge {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800;
+}
+.ev-a { background: #dbeafe; color: #1d4ed8; }
+.ev-b { background: #dcfce7; color: #15803d; }
+.ev-c { background: #fef9c3; color: #854d0e; }
+.ev-d { background: #fce7f3; color: #9d174d; }
+.ev-x { background: #f1f5f9; color: #64748b; }
+.pair-info { flex: 1; min-width: 0; }
+.pair-ev-label { font-size: 12px; font-weight: 700; color: #1e293b; }
+.pair-type-label { font-size: 11px; color: #64748b; margin-top: 2px; }
+.pair-status-tag {
+  font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  background: #fff7ed; border: 1px solid #fed7aa; color: #c2410c;
+  white-space: nowrap;
+}
+
+/* ── 드로어 로딩 스피너 ── */
+.dw-spinner {
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 0; gap: 10px; color: #94a3b8; font-size: 13px;
+}
+.dw-spin-ico {
+  width: 18px; height: 18px; border: 2px solid #e2e8f0;
+  border-top-color: #3b82f6; border-radius: 50%;
+  animation: dw-spin .7s linear infinite;
+}
+@keyframes dw-spin { to { transform: rotate(360deg); } }
 </style>
 
 <div class="pg-wrap">
@@ -255,18 +347,20 @@
           <th style="min-width:140px">진행률</th>
           <th class="hide-sm">최종 활동</th>
           <th>상태</th>
+          <th style="width:58px"></th>
         </tr>
       </thead>
       <tbody>
         <tr th:if="${members.isEmpty()}">
-          <td colspan="9">
+          <td colspan="10">
             <div class="empty-state">
               <span class="empty-ico">—</span>
               조회된 직원이 없습니다.
             </div>
           </td>
         </tr>
-        <tr th:each="m, stat : ${members}">
+        <tr th:each="m, stat : ${members}"
+            th:attr="data-target-id=${m.targetId},data-name=${m.targetName},data-dept=${m.deptName},data-position=${m.position},data-pending=${m.pendingPairs}">
           <td style="color:#94a3b8;font-size:12px" th:text="${stat.index + 1}">1</td>
 
           <!-- 이름 + 부서 -->
@@ -318,6 +412,17 @@
             <span th:if="${m.needPairs == 0}"
                   class="status-chip chip-pending">대상없음</span>
           </td>
+
+          <!-- 상세 버튼 -->
+          <td style="text-align:center;">
+            <button type="button"
+                    th:classappend="${m.pendingPairs > 0 ? 'has-pending' : ''}"
+                    class="detail-btn"
+                    th:if="${m.needPairs > 0}"
+                    onclick="openDrawer(this.closest('tr'))">
+              상세
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -326,23 +431,157 @@
 </div><!-- /pg-wrap -->
 </div><!-- /main-content -->
 
-<div th:replace="~{Include/aff-inst-admin-layout :: scripts}"></div>
-<script>
-window.addEventListener('DOMContentLoaded', function () {
-  document.body.classList.add('page-ready');
+<!-- ── 드로어 오버레이 ── -->
+<div class="drawer-ov" id="drawerOv" onclick="closeDrawer()"></div>
 
-  /* 진행 바 애니메이션 */
-  requestAnimationFrame(function () {
-    document.querySelectorAll('.mini-bar-fill, .prog-bar-fill').forEach(function (el) {
-      var w = el.style.width;
-      el.style.width = '0';
-      requestAnimationFrame(function () {
-        el.style.transition = 'width .5s ease';
-        el.style.width = w;
+<!-- ── 미완료 상세 드로어 ── -->
+<div class="drawer" id="drawerPanel" role="dialog" aria-modal="true" aria-labelledby="dw-name-el">
+  <div class="dw-head">
+    <div class="dw-head-info">
+      <div class="dw-name" id="dw-name-el">—</div>
+      <div class="dw-meta" id="dw-meta-el">—</div>
+    </div>
+    <button class="dw-close" onclick="closeDrawer()" aria-label="닫기">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="dw-body" id="dw-body">
+    <div class="dw-spinner">
+      <span class="dw-spin-ico"></span> 불러오는 중…
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{Include/aff-inst-admin-layout :: scripts}"></div>
+<script th:inline="javascript">
+/*<![CDATA[*/
+(function () {
+  'use strict';
+
+  /* ── 서버에서 전달된 값 ── */
+  var YEAR = /*[[${year}]]*/ 2026;
+  var EV   = /*[[${ev}]]*/ 'ALL';
+
+  /* ── EV 레이블 맵 ── */
+  var EV_LABEL = {
+    'A': '부서장 ↔ 부서장', 'B': '부서장 → 부서원',
+    'C': '부서원 → 부서장', 'D': '부서원 ↔ 부서원'
+  };
+  var EV_CLASS = { 'A': 'ev-a', 'B': 'ev-b', 'C': 'ev-c', 'D': 'ev-d' };
+
+  /* ── 데이터 타입 레이블 ── */
+  var TYPE_LABEL = {
+    'AA': '자기평가', 'AB': '상호평가(10문항)', 'AC': '상호평가(10문항)',
+    'AD': '상호평가(20문항)', 'AE': '상호평가(20문항)'
+  };
+
+  /* ── 진행 바 애니메이션 ── */
+  window.addEventListener('DOMContentLoaded', function () {
+    document.body.classList.add('page-ready');
+    requestAnimationFrame(function () {
+      document.querySelectorAll('.mini-bar-fill, .prog-bar-fill').forEach(function (el) {
+        var w = el.style.width;
+        el.style.width = '0';
+        requestAnimationFrame(function () {
+          el.style.transition = 'width .5s ease';
+          el.style.width = w;
+        });
       });
     });
   });
-});
+
+  /* ── ESC 키 닫기 ── */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeDrawer();
+  });
+
+  /* ── 드로어 열기 ── */
+  window.openDrawer = function (row) {
+    var targetId = row.getAttribute('data-target-id');
+    var name     = row.getAttribute('data-name') || '—';
+    var dept     = row.getAttribute('data-dept') || '';
+    var position = row.getAttribute('data-position') || '';
+    var pending  = parseInt(row.getAttribute('data-pending') || '0', 10);
+
+    document.getElementById('dw-name-el').textContent = name;
+    document.getElementById('dw-meta-el').textContent =
+      [dept, position].filter(Boolean).join(' · ') +
+      (pending > 0 ? '  |  미완료 ' + pending + '건' : '  |  모두 완료');
+
+    /* 로딩 표시 */
+    document.getElementById('dw-body').innerHTML =
+      '<div class="dw-spinner"><span class="dw-spin-ico"></span> 불러오는 중…</div>';
+
+    document.getElementById('drawerOv').classList.add('open');
+    document.getElementById('drawerPanel').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    /* API 호출 */
+    fetch('/aff/inst-admin/api/progress/members/' + encodeURIComponent(targetId) +
+          '/pending?year=' + YEAR + '&ev=' + encodeURIComponent(EV))
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function (pairs) { renderPairs(pairs, pending); })
+      .catch(function (err) {
+        document.getElementById('dw-body').innerHTML =
+          '<div class="dw-empty">데이터를 불러오지 못했습니다.<br><small style="color:#cbd5e1">(' + err + ')</small></div>';
+      });
+  };
+
+  /* ── 드로어 닫기 ── */
+  window.closeDrawer = function () {
+    document.getElementById('drawerOv').classList.remove('open');
+    document.getElementById('drawerPanel').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  /* ── 미완료 쌍 렌더링 ── */
+  function renderPairs(pairs, pendingCount) {
+    var body = document.getElementById('dw-body');
+
+    if (!pairs || pairs.length === 0) {
+      body.innerHTML =
+        '<p class="dw-section-title">미완료 평가</p>' +
+        '<div class="dw-empty">✅ 모든 평가가 완료되었습니다.</div>';
+      return;
+    }
+
+    var html = '<p class="dw-section-title">미완료 평가 (' + pairs.length + '건)</p>' +
+               '<div class="pair-list">';
+
+    pairs.forEach(function (p) {
+      var ev       = (p.dataEv  || '').toUpperCase();
+      var type     = (p.dataType || '').toUpperCase();
+      var evLabel  = EV_LABEL[ev]  || ('EV ' + ev);
+      var evClass  = EV_CLASS[ev]  || 'ev-x';
+      var typeLabel = TYPE_LABEL[type] || type;
+      var evalId   = p.evaluatorId || '—';
+
+      html +=
+        '<div class="pair-card">' +
+          '<div class="pair-ev-badge ' + evClass + '">' + (ev || '?') + '</div>' +
+          '<div class="pair-info">' +
+            '<div class="pair-ev-label">' + escHtml(evLabel) + '</div>' +
+            '<div class="pair-type-label">' + escHtml(typeLabel) + ' · ' + escHtml(evalId) + '</div>' +
+          '</div>' +
+          '<span class="pair-status-tag">미완료</span>' +
+        '</div>';
+    });
+
+    html += '</div>';
+    body.innerHTML = html;
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+})();
+/*]]>*/
 </script>
 </body>
 </html>

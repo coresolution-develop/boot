@@ -120,9 +120,24 @@ public class SuperAdminInstitutionController {
                               @RequestParam String password,
                               @RequestParam String adminName,
                               RedirectAttributes ra) {
+        // 서버 측 입력 검증
+        if (loginId == null || loginId.trim().isEmpty()) {
+            ra.addFlashAttribute("error", "로그인 ID를 입력해주세요.");
+            return "redirect:/admin/institutions/" + id + "/admins";
+        }
+        if (password == null || password.length() < 6) {
+            ra.addFlashAttribute("error", "비밀번호는 6자 이상이어야 합니다.");
+            return "redirect:/admin/institutions/" + id + "/admins";
+        }
+        if (adminName == null || adminName.trim().isEmpty()) {
+            ra.addFlashAttribute("error", "관리자 이름을 입력해주세요.");
+            return "redirect:/admin/institutions/" + id + "/admins";
+        }
         try {
             institutionService.createAdmin(id, loginId.trim(), password, adminName.trim());
             ra.addFlashAttribute("message", "관리자 계정이 생성되었습니다: " + loginId);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            ra.addFlashAttribute("error", "이미 사용 중인 로그인 ID입니다: " + loginId.trim());
         } catch (Exception e) {
             ra.addFlashAttribute("error", "관리자 생성 실패: " + e.getMessage());
         }

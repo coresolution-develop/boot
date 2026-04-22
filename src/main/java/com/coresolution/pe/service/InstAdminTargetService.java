@@ -78,6 +78,7 @@ public class InstAdminTargetService {
         }
 
         List<UserPE> allUsers = loginMapper.getUsersWithRolesByOrg(String.valueOf(year), orgName);
+        if (allUsers == null) allUsers = List.of();
 
         // ── 경혁팀 / 진료부 전체 목록 ─────────────────────────────────
         List<UserPE> ghTeam = allUsers.stream()

@@ -194,7 +194,8 @@ public class AffPageController {
         if (error != null) {
             model.addAttribute("loginError", true);
         }
-        model.addAttribute("noticeV2List", noticeservice.getActiveNoticesaff(currentEvalYear));
+        List<NoticeV2> noticeV2List = noticeservice.getActiveNoticesaff(currentEvalYear);
+        model.addAttribute("noticeV2List", noticeV2List != null ? noticeV2List : new ArrayList<>());
         model.addAttribute("currentEvalYear", currentEvalYear);
         return "aff/login/login";
     }

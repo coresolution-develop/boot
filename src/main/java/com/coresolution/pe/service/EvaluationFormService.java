@@ -1,5 +1,6 @@
 package com.coresolution.pe.service;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -124,10 +125,32 @@ public class EvaluationFormService {
         int total = evaluationMapper.countByType(year, dataType);
         boolean completed = (total > 0) && (answeredCount >= total);
 
+        // 4-1) 뷰 편의용: 주관식/객관식 분리 + 그룹핑
+        List<Evaluation> essay = new ArrayList<>();
+        Map<String, List<Evaluation>> grouped = new LinkedHashMap<>();
+        if (questions != null) {
+            for (Evaluation q : questions) {
+                if ("주관식".equals(q.getD3())) {
+                    essay.add(q);
+                } else {
+                    grouped.computeIfAbsent(q.getD3(), k -> new ArrayList<>()).add(q);
+                }
+            }
+        }
+        // 표시 순서: 고정 순서 우선, 그 외 그룹은 뒤에 추가
+        List<String> knownOrder = List.of("섬김", "배움", "키움", "나눔", "목표관리");
+        List<String> order = new ArrayList<>(knownOrder);
+        for (String g : grouped.keySet()) {
+            if (!order.contains(g)) order.add(g);
+        }
+
         // 5) 컨트롤러에서 model.addAttribute로 바인딩할 DTO 리턴
         return FormPayload.builder()
                 .target(target)
                 .questions(questions)
+                .grouped(grouped)
+                .order(order)
+                .essay(essay)
                 .answerMap(answerMap) // radios + essays를 한 맵에 담아 반환 (이름: q??/t??)
                 .answered(answeredCount)
                 .total(total)

@@ -132,13 +132,43 @@ public class AffInstAdminPageController {
     @GetMapping("/progress")
     public String progress(HttpServletRequest req, Model model,
                            @RequestParam(required = false) Integer year,
-                           @RequestParam(defaultValue = "ALL") String ev) {
+                           @RequestParam(defaultValue = "ALL") String ev,
+                           @RequestParam(defaultValue = "") String q,
+                           @RequestParam(defaultValue = "default") String sort) {
         int evalYear   = resolveYear(year);
         String orgName = institution(req);
 
+        Map<String, Object> data = progressService.list(evalYear, orgName, ev, q, sort);
+
+        @SuppressWarnings("unchecked")
+        List<OrgMemberProgressRow> members = data.get("rows") instanceof List<?> l
+                ? (List<OrgMemberProgressRow>) l : List.of();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> summary = data.get("summary") instanceof Map<?, ?> m
+                ? (Map<String, Object>) m : Map.of("needPairs", 0, "donePairs", 0, "progress", 0.0);
+
+        int totalMembers   = members.size();
+        int doneAll        = (int) members.stream()
+                .filter(mb -> mb.getNeedPairs() > 0 && mb.getPendingPairs() == 0).count();
+        int notStarted     = (int) members.stream()
+                .filter(mb -> mb.getNeedPairs() > 0 && mb.getDonePairs() == 0).count();
+        int inProgress     = Math.max(0, totalMembers - doneAll - notStarted);
+        int totalPairs     = ((Number) summary.getOrDefault("needPairs", 0)).intValue();
+        int completedPairs = ((Number) summary.getOrDefault("donePairs", 0)).intValue();
+
         model.addAttribute("year",            evalYear);
         model.addAttribute("ev",              ev);
+        model.addAttribute("q",               q);
+        model.addAttribute("sort",            sort);
         model.addAttribute("institutionName", orgName);
+        model.addAttribute("members",         members);
+        model.addAttribute("totalMembers",    totalMembers);
+        model.addAttribute("doneAll",         doneAll);
+        model.addAttribute("inProgress",      inProgress);
+        model.addAttribute("notStarted",      notStarted);
+        model.addAttribute("totalPairs",      totalPairs);
+        model.addAttribute("completedPairs",  completedPairs);
         model.addAttribute("currentYear",     currentEvalYear);
 
         return "aff/inst-admin/progress";
