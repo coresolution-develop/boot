@@ -85,7 +85,7 @@
     <a th:href="@{/admin/institutions}">기관 관리</a> &rsaquo; 관리자 관리
   </p>
   <h1 class="page-title">
-    👤 기관 관리자
+    기관 관리자
     <span class="inst-badge" th:text="${institution.name}"></span>
   </h1>
 
@@ -134,12 +134,12 @@
                     th:action="@{/admin/institutions/{id}/admins/{adminId}/deactivate(id=${institution.id},adminId=${admin.id})}"
                     method="post">
                 <button type="submit" class="btn-sm btn-danger"
-                        onclick="return confirm('관리자 계정을 비활성화하시겠습니까?')">🔒 비활성화</button>
+                        onclick="return confirm('관리자 계정을 비활성화하시겠습니까?')">비활성화</button>
               </form>
               <form th:unless="${admin.isActive}"
                     th:action="@{/admin/institutions/{id}/admins/{adminId}/activate(id=${institution.id},adminId=${admin.id})}"
                     method="post">
-                <button type="submit" class="btn-sm btn-success">🔓 활성화</button>
+                <button type="submit" class="btn-sm btn-success">활성화</button>
               </form>
             </div>
           </td>
@@ -150,7 +150,7 @@
 
   <!-- ── 관리자 계정 신규 생성 ── -->
   <div class="card">
-    <p class="card-title">➕ 관리자 계정 추가</p>
+    <p class="card-title">관리자 계정 추가</p>
     <form th:action="@{/admin/institutions/{id}/admins(id=${institution.id})}"
           method="post" class="create-form">
 

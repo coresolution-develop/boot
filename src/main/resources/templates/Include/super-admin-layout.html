@@ -150,12 +150,12 @@
         <rect y="15" width="20" height="2" rx="1"/>
       </svg>
     </button>
-    <a href="/admin/institutions" class="sa-logo-link">
+    <a href="/admin/dashboard" class="sa-logo-link">
       <img th:src="@{/img/logo.png}" alt="로고" class="sa-logo-img"
            onerror="this.style.display='none'">
       <span class="sa-logo-text">시스템 관리</span>
     </a>
-    <span class="sa-role-badge">⚙ 최고 관리자</span>
+    <span class="sa-role-badge">SUPER ADMIN</span>
   </div>
   <div class="sa-header-right">
     <a href="/Logout" class="sa-logout-btn">
@@ -178,7 +178,23 @@
      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
 
   <ul>
-    <!-- 섹션 레이블 -->
+    <!-- ─── 개요 ─── -->
+    <li class="nav-section-label"><span>개요</span></li>
+
+    <li class="nav_link sa-dashboard"
+        data-base-url="/admin/dashboard">
+      <svg class="icon-image" width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right:10px;flex-shrink:0;opacity:.75;">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+      <span>대시보드</span>
+    </li>
+
+    <li class="nav-divider"></li>
+
+    <!-- ─── 기관 관리 ─── -->
     <li class="nav-section-label"><span>기관 관리</span></li>
 
     <li class="nav_link sa-institutions"
@@ -206,7 +222,7 @@
 
     <li class="nav-divider"></li>
 
-    <!-- ─── 일반 관리자 이동 ─── -->
+    <!-- ─── 바로가기 ─── -->
     <li class="nav-section-label"><span>바로가기</span></li>
 
     <li class="nav_link sa-admin"

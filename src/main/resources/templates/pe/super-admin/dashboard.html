@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>대시보드 | 최고 관리자</title>
+  <link rel="stylesheet" th:href="@{/css/css.css}">
+  <link rel="stylesheet" th:href="@{/css/leftMenu.css}">
+  <link rel="stylesheet" th:href="@{/css/admin.css}">
+  <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
+  <script>(function(){ document.documentElement.setAttribute('data-first-paint',''); })();</script>
+  <style>
+    .main-inner { max-width:1100px; margin:0 auto; padding:28px 20px; }
+
+    /* 페이지 헤더 */
+    .page-header { margin-bottom:28px; }
+    .page-title  { font-size:22px; font-weight:700; color:#1e293b; margin:0 0 4px; }
+    .page-sub    { font-size:13px; color:#64748b; margin:0; }
+
+    /* 통계 카드 행 */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e5e9ef;
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .stat-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin: 0 0 8px;
+    }
+    .stat-value {
+      font-size: 30px;
+      font-weight: 800;
+      color: #1e293b;
+      line-height: 1;
+      margin: 0 0 4px;
+    }
+    .stat-detail { font-size: 12px; color: #94a3b8; margin: 0; }
+    .stat-card.green  { border-left: 4px solid #22c55e; }
+    .stat-card.blue   { border-left: 4px solid #3b82f6; }
+    .stat-card.amber  { border-left: 4px solid #f59e0b; }
+    .stat-card.slate  { border-left: 4px solid #64748b; }
+
+    /* 섹션 헤더 */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .section-title { font-size: 16px; font-weight: 700; color: #1e293b; margin: 0; }
+    .btn-sm-primary {
+      background: #1b304a; color: #fff; border: none;
+      padding: 7px 14px; border-radius: 7px; font-size: 12px;
+      font-weight: 600; cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-sm-primary:hover { filter: brightness(1.15); }
+
+    /* 기관 카드 그리드 */
+    .inst-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .inst-card {
+      background: #fff;
+      border: 1px solid #e5e9ef;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .inst-card.inactive { opacity: .55; }
+    .inst-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .inst-name { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; }
+    .inst-code {
+      font-family: monospace; font-size: 11px;
+      background: #f1f5f9; color: #64748b;
+      padding: 2px 7px; border-radius: 4px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .badge-on  { background: #dcfce7; color: #166534; }
+    .badge-off { background: #f1f5f9; color: #64748b; }
+    .badge {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 9px; border-radius: 20px;
+    }
+    .inst-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .inst-meta span { display: flex; align-items: center; gap: 4px; }
+    .inst-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-xs {
+      padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border: 1px solid; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .btn-xs-edit   { background: #fff; border-color: #cbd5e1; color: #374151; }
+    .btn-xs-edit:hover { background: #f8fafc; }
+    .btn-xs-admin  { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+    .btn-xs-admin:hover { background: #dbeafe; }
+    .btn-xs-deact  { background: #fff; border-color: #fca5a5; color: #dc2626; }
+    .btn-xs-deact:hover { background: #fef2f2; }
+    .btn-xs-act    { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+    .btn-xs-act:hover  { background: #dcfce7; }
+
+    /* 알림 */
+    .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .alert-danger  { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+    /* 빈 상태 */
+    .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div th:replace="~{Include/super-admin-layout :: header}"></div>
+<div th:replace="~{Include/super-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div class="main-inner">
+
+  <div class="page-header">
+    <h1 class="page-title">시스템 대시보드</h1>
+    <p class="page-sub">기관 및 관리자 계정 현황을 한눈에 확인합니다.</p>
+  </div>
+
+  <!-- 알림 -->
+  <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+  <div th:if="${error}"   class="alert alert-danger"  th:text="${error}"></div>
+
+  <!-- 통계 카드 -->
+  <div class="stat-row">
+    <div class="stat-card blue">
+      <p class="stat-label">전체 기관</p>
+      <p class="stat-value" th:text="${totalInst}">0</p>
+      <p class="stat-detail">등록된 기관 수</p>
+    </div>
+    <div class="stat-card green">
+      <p class="stat-label">활성 기관</p>
+      <p class="stat-value" th:text="${activeInst}">0</p>
+      <p class="stat-detail">현재 운영 중</p>
+    </div>
+    <div class="stat-card amber">
+      <p class="stat-label">비활성 기관</p>
+      <p class="stat-value" th:text="${inactiveInst}">0</p>
+      <p class="stat-detail">정지된 기관</p>
+    </div>
+    <div class="stat-card slate">
+      <p class="stat-label">기관 관리자</p>
+      <p class="stat-value" th:text="${totalAdmins}">0</p>
+      <p class="stat-detail">활성 <span th:text="${activeAdmins}">0</span>명 포함</p>
+    </div>
+  </div>
+
+  <!-- 기관 목록 -->
+  <div class="section-header">
+    <h2 class="section-title">기관 목록</h2>
+    <a th:href="@{/admin/institutions/new}" class="btn-sm-primary">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      기관 등록
+    </a>
+  </div>
+
+  <div th:if="${institutions.isEmpty()}" class="empty-state">
+    <p>등록된 기관이 없습니다.</p>
+  </div>
+
+  <div th:unless="${institutions.isEmpty()}" class="inst-grid">
+    <div th:each="inst : ${institutions}"
+         th:class="${'inst-card' + (!inst.isActive() ? ' inactive' : '')}">
+
+      <!-- 상단: 기관명 + 코드 + 상태 -->
+      <div class="inst-card-top">
+        <div>
+          <p class="inst-name" th:text="${inst.name}">기관명</p>
+          <code class="inst-code" th:text="${inst.code}">CODE</code>
+        </div>
+        <span th:class="${'badge ' + (inst.isActive() ? 'badge-on' : 'badge-off')}"
+              th:text="${inst.isActive() ? '활성' : '비활성'}">활성</span>
+      </div>
+
+      <!-- 메타: 관리자 수 / 등록일 -->
+      <div class="inst-meta">
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          관리자
+          <strong th:text="${adminCountByInst.get(inst.id) != null ? adminCountByInst.get(inst.id) : 0}">0</strong>명
+        </span>
+        <span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.6">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span th:text="${#dates.format(inst.createdAt,'yyyy-MM-dd')}">-</span>
+        </span>
+      </div>
+
+      <!-- 액션 버튼 -->
+      <div class="inst-actions">
+        <a th:href="@{/admin/institutions/{id}/edit(id=${inst.id})}"
+           class="btn-xs btn-xs-edit">수정</a>
+        <a th:href="@{/admin/institutions/{id}/admins(id=${inst.id})}"
+           class="btn-xs btn-xs-admin">관리자</a>
+        <form th:if="${inst.isActive()}"
+              th:action="@{/admin/institutions/{id}/deactivate(id=${inst.id})}"
+              method="post" style="display:inline"
+              onsubmit="return confirm('기관을 비활성화하시겠습니까?')">
+          <button type="submit" class="btn-xs btn-xs-deact">비활성화</button>
+        </form>
+        <form th:unless="${inst.isActive()}"
+              th:action="@{/admin/institutions/{id}/activate(id=${inst.id})}"
+              method="post" style="display:inline">
+          <button type="submit" class="btn-xs btn-xs-act">활성화</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+<div th:replace="~{Include/super-admin-layout :: scripts}"></div>
+</body>
+</html>

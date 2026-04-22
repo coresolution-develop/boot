@@ -66,7 +66,7 @@
 <div class="main-inner">
 
   <div class="page-header">
-    <h1 class="page-title">🏥 기관 관리</h1>
+    <h1 class="page-title">기관 관리</h1>
     <a th:href="@{/admin/institutions/new}" class="btn-primary">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -115,19 +115,19 @@
           <td>
             <div class="actions">
               <a th:href="@{/admin/institutions/{id}/edit(id=${inst.id})}"
-                 class="btn-sm btn-edit">✏️ 수정</a>
+                 class="btn-sm btn-edit">수정</a>
               <a th:href="@{/admin/institutions/{id}/admins(id=${inst.id})}"
-                 class="btn-sm btn-admins">👤 관리자</a>
+                 class="btn-sm btn-admins">관리자</a>
               <form th:if="${inst.isActive}"
                     th:action="@{/admin/institutions/{id}/deactivate(id=${inst.id})}"
                     method="post" style="display:inline"
                     onsubmit="return confirm('기관을 비활성화하시겠습니까?')">
-                <button type="submit" class="btn-sm btn-deact">🔒 비활성화</button>
+                <button type="submit" class="btn-sm btn-deact">비활성화</button>
               </form>
               <form th:unless="${inst.isActive}"
                     th:action="@{/admin/institutions/{id}/activate(id=${inst.id})}"
                     method="post" style="display:inline">
-                <button type="submit" class="btn-sm btn-act">🔓 활성화</button>
+                <button type="submit" class="btn-sm btn-act">활성화</button>
               </form>
             </div>
           </td>
