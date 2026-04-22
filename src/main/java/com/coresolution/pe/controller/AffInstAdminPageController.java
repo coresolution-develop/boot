@@ -98,23 +98,30 @@ public class AffInstAdminPageController {
         Map<String, Object> progress = progressService.list(evalYear, orgName, "ALL", "", "progress_desc");
 
         @SuppressWarnings("unchecked")
-        List<OrgMemberProgressRow> members = (List<OrgMemberProgressRow>) progress.get("rows");
+        List<OrgMemberProgressRow> members = progress.get("rows") instanceof List<?> l
+                ? (List<OrgMemberProgressRow>) l
+                : List.of();
 
-        int totalUsers   = members.size();
-        int completed    = (int) members.stream().filter(m -> m.getNeedPairs() > 0 && m.getDonePairs() >= m.getNeedPairs()).count();
-        int notStarted   = (int) members.stream().filter(m -> m.getNeedPairs() > 0 && m.getDonePairs() == 0).count();
-        int inProgress   = totalUsers - completed - notStarted;
+        int totalUsers = members.size();
+        int completed  = (int) members.stream()
+                .filter(m -> m.getNeedPairs() > 0 && m.getDonePairs() >= m.getNeedPairs()).count();
+        int notStarted = (int) members.stream()
+                .filter(m -> m.getNeedPairs() > 0 && m.getDonePairs() == 0).count();
+        int inProgress = Math.max(0, totalUsers - completed - notStarted);
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> summary = (Map<String, Object>) progress.get("summary");
+        Map<String, Object> summary = progress.get("summary") instanceof Map<?, ?> m
+                ? (Map<String, Object>) m
+                : Map.of("progress", 0.0);
+        Object overallProgress = summary.getOrDefault("progress", 0.0);
 
         model.addAttribute("year",             evalYear);
         model.addAttribute("institutionName",  orgName);
         model.addAttribute("totalUsers",       totalUsers);
         model.addAttribute("completed",        completed);
-        model.addAttribute("inProgress",       Math.max(0, inProgress));
+        model.addAttribute("inProgress",       inProgress);
         model.addAttribute("notStarted",       notStarted);
-        model.addAttribute("overallProgress",  summary.get("progress"));
+        model.addAttribute("overallProgress",  overallProgress);
         model.addAttribute("currentYear",      currentEvalYear);
 
         return "aff/inst-admin/dashboard";
