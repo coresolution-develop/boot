@@ -36,7 +36,9 @@ import com.coresolution.pe.service.TableInitService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/excel")
 @RequiredArgsConstructor
@@ -257,6 +259,7 @@ public class ExcelContoller {
             return "Excel/preview";
 
         } catch (Exception e) {
+            log.error("[Excel] 직원 엑셀 업로드 파싱 오류 year={}", year, e);
             ra.addFlashAttribute("error", "업로드 실패: " + e.getMessage());
             return "redirect:/excel/uploadStatus?year=" + year;
         }
@@ -456,6 +459,7 @@ public class ExcelContoller {
             // 세션에 담긴 리스트는 비워 줘도 좋습니다.
             session.removeAttribute("subList");
         } catch (Exception e) {
+            log.error("[Excel] 부서 저장 오류 year={}", year, e);
             model.addAttribute("message", "저장 중 오류 발생: " + e.getMessage());
         }
         return "Excel/subuploadStatus";
@@ -469,6 +473,7 @@ public class ExcelContoller {
             poiService.resetUsersAndRolesExceptCurrentAdmin(year);
             ra.addFlashAttribute("message", "데이터를 초기화했습니다. (관리자 계정 제외)");
         } catch (Exception e) {
+            log.error("[Excel] 데이터 초기화 오류 year={}", year, e);
             ra.addFlashAttribute("error", "초기화 중 오류 발생: " + e.getMessage());
         }
         return "redirect:/excel/uploadStatus?year=" + year;
@@ -530,6 +535,7 @@ public class ExcelContoller {
             ra.addFlashAttribute("message", msg.toString());
             ra.addFlashAttribute("errors", result.getErrors());
         } catch (Exception e) {
+            log.error("[Excel] 평가 뱅크 업로드 오류 year={}", year, e);
             ra.addFlashAttribute("message", "업로드 실패: " + e.getMessage());
         }
         return "redirect:/pe/admin/evaluation?year=" + year;
@@ -558,6 +564,7 @@ public class ExcelContoller {
 
             return "Excel/evalPreview"; // 미리보기 페이지(타임리프)
         } catch (Exception e) {
+            log.error("[Excel] 평가 뱅크 미리보기 파싱 오류 year={}", year, e);
             ra.addFlashAttribute("message", "파싱 실패: " + e.getMessage());
             return "redirect:/pe/admin/evaluation?year=" + year;
         }
@@ -654,6 +661,7 @@ public class ExcelContoller {
 
             return "Excel/kpiPreview";
         } catch (Exception e) {
+            log.error("[Excel] KPI 업로드 파싱 오류 year={}", year, e);
             ra.addFlashAttribute("error", "업로드 실패: " + e.getMessage());
             return "redirect:/excel/kpi/uploadStatus";
         }
@@ -684,6 +692,7 @@ public class ExcelContoller {
             session.removeAttribute("kpiRows");
             session.removeAttribute("kpiYear");
         } catch (Exception e) {
+            log.error("[Excel] KPI 저장 오류 year={}", year, e);
             ra.addFlashAttribute("error", "저장 중 오류: " + e.getMessage());
         }
 
@@ -764,6 +773,7 @@ public class ExcelContoller {
 
             return "Excel/kpiGeneralPreview";
         } catch (Exception e) {
+            log.error("[Excel] 일반 KPI 업로드 파싱 오류", e);
             ra.addFlashAttribute("error", "업로드 실패: " + e.getMessage());
             return "redirect:/excel/kpi/general/uploadStatus";
         }
@@ -787,6 +797,7 @@ public class ExcelContoller {
             ra.addFlashAttribute("message", "일반 KPI 정보 저장 완료 (" + affected + "건)");
             session.removeAttribute("kpiGeneralRows");
         } catch (Exception e) {
+            log.error("[Excel] 일반 KPI 저장 오류", e);
             ra.addFlashAttribute("error", "저장 중 오류: " + e.getMessage());
         }
 
