@@ -15,11 +15,13 @@ import com.coresolution.pe.entity.InstitutionAdmin;
 import com.coresolution.pe.service.InstitutionService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 슈퍼 어드민 전용 — 기관 등록·수정 및 기관 관리자 계정 관리 컨트롤러.
  * /admin/institutions/** — ROLE_ADMIN 만 접근 가능.
  */
+@Slf4j
 @Controller
 @RequestMapping("/admin/institutions")
 @PreAuthorize("hasRole('ADMIN')")
@@ -54,6 +56,7 @@ public class SuperAdminInstitutionController {
             institutionService.create(code.trim(), name.trim());
             ra.addFlashAttribute("message", "기관이 등록되었습니다: " + name);
         } catch (Exception e) {
+            log.error("[SuperAdmin] 기관 등록 실패 code={}, name={}", code, name, e);
             ra.addFlashAttribute("error", "기관 등록 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions";
@@ -80,6 +83,7 @@ public class SuperAdminInstitutionController {
             institutionService.update(id, code.trim(), name.trim(), isActive);
             ra.addFlashAttribute("message", "기관 정보가 수정되었습니다.");
         } catch (Exception e) {
+            log.error("[SuperAdmin] 기관 수정 실패 id={}, code={}, name={}", id, code, name, e);
             ra.addFlashAttribute("error", "수정 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions";
@@ -139,6 +143,7 @@ public class SuperAdminInstitutionController {
         } catch (org.springframework.dao.DuplicateKeyException e) {
             ra.addFlashAttribute("error", "이미 사용 중인 로그인 ID입니다: " + loginId.trim());
         } catch (Exception e) {
+            log.error("[SuperAdmin] 기관 관리자 생성 실패 institutionId={}, loginId={}", id, loginId, e);
             ra.addFlashAttribute("error", "관리자 생성 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions/" + id + "/admins";
@@ -155,6 +160,7 @@ public class SuperAdminInstitutionController {
             institutionService.resetAdminPassword(adminId, newPassword);
             ra.addFlashAttribute("message", "비밀번호가 재설정되었습니다.");
         } catch (Exception e) {
+            log.error("[SuperAdmin] 기관 관리자 비밀번호 재설정 실패 institutionId={}, adminId={}", id, adminId, e);
             ra.addFlashAttribute("error", "비밀번호 재설정 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions/" + id + "/admins";

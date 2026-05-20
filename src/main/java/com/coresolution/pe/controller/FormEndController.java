@@ -17,7 +17,9 @@ import com.coresolution.pe.mapper.EndLetterMapper;
 import com.coresolution.pe.service.PeService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Controller
 @RequestMapping("/")
 @RequiredArgsConstructor
@@ -70,7 +72,11 @@ public class FormEndController {
         try {
             letter = endLetterMapper.findByYearAndInstitution(
                     Integer.parseInt(year), userInfo.getCName());
-        } catch (Exception ignored) { /* 테이블 미존재 등 예외 무시 */ }
+        } catch (Exception e) {
+            // 테이블 미존재 등은 의도된 무시(템플릿이 letter=null로 기본 문구 표시).
+            // 디버깅 단서만 남김.
+            log.warn("[FormEnd] EndLetter 조회 실패 year={}, institution={}", year, userInfo.getCName(), e);
+        }
 
         // 모델 바인딩
         model.addAttribute("userInfo", userInfo);
