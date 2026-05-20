@@ -1,4 +1,4 @@
-package con.coresolution.pe;
+package com.coresolution.pe;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
