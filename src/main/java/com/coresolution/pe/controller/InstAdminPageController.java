@@ -26,6 +26,7 @@ import com.coresolution.pe.entity.Department;
 import com.coresolution.pe.entity.EndLetter;
 import com.coresolution.pe.entity.Evaluation;
 import com.coresolution.pe.entity.OrgMemberProgressRow;
+import com.coresolution.pe.entity.PendingPairRow;
 import com.coresolution.pe.entity.SubManagement;
 import com.coresolution.pe.entity.UserPE;
 import com.coresolution.pe.mapper.AdminProgressByOrgMapper;
@@ -410,6 +411,28 @@ public class InstAdminPageController {
         model.addAttribute("totalPairs",      totalPairs);
         model.addAttribute("completedPairs",  completedPairs);
         return "pe/inst-admin/progress";
+    }
+
+    // ── 진행률 드릴다운 API: 특정 직원의 미완료 평가쌍 ──────────
+    @GetMapping("/api/progress/members/{targetId}/pending")
+    @ResponseBody
+    public ResponseEntity<List<PendingPairRow>> pendingPairs(
+            HttpServletRequest request,
+            @PathVariable String targetId,
+            @RequestParam int year,
+            @RequestParam(defaultValue = "ALL") String ev) {
+
+        // 기관 스코프 가드: targetId가 현재 inst-admin 기관 소속이어야 한다
+        String institutionName = resolveInstitutionName(request);
+        UserPE target = loginMapper.findById(targetId, year);
+        if (target == null || !institutionName.equals(target.getCName())) {
+            log.warn("[InstAdmin] pendingPairs 권한 거부 institution={}, targetId={}",
+                    institutionName, targetId);
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
+
+        List<PendingPairRow> rows = progressMapper.selectPendingPairs(year, targetId, ev);
+        return ResponseEntity.ok(rows);
     }
 
     // ── 평가완료 편지 설정 ────────────────────────────────────────
