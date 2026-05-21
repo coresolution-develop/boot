@@ -13,13 +13,14 @@
   <link rel="shortcut icon" th:href="@{/favicon/favicon.ico}">
   <script>(function(){ document.documentElement.setAttribute('data-first-paint',''); })();</script>
   <style>
-    /* ── 페이지 레이아웃 ── */
+    /* ── 페이지 레이아웃 (ev_header 56px 영역 회피) ── */
+    .main-content { margin-top: 56px; }
     .pwdset-outer {
       display: flex;
       align-items: flex-start;
       justify-content: center;
       padding: 48px 20px 60px;
-      min-height: calc(100vh - 62px);
+      min-height: calc(100vh - 56px);
     }
 
     /* ── 카드 ── */
@@ -132,8 +133,8 @@
   </style>
 </head>
 <body>
-  <div th:replace="~{Include/layout :: header}"></div>
-  <div th:replace="~{Include/layout :: nav_section2}"></div>
+  <div th:replace="~{Include/layout :: ev_header}"></div>
+  <div th:replace="~{Include/layout :: user_nav_new}"></div>
 
   <main class="main-content">
     <div class="pwdset-outer">

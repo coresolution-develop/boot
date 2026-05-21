@@ -13,12 +13,15 @@ $(function () {
   // 공통 전환 함수: 필요 시에만 focus
   function switchMode(toPwd, { doFocus = true } = {}) {
     const $pwd = $('#pwd');
+    const $label = $('#pwdLabel');
     if (toPwd) {
       $pwd.attr({ placeholder: '비밀번호', type: 'password', title: '비밀번호입력', name: 'pwd' })
           .removeClass('name').addClass('pwd');
+      $label.text('비밀번호');
     } else {
       $pwd.attr({ placeholder: '이름', type: 'text', title: '이름입력', name: 'name' })
           .removeClass('pwd').addClass('name');
+      $label.text('이름');
     }
     if (doFocus && !isMobile) $pwd.focus();   // ← 모바일이면 초기 포커스 금지
   }

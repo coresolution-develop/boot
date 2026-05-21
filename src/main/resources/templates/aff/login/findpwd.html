@@ -80,21 +80,6 @@
     .form-control::placeholder { color: #9ca3af; }
     .form-control.is-error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
 
-    /* ── 비밀번호 강도 ── */
-    .pwd-strength { margin-top: 8px; }
-    .pwd-bars     { display: flex; gap: 4px; margin-bottom: 4px; }
-    .pwd-bar {
-      flex: 1; height: 4px; border-radius: 2px;
-      background: #e2e8f0; transition: background .2s;
-    }
-    .pwd-bar.weak   { background: #ef4444; }
-    .pwd-bar.medium { background: #f59e0b; }
-    .pwd-bar.strong { background: #22c55e; }
-    .pwd-strength-label { font-size: 11px; color: #94a3b8; }
-    .pwd-strength-label.weak   { color: #ef4444; }
-    .pwd-strength-label.medium { color: #f59e0b; }
-    .pwd-strength-label.strong { color: #22c55e; }
-
     /* ── 메시지 ── */
     .msg-box {
       display: none; padding: 10px 14px;
@@ -190,15 +175,6 @@
         <label class="form-label" for="pwd">새 비밀번호</label>
         <input type="password" id="pwd" class="form-control"
                placeholder="새 비밀번호를 입력하세요" autocomplete="new-password">
-        <div class="pwd-strength" id="pwdStrength" style="display:none">
-          <div class="pwd-bars">
-            <div class="pwd-bar" id="bar1"></div>
-            <div class="pwd-bar" id="bar2"></div>
-            <div class="pwd-bar" id="bar3"></div>
-            <div class="pwd-bar" id="bar4"></div>
-          </div>
-          <span class="pwd-strength-label" id="strengthLabel">비밀번호를 입력하세요</span>
-        </div>
       </div>
       <div class="form-group">
         <label class="form-label" for="pwd2">비밀번호 확인</label>
@@ -242,10 +218,6 @@ var elPwd      = document.getElementById('pwd');
 var elPwd2     = document.getElementById('pwd2');
 var elBtnFind  = document.getElementById('btnFind');
 var elBtnChg   = document.getElementById('btnChange');
-var elStrBox   = document.getElementById('pwdStrength');
-var elStrLbl   = document.getElementById('strengthLabel');
-var bars       = [document.getElementById('bar1'), document.getElementById('bar2'),
-                  document.getElementById('bar3'), document.getElementById('bar4')];
 var si1 = document.getElementById('si-1');
 var si2 = document.getElementById('si-2');
 var sl  = document.getElementById('sl-12');
@@ -269,29 +241,6 @@ function goStep2() {
   elStep2.style.display = 'block';
   elPwd.focus();
 }
-
-/* ── 비밀번호 강도 ── */
-function measureStrength(val) {
-  var score = 0;
-  if (val.length >= 8)  score++;
-  if (/[A-Z]/.test(val)) score++;
-  if (/[0-9]/.test(val)) score++;
-  if (/[^A-Za-z0-9]/.test(val)) score++;
-  return score;
-}
-elPwd.addEventListener('input', function() {
-  var val = this.value;
-  if (!val) { elStrBox.style.display = 'none'; return; }
-  elStrBox.style.display = 'block';
-  var score = measureStrength(val);
-  var cls   = score <= 1 ? 'weak' : score <= 2 ? 'medium' : 'strong';
-  var label = score <= 1 ? '약함' : score <= 2 ? '보통' : '강함';
-  bars.forEach(function(b, i) {
-    b.className = 'pwd-bar' + (i < score ? ' ' + cls : '');
-  });
-  elStrLbl.className = 'pwd-strength-label ' + cls;
-  elStrLbl.textContent = label;
-});
 
 /* ── 본인 확인 ── */
 function doFind() {
@@ -332,7 +281,6 @@ function doChange() {
   var pwd  = elPwd.value;
   var pwd2 = elPwd2.value;
   if (!pwd)         { showMsg('새 비밀번호를 입력해주세요.'); elPwd.classList.add('is-error'); elPwd.focus(); return; }
-  if (pwd.length < 6) { showMsg('비밀번호는 6자 이상 입력해주세요.'); elPwd.classList.add('is-error'); elPwd.focus(); return; }
   if (!pwd2)        { showMsg('비밀번호 확인을 입력해주세요.'); elPwd2.classList.add('is-error'); elPwd2.focus(); return; }
   if (pwd !== pwd2) { showMsg('비밀번호가 일치하지 않습니다.'); elPwd2.classList.add('is-error'); elPwd2.focus(); return; }
 

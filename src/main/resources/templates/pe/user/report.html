@@ -31,6 +31,9 @@
       min-height: 100%;
     }
 
+    /* ev_header(56px) 영역 회피 */
+    .main-content { margin-top: 56px; }
+
     .ac-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -946,8 +949,8 @@
 </head>
 
 <body>
-  <div th:replace="~{Include/layout :: header}"></div>
-  <div th:replace="~{Include/layout :: nav_section2}"></div>
+  <div th:replace="~{Include/layout :: ev_header}"></div>
+  <div th:replace="~{Include/layout :: user_nav_new}"></div>
 
   <main class="main-content">
     <div class="form-area">

@@ -224,6 +224,53 @@
 		</div>
 	</header>
 
+	<!-- ============================================
+	     Info 스타일 헤더 (사용자 페이지 통일용)
+	     pwdset / report / mypage 등에서 재사용
+	   ============================================ -->
+	<header th:fragment="ev_header" class="ev-header">
+		<style>
+		.ev-header {
+			position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+			height: 56px; background: #1b304a;
+			display: flex; align-items: center; justify-content: space-between;
+			padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+		}
+		.ev-logo { color: #fff; font-size: 17px; font-weight: 700;
+		           text-decoration: none; letter-spacing: -.3px; }
+		.ev-header-right { display: flex; align-items: center; gap: 14px; }
+		.ev-user-label { font-size: 13px; color: #94a3b8; }
+		.ev-user-label strong { color: #e2e8f0; font-weight: 600; }
+		.ev-logout { font-size: 12px; color: #94a3b8; text-decoration: none;
+		             border: 1px solid #334e68; padding: 4px 12px; border-radius: 6px;
+		             transition: all .15s; }
+		.ev-logout:hover { background: #243d57; color: #e2e8f0; }
+		.nav-toggle-btn {
+			width: 32px; height: 32px; border: none; background: transparent;
+			color: #e2e8f0; cursor: pointer; display: flex; align-items: center;
+			justify-content: center; padding: 0;
+		}
+		.nav-toggle-btn:hover { background: rgba(255,255,255,.08); border-radius: 6px; }
+		</style>
+		<div style="display:flex;align-items:center;gap:8px">
+			<button class="nav-toggle-btn" type="button" aria-label="메뉴">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+					<rect y="3" width="20" height="2" rx="1"/>
+					<rect y="9" width="20" height="2" rx="1"/>
+					<rect y="15" width="20" height="2" rx="1"/>
+				</svg>
+			</button>
+			<a href="/Info" class="ev-logo">인사평가</a>
+		</div>
+		<div class="ev-header-right">
+			<span class="ev-user-label" th:if="${userInfo != null}">
+				<span th:text="${userInfo.subName}">부서</span>&nbsp;
+				<strong th:text="${userInfo.name}">이름</strong>
+			</span>
+			<a href="/Logout" class="ev-logout">로그아웃</a>
+		</div>
+	</header>
+
 	<!-- 관리자 네비 -->
 	<div id="admin-nav" class="nav_section" th:fragment="nav_section"
 		 th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
