@@ -245,7 +245,7 @@ public class AffExcelContoller {
             return "Excel/aff/uploadStatus";
         }
         for (UserPE u : users) {
-            if (peService.countByCodeAndYear(u.getSubCode(), year) == 0) {
+            if (peService.countByCodeAndYear(u.getSubCode(), year, null) == 0) {
                 model.addAttribute("message",
                         "존재하지 않는 부서코드가 포함되어 있습니다: " + u.getSubCode());
                 return "Excel/aff/uploadStatus";
@@ -393,8 +393,8 @@ public class AffExcelContoller {
         }
 
         try {
-            // 👉 리스트와 연도를 함께 넘깁니다.
-            poiService.saveDepartments(subList, year);
+            // 슈퍼 어드민 도구 경로 — institution 컨텍스트 없음 (null). 레거시 호환용.
+            poiService.saveDepartments(subList, year, null);
             model.addAttribute("message", "부서 정보를 성공적으로 저장했습니다.");
             // 세션에 담긴 리스트는 비워 줘도 좋습니다.
             session.removeAttribute("subList");

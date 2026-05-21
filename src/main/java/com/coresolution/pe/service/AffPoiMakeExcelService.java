@@ -21,7 +21,9 @@ import com.coresolution.pe.entity.UserPE;
 import com.coresolution.pe.entity.UserrolePE;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AffPoiMakeExcelService {
@@ -141,19 +143,26 @@ public class AffPoiMakeExcelService {
         return list;
     }
 
-    /** DB 반영: 기존 부서 삭제 → 새로 삽입 */
+    /**
+     * DB 반영 — 기관 스코프로 UPSERT.
+     * institutionId 가 null 이면 레거시 경로(슈퍼 어드민 도구 등)로 간주, 경고 로그만 남기고 진행.
+     * 단, 다른 기관과 sub_code 가 충돌하면 sub_name 이 덮어쓰여질 수 있음 — 이 경로는 가급적 사용 지양.
+     */
     @Transactional
-    public void saveDepartments(List<SubManagement> subs, int year) {
-        // 1) 입력받은 subs 리스트가 비어있으면 에러
+    public void saveDepartments(List<SubManagement> subs, int year, Integer institutionId) {
         if (subs == null || subs.isEmpty()) {
             throw new IllegalStateException("업로드된 부서 목록이 없습니다.");
         }
+        if (institutionId == null) {
+            log.warn("[AffPoiMakeExcel] saveDepartments 호출에 institutionId 가 null — 레거시 경로. " +
+                    "기관 간 sub_code 충돌 시 sub_name 이 덮어쓰여질 수 있음. year={}, subs={}",
+                    year, subs.size());
+        }
         for (SubManagement s : subs) {
-            // 1) 파라미터에 확실히 연도를 넣어 줍니다
             s.setEvalYear(year);
+            s.setInstitutionId(institutionId);
 
-            // 2) 같은 코드+연도 레코드가 있으면 UPDATE, 없으면 INSERT
-            if (peService.countByCodeAndYear(s.getSubCode(), year) > 0) {
+            if (peService.countByCodeAndYear(s.getSubCode(), year, institutionId) > 0) {
                 peService.subupdate(s);
             } else {
                 peService.subinsert(s);

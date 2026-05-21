@@ -174,62 +174,42 @@
 
       <div class="role-grid">
         <label class="role-item"
-               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_head')} ? ' is-checked' : ''">
-          <input type="checkbox" name="roles" value="team_head"
-                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_head')}">
+               th:classappend="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'AFF_ORG_HEAD')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="AFF_ORG_HEAD"
+                 th:checked="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'AFF_ORG_HEAD')}">
           <div>
-            <div class="role-label">경혁팀장</div>
-            <div class="role-desc">경영혁신팀 팀장</div>
+            <div class="role-label">기관장</div>
+            <div class="role-desc">ORG 평가의 헤드 (OMEMBER→OHEAD 대상)</div>
           </div>
         </label>
 
         <label class="role-item"
-               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_member')} ? ' is-checked' : ''">
-          <input type="checkbox" name="roles" value="team_member"
-                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'team_member')}">
+               th:classappend="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'AFF_AGC_HEAD')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="AFF_AGC_HEAD"
+                 th:checked="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'AFF_AGC_HEAD')}">
           <div>
-            <div class="role-label">경혁팀원</div>
-            <div class="role-desc">경영혁신팀 팀원</div>
+            <div class="role-label">그룹 대표</div>
+            <div class="role-desc">같은 AGC 그룹 내 cross-ORG 평가의 헤드</div>
           </div>
         </label>
 
         <label class="role-item"
-               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_head')} ? ' is-checked' : ''">
-          <input type="checkbox" name="roles" value="sub_head"
-                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_head')}">
+               th:classappend="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'AFF_SUB_HEAD')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="AFF_SUB_HEAD"
+                 th:checked="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'AFF_SUB_HEAD')}">
           <div>
             <div class="role-label">부서장</div>
-            <div class="role-desc">일반 부서 책임자</div>
+            <div class="role-desc">부서 평가의 헤드 (SHEAD↔SMEMBER)</div>
           </div>
         </label>
 
         <label class="role-item"
-               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'one_person_sub')} ? ' is-checked' : ''">
-          <input type="checkbox" name="roles" value="one_person_sub"
-                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'one_person_sub')}">
-          <div>
-            <div class="role-label">1인부서</div>
-            <div class="role-desc">단독 부서 운영</div>
-          </div>
-        </label>
-
-        <label class="role-item"
-               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'medical_leader')} ? ' is-checked' : ''">
-          <input type="checkbox" name="roles" value="medical_leader"
-                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'medical_leader')}">
-          <div>
-            <div class="role-label">의료리더</div>
-            <div class="role-desc">의료직군 리더</div>
-          </div>
-        </label>
-
-        <label class="role-item"
-               th:classappend="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_member')} ? ' is-checked' : ''">
-          <input type="checkbox" name="roles" value="sub_member"
-                 th:checked="${user.rolesCsv != null and #strings.contains(user.rolesCsv, 'sub_member')}">
+               th:classappend="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'SUB_MEMBER')} ? ' is-checked' : ''">
+          <input type="checkbox" name="roles" value="SUB_MEMBER"
+                 th:checked="${user.rolesCsv != null and #strings.containsIgnoreCase(user.rolesCsv, 'SUB_MEMBER')}">
           <div>
             <div class="role-label">일반직원</div>
-            <div class="role-desc">일반 팀원</div>
+            <div class="role-desc">*MEMBER 측 — 부서원/구성원</div>
           </div>
         </label>
       </div>

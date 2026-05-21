@@ -183,25 +183,44 @@ public interface AffLoginMapper {
       """)
   List<String> getOrganizations(@Param("year") String year);
 
+  /**
+   * 기관 단위 부서 목록.
+   * institution_id 기반으로 직접 필터 (이전엔 users_${year} JOIN 으로 필터하여
+   * 직원 미업로드 시 부서가 0건으로 표시되는 문제가 있었음).
+   * 레거시 호환: institutionId 가 null 이면 c_name JOIN 폴백.
+   */
   @Select("""
       <script>
-      SELECT DISTINCT
-          s.sub_code  AS subCode,
-          s.sub_name  AS subName
-      FROM personnel_evaluation_aff.sub_management s
-      JOIN personnel_evaluation_aff.users_${year} u
-        ON u.sub_code = s.sub_code
-       AND u.eval_year = s.eval_year
-      WHERE s.eval_year = #{year}
-      <if test="org != null and org != ''">
-        AND u.c_name = #{org}
-      </if>
-      ORDER BY s.sub_name
+      <choose>
+        <when test="institutionId != null">
+          SELECT sub_code AS subCode,
+                 sub_name AS subName
+            FROM personnel_evaluation_aff.sub_management
+           WHERE eval_year = #{year}
+             AND institution_id = #{institutionId}
+           ORDER BY sub_name
+        </when>
+        <otherwise>
+          SELECT DISTINCT
+              s.sub_code AS subCode,
+              s.sub_name AS subName
+            FROM personnel_evaluation_aff.sub_management s
+            JOIN personnel_evaluation_aff.users_${year} u
+              ON u.sub_code = s.sub_code
+             AND u.eval_year = s.eval_year
+           WHERE s.eval_year = #{year}
+             <if test="org != null and org != ''">
+               AND u.c_name = #{org}
+             </if>
+           ORDER BY s.sub_name
+        </otherwise>
+      </choose>
       </script>
       """)
   List<Department> getDepartmentsByOrg(
       @Param("year") String year,
-      @Param("org") String org);
+      @Param("org") String org,
+      @Param("institutionId") Integer institutionId);
 
   @Select("""
       SELECT idx,
@@ -333,10 +352,16 @@ public interface AffLoginMapper {
       @Param("year") String year,
       @Param("delYn") String delYn);
 
-  /** 비밀번호 초기화 (NULL) */
+  /** 비밀번호 초기화 (NULL) — idx 기준 */
   @Update("UPDATE personnel_evaluation_aff.users_${year} SET pwd = NULL WHERE idx = #{idx} AND eval_year = #{year}")
   int resetPasswordByIdx(
       @Param("idx") int idx,
+      @Param("year") String year);
+
+  /** 비밀번호 초기화 (NULL) — 사번(id) 기준. 연도 간 동일 사번 매칭에 사용. */
+  @Update("UPDATE personnel_evaluation_aff.users_${year} SET pwd = NULL WHERE id = #{id} AND eval_year = #{year}")
+  int resetPasswordById(
+      @Param("id") String id,
       @Param("year") String year);
 
   /** 특정 직원의 역할 전체 삭제 */
@@ -383,6 +408,41 @@ public interface AffLoginMapper {
   List<UserPE> getUsersWithRolesByOrg(
       @Param("year") String year,
       @Param("orgName") String orgName);
+
+  /**
+   * 여러 기관의 직원 + 역할을 한꺼번에 조회 (AGC 단위 cross-ORG 평가 자동 생성용).
+   * orgNames 는 같은 agc_code 를 공유하는 기관명 리스트.
+   */
+  @Select("""
+      <script>
+      SELECT
+          u.idx        AS idx,
+          u.c_name     AS cName,
+          u.sub_code   AS subCode,
+          u.team_code  AS teamCode,
+          u.id         AS id,
+          u.name       AS name,
+          u.position   AS position,
+          s.sub_name   AS subName,
+          (SELECT GROUP_CONCAT(r.role ORDER BY r.role SEPARATOR ',')
+           FROM personnel_evaluation_aff.user_roles_${year} r
+           WHERE r.user_id = u.id AND r.eval_year = u.eval_year) AS rolesCsv
+      FROM personnel_evaluation_aff.users_${year} u
+      LEFT JOIN personnel_evaluation_aff.sub_management s
+             ON s.sub_code  = u.sub_code
+            AND s.eval_year = u.eval_year
+      WHERE u.eval_year = #{year}
+        AND u.del_yn    = 'N'
+        AND u.c_name IN
+        <foreach collection="orgNames" item="name" open="(" separator="," close=")">
+          #{name}
+        </foreach>
+      ORDER BY u.c_name, s.sub_name, u.name
+      </script>
+      """)
+  List<UserPE> getUsersWithRolesByOrgList(
+      @Param("year") String year,
+      @Param("orgNames") java.util.List<String> orgNames);
 
   /** 특정 기관의 모든 평가 대상 비활성화 (targets 초기화용) */
   @Update("""

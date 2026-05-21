@@ -225,6 +225,11 @@ public class AffInstAdminExcelController {
                                RedirectAttributes ra) {
 
         resolveInstitutionName(request); // 권한 확인
+        Integer institutionId = InstitutionAdminContext.getInstitutionId(request);
+        if (institutionId == null) {
+            ra.addFlashAttribute("error", "기관 정보가 세션에 없습니다. 다시 로그인해주세요.");
+            return "redirect:/aff/inst-admin/userDataUpload?year=" + year;
+        }
 
         @SuppressWarnings("unchecked")
         List<SubManagement> subList =
@@ -236,7 +241,7 @@ public class AffInstAdminExcelController {
         }
 
         try {
-            poiService.saveDepartments(subList, year);
+            poiService.saveDepartments(subList, year, institutionId);
             session.removeAttribute(SESSION_SUBDEP);
             ra.addFlashAttribute("success", "부서 " + subList.size() + "개가 저장되었습니다.");
         } catch (Exception e) {

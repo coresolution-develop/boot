@@ -16,9 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -64,9 +66,9 @@ public class AffInstAdminPageController {
     @Value("${app.upload.bg-dir:uploads/bg}")
     private String bgUploadDir;
 
+    // AFF 도메인 표준 역할 (대문자). 기존 PE 잔재(team_head 등)는 더 이상 허용하지 않음.
     private static final List<String> VALID_ROLES = Arrays.asList(
-            "team_head", "team_member", "sub_head",
-            "one_person_sub", "medical_leader", "sub_member");
+            "AFF_ORG_HEAD", "AFF_AGC_HEAD", "AFF_SUB_HEAD", "SUB_MEMBER");
 
     @Value("${app.current.eval-year}")
     private int currentEvalYear;
@@ -230,7 +232,7 @@ public class AffInstAdminPageController {
             userList = affLoginMapper.getUserListpage(year, q, dept, pwd, orgName, delYn, role, offset, size);
         }
 
-        List<Department> departments = affLoginMapper.getDepartmentsByOrg(year, orgName);
+        List<Department> departments = affLoginMapper.getDepartmentsByOrg(year, orgName, InstitutionAdminContext.getInstitutionId(req));
 
         model.addAttribute("userList",        userList);
         model.addAttribute("year",            year);
@@ -279,7 +281,7 @@ public class AffInstAdminPageController {
                     "해당 직원 정보에 접근할 수 없습니다.");
         }
 
-        List<Department> departments = affLoginMapper.getDepartmentsByOrg(year, orgName);
+        List<Department> departments = affLoginMapper.getDepartmentsByOrg(year, orgName, InstitutionAdminContext.getInstitutionId(req));
 
         model.addAttribute("user",            user);
         model.addAttribute("year",            year);
@@ -315,11 +317,15 @@ public class AffInstAdminPageController {
         return "redirect:/aff/inst-admin/userDetail/" + idx + "?year=" + year;
     }
 
-    /** 비밀번호 초기화 */
+    /**
+     * 비밀번호 초기화.
+     * 화면이 어떤 연도(year 파라미터)이든 실제 초기화는 항상 currentEvalYear 테이블에 적용.
+     * (이전엔 화면 연도 그대로 초기화하여 로그인은 currentEvalYear 를 봐서 효과 없음 버그가 있었음)
+     */
     @PostMapping("/userDetail/{idx}/resetPwd")
     public String resetPassword(HttpServletRequest req,
-                                @PathVariable int idx,
-                                @RequestParam String year,
+                                @PathVariable("idx") int idx,
+                                @RequestParam("year") String year,
                                 RedirectAttributes ra) {
         String orgName = institution(req);
 
@@ -329,8 +335,17 @@ public class AffInstAdminPageController {
             return "redirect:/aff/inst-admin/userList?year=" + year;
         }
 
-        affLoginMapper.resetPasswordByIdx(idx, year);
-        ra.addFlashAttribute("success", "비밀번호가 초기화되었습니다. 직원이 이름으로 재로그인 후 비밀번호를 설정해야 합니다.");
+        String activeYear = String.valueOf(currentEvalYear);
+        int affected = affLoginMapper.resetPasswordById(user.getId(), activeYear);
+        if (affected > 0) {
+            ra.addFlashAttribute("success",
+                "현재 연도(" + activeYear + ") 비밀번호가 초기화되었습니다. " +
+                "직원이 이름으로 재로그인 후 비밀번호를 설정해야 합니다.");
+        } else {
+            ra.addFlashAttribute("error",
+                "현재 연도(" + activeYear + ") 테이블에 해당 직원이 없어 초기화하지 못했습니다. " +
+                "직원이 " + activeYear + "년도 평가 대상으로 등록되어 있는지 확인해주세요.");
+        }
         return "redirect:/aff/inst-admin/userDetail/" + idx + "?year=" + year;
     }
 
@@ -341,8 +356,10 @@ public class AffInstAdminPageController {
                                 @RequestParam(required = false) String year) {
         if (year == null || year.isBlank()) year = String.valueOf(currentEvalYear);
         String orgName = institution(req);
+        Integer institutionId = InstitutionAdminContext.getInstitutionId(req);
 
-        List<SubManagement> subList = affLoginMapper.getDepartmentsByOrg(year, orgName)
+        // institution_id 기준으로 직접 조회 — 직원 미업로드 상태에서도 부서가 보임
+        List<SubManagement> subList = affLoginMapper.getDepartmentsByOrg(year, orgName, institutionId)
                 .stream()
                 .map(d -> {
                     SubManagement sm = new SubManagement();
@@ -504,7 +521,8 @@ public class AffInstAdminPageController {
         }
 
         try {
-            Path dir = Paths.get(bgUploadDir);
+            // 상대 경로는 절대 경로로 변환 (Tomcat Part.write 의 work-dir 해석 이슈 회피)
+            Path dir = Paths.get(bgUploadDir).toAbsolutePath().normalize();
             Files.createDirectories(dir);
             String ext = "";
             String orig = file.getOriginalFilename();
@@ -513,10 +531,12 @@ public class AffInstAdminPageController {
             }
             String filename = UUID.randomUUID().toString().replace("-", "") + ext;
             Path dest = dir.resolve(filename);
-            file.transferTo(dest.toFile());
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
             return ResponseEntity.ok(Map.of("ok", true, "url", "/uploads/bg/" + filename));
         } catch (IOException e) {
-            log.error("[aff end-letter] 배경 이미지 업로드 실패: {}", e.getMessage());
+            log.error("[aff end-letter] 배경 이미지 업로드 실패", e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("ok", false, "error", "업로드 중 오류가 발생했습니다."));
         }
@@ -540,7 +560,7 @@ public class AffInstAdminPageController {
 
         List<String> filtered = roles == null ? List.of() :
                 roles.stream()
-                     .map(String::toLowerCase)
+                     .map(String::toUpperCase)
                      .filter(VALID_ROLES::contains)
                      .distinct()
                      .toList();

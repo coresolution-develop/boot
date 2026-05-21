@@ -56,11 +56,9 @@
 /* 역할 뱃지 */
 .role { display:inline-block; padding:1px 7px; border-radius:12px; font-size:10px;
         font-weight:600; margin:1px; }
-.role-th  { background:#fef3c7; color:#b45309; }
-.role-tm  { background:#fef9c3; color:#92400e; }
+.role-oh  { background:#fce7f3; color:#9d174d; }
+.role-ah  { background:#ede9fe; color:#5b21b6; }
 .role-sh  { background:#dbeafe; color:#1d4ed8; }
-.role-op  { background:#e0e7ff; color:#4338ca; }
-.role-ml  { background:#dcfce7; color:#166534; }
 .role-sm  { background:#f1f5f9; color:#475569; }
 
 /* 기관 강조 */
@@ -170,15 +168,13 @@
                 <th:block th:if="${roleList != null}">
                   <th:block th:each="r : ${roleList}" th:if="${r.userId == u.id}">
                     <th:block th:each="role : ${r.roles}">
-                      <span th:switch="${#strings.toLowerCase(role.name())}">
-                        <span th:case="'team_head'"      class="role role-th">경혁팀장</span>
-                        <span th:case="'team_member'"    class="role role-tm">경혁팀원</span>
-                        <span th:case="'sub_head'"       class="role role-sh">부서장</span>
-                        <span th:case="'one_person_sub'" class="role role-op">1인부서</span>
-                        <span th:case="'medical_leader'" class="role role-ml">의료리더</span>
-                        <span th:case="'sub_member'"     class="role role-sm">일반직원</span>
+                      <span th:switch="${#strings.toUpperCase(role.name())}">
+                        <span th:case="'AFF_ORG_HEAD'" class="role role-oh">기관장</span>
+                        <span th:case="'AFF_AGC_HEAD'" class="role role-ah">그룹 대표</span>
+                        <span th:case="'AFF_SUB_HEAD'" class="role role-sh">부서장</span>
+                        <span th:case="'SUB_MEMBER'"   class="role role-sm">일반직원</span>
                         <span th:case="*" class="role role-sm"
-                              th:text="${#strings.toLowerCase(role.name())}">-</span>
+                              th:text="${role.name()}">-</span>
                       </span>
                     </th:block>
                   </th:block>

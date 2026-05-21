@@ -21,6 +21,7 @@ import com.coresolution.pe.mapper.AffCustomTargetMapper;
 import com.coresolution.pe.mapper.AffDefaultTargetMapper;
 import com.coresolution.pe.mapper.AffLoginMapper;
 import com.coresolution.pe.mapper.AffUserMapper;
+import com.coresolution.pe.mapper.InstitutionMapper;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class AffAdminTargetService {
     private final AffLoginMapper loginMapper;
     private final AffDefaultTargetMapper defaultTargetMapper;
     private final AffCustomTargetMapper customTargetMapper;
+    private final InstitutionMapper institutionMapper;
 
     @Value("${app.current.eval-year}")
     private int currentEvalYear;
@@ -145,7 +147,29 @@ public class AffAdminTargetService {
     }
 
     /**
-     * 부서별 역할 기반 평가 대상 자동 생성.
+     * AFF 평가 대상 자동 생성 — 운영 실태 기반 6개 핵심 규칙.
+     *
+     * <ul>
+     *   <li>부서(S) — 같은 sub_code 내
+     *     <ul>
+     *       <li>{@code SHEAD_TO_SMEMBER} — 수직평가 (본진)
+     *       <li>{@code SMEMBER_TO_SHEAD} — 역방향
+     *       <li>{@code SMEMBER_TO_SMEMBER} — 동료평가
+     *     </ul>
+     *   <li>소속(A) — 같은 AGC 그룹 (cross-ORG)
+     *     <ul>
+     *       <li>{@code AHEAD_TO_AMEMBER} — 그룹 대표 → 그룹 직원
+     *       <li>{@code AMEMBER_TO_AHEAD} — 그룹 직원 → 그룹 대표
+     *     </ul>
+     *   <li>기관(O) — 단일 ORG
+     *     <ul>
+     *       <li>{@code OMEMBER_TO_OHEAD} — 직원 → 기관장
+     *     </ul>
+     * </ul>
+     *
+     * 역할 매핑(users.role 또는 user_roles):
+     * {@code AFF_ORG_HEAD}, {@code AFF_AGC_HEAD}, {@code AFF_SUB_HEAD}, {@code SUB_MEMBER}.
+     * cross-ORG 특수 케이스(예: 영양과 영양팀장)는 커스텀 평가 메뉴에서 수동 추가.
      */
     @Transactional
     public int generateTargets(String orgName, int year,
@@ -155,128 +179,100 @@ public class AffAdminTargetService {
             loginMapper.deactivateTargetsByOrg(year, orgName);
         }
 
-        java.util.List<UserPE> allUsers = loginMapper.getUsersWithRolesByOrg(String.valueOf(year), orgName);
+        String yearStr = String.valueOf(year);
 
-        java.util.List<UserPE> ghTeam = allUsers.stream()
-                .filter(u -> "GH_TEAM".equalsIgnoreCase(u.getTeamCode()))
-                .collect(java.util.stream.Collectors.toList());
+        // 자기 ORG 직원 (S* / O* 규칙용)
+        java.util.List<UserPE> orgUsers =
+                loginMapper.getUsersWithRolesByOrg(yearStr, orgName);
 
-        java.util.List<UserPE> medicalAll = allUsers.stream()
-                .filter(u -> u.getSubCode() != null && u.getSubCode().startsWith("A"))
-                .collect(java.util.stream.Collectors.toList());
+        // 같은 AGC 그룹의 모든 ORG 직원 (A* 규칙용)
+        java.util.List<UserPE> agcUsers = resolveAgcUsers(orgName, yearStr);
 
-        java.util.Map<String, java.util.List<UserPE>> byDept = allUsers.stream()
+        java.util.List<UserPE> orgHeads = filterByRole(orgUsers, "AFF_ORG_HEAD");
+        java.util.List<UserPE> agcHeads = filterByRole(agcUsers, "AFF_AGC_HEAD");
+        java.util.List<UserPE> agcMembers = filterByRole(agcUsers, "SUB_MEMBER");
+
+        java.util.Map<String, java.util.List<UserPE>> byDept = orgUsers.stream()
                 .collect(java.util.stream.Collectors.groupingBy(
                         u -> u.getSubCode() != null ? u.getSubCode() : "__NO_DEPT__"));
 
-        String yearStr = String.valueOf(year);
         int count = 0;
 
+        // ── 부서(S) — 같은 부서 내 ────────────────────────────
         for (java.util.List<UserPE> deptUsers : byDept.values()) {
-            java.util.List<UserPE> heads = deptUsers.stream()
-                    .filter(u -> hasRole(u.getRolesCsv(), "SUB_HEAD"))
-                    .collect(java.util.stream.Collectors.toList());
-            java.util.List<UserPE> members = deptUsers.stream()
-                    .filter(u -> hasRole(u.getRolesCsv(), "SUB_MEMBER"))
-                    .collect(java.util.stream.Collectors.toList());
+            java.util.List<UserPE> deptHeads = filterByRole(deptUsers, "AFF_SUB_HEAD");
+            java.util.List<UserPE> deptMembers = filterByRole(deptUsers, "SUB_MEMBER");
 
-            if (rules.contains("SUB_MEMBER_TO_HEAD")) {
-                for (UserPE member : members) {
-                    for (UserPE head : heads) {
-                        if (!member.getId().equals(head.getId())) {
-                            customTargetMapper.upsertCustomAdd(
-                                    member.getId(), yearStr, head.getId(),
-                                    "SUB_MEMBER_TO_HEAD", "F", subDataType, null);
-                            count++;
-                        }
-                    }
-                }
+            if (rules.contains("SHEAD_TO_SMEMBER")) {
+                count += pair(deptHeads, deptMembers, yearStr, "SHEAD_TO_SMEMBER", "a", subDataType);
             }
-
-            if (rules.contains("SUB_HEAD_TO_MEMBER")) {
-                for (UserPE head : heads) {
-                    for (UserPE member : members) {
-                        if (!head.getId().equals(member.getId())) {
-                            customTargetMapper.upsertCustomAdd(
-                                    head.getId(), yearStr, member.getId(),
-                                    "SUB_HEAD_TO_MEMBER", "E", subDataType, null);
-                            count++;
-                        }
-                    }
-                }
+            if (rules.contains("SMEMBER_TO_SHEAD")) {
+                count += pair(deptMembers, deptHeads, yearStr, "SMEMBER_TO_SHEAD", "b", subDataType);
             }
-
-            if (rules.contains("SUB_MEMBER_TO_MEMBER")) {
-                for (UserPE m1 : members) {
-                    for (UserPE m2 : members) {
-                        if (!m1.getId().equals(m2.getId())) {
-                            customTargetMapper.upsertCustomAdd(
-                                    m1.getId(), yearStr, m2.getId(),
-                                    "SUB_MEMBER_TO_MEMBER", "G", subDataType, null);
-                            count++;
-                        }
-                    }
-                }
+            if (rules.contains("SMEMBER_TO_SMEMBER")) {
+                count += pair(deptMembers, deptMembers, yearStr, "SMEMBER_TO_SMEMBER", "c", subDataType);
             }
         }
 
-        if (rules.contains("GH_TO_GH")) {
-            for (UserPE ev : ghTeam) {
-                for (UserPE tg : ghTeam) {
-                    if (!ev.getId().equals(tg.getId())) {
-                        customTargetMapper.upsertCustomAdd(ev.getId(), yearStr, tg.getId(),
-                                "GH_TO_GH", "D", "AA", null);
-                        count++;
-                    }
-                }
-            }
+        // ── 소속(A) — 같은 AGC 그룹 cross-ORG ─────────────────
+        if (rules.contains("AHEAD_TO_AMEMBER")) {
+            count += pair(agcHeads, agcMembers, yearStr, "AHEAD_TO_AMEMBER", "e", "AA");
+        }
+        if (rules.contains("AMEMBER_TO_AHEAD")) {
+            count += pair(agcMembers, agcHeads, yearStr, "AMEMBER_TO_AHEAD", "f", "AA");
         }
 
-        if (rules.contains("GH_TO_MEDICAL")) {
-            for (UserPE ev : ghTeam) {
-                for (UserPE tg : medicalAll) {
-                    if (!ev.getId().equals(tg.getId())) {
-                        customTargetMapper.upsertCustomAdd(ev.getId(), yearStr, tg.getId(),
-                                "GH_TO_MEDICAL", "C", "AA", null);
-                        count++;
-                    }
-                }
-            }
-        }
-
-        if (rules.contains("MEDICAL_TO_GH")) {
-            for (UserPE ev : medicalAll) {
-                for (UserPE tg : ghTeam) {
-                    if (!ev.getId().equals(tg.getId())) {
-                        customTargetMapper.upsertCustomAdd(ev.getId(), yearStr, tg.getId(),
-                                "MEDICAL_TO_GH", "B", "AA", null);
-                        count++;
-                    }
-                }
-            }
-        }
-
-        if (rules.contains("MEDICAL_LEADER_TO_MEDICAL")) {
-            java.util.Map<String, java.util.List<UserPE>> medByDept = medicalAll.stream()
-                    .collect(java.util.stream.Collectors.groupingBy(
-                            u -> u.getSubCode() != null ? u.getSubCode() : "__NO_DEPT__"));
-            for (java.util.List<UserPE> deptUsers : medByDept.values()) {
-                java.util.List<UserPE> leaders = deptUsers.stream()
-                        .filter(u -> hasRole(u.getRolesCsv(), "MEDICAL_LEADER"))
-                        .collect(java.util.stream.Collectors.toList());
-                for (UserPE leader : leaders) {
-                    for (UserPE tg : deptUsers) {
-                        if (!leader.getId().equals(tg.getId())) {
-                            customTargetMapper.upsertCustomAdd(leader.getId(), yearStr, tg.getId(),
-                                    "SUB_HEAD_TO_MEMBER", "A", "AB", null);
-                            count++;
-                        }
-                    }
-                }
-            }
+        // ── 기관(O) — 단일 ORG ───────────────────────────────
+        if (rules.contains("OMEMBER_TO_OHEAD")) {
+            java.util.List<UserPE> orgMembers = filterByRole(orgUsers, "SUB_MEMBER");
+            count += pair(orgMembers, orgHeads, yearStr, "OMEMBER_TO_OHEAD", "j", "AA");
         }
 
         return count;
+    }
+
+    /**
+     * 같은 AGC 그룹의 모든 ORG 직원 조회. agc_code 없으면 자기 ORG 만 반환.
+     */
+    private java.util.List<UserPE> resolveAgcUsers(String orgName, String yearStr) {
+        com.coresolution.pe.entity.Institution self = institutionMapper.findByName(orgName);
+        if (self == null || self.getAgcCode() == null || self.getAgcCode().isBlank()) {
+            return loginMapper.getUsersWithRolesByOrg(yearStr, orgName);
+        }
+        java.util.List<com.coresolution.pe.entity.Institution> sameAgc =
+                institutionMapper.findByAgcCode(self.getAgcCode());
+        if (sameAgc.isEmpty()) {
+            return loginMapper.getUsersWithRolesByOrg(yearStr, orgName);
+        }
+        java.util.List<String> orgNames = sameAgc.stream()
+                .map(com.coresolution.pe.entity.Institution::getName)
+                .collect(java.util.stream.Collectors.toList());
+        return loginMapper.getUsersWithRolesByOrgList(yearStr, orgNames);
+    }
+
+    private java.util.List<UserPE> filterByRole(java.util.List<UserPE> users, String role) {
+        return users.stream()
+                .filter(u -> hasRole(u.getRolesCsv(), role))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 두 리스트의 카르테시안 곱으로 (evaluator → target) 쌍을 upsert.
+     * 자기 자신은 제외. 영향 행 수 반환.
+     */
+    private int pair(java.util.List<UserPE> evaluators, java.util.List<UserPE> targets,
+                     String yearStr, String evalTypeCode, String dataEv, String dataType) {
+        int n = 0;
+        for (UserPE ev : evaluators) {
+            for (UserPE tg : targets) {
+                if (ev.getId().equals(tg.getId())) continue;
+                customTargetMapper.upsertCustomAdd(
+                        ev.getId(), yearStr, tg.getId(),
+                        evalTypeCode, dataEv, dataType, null);
+                n++;
+            }
+        }
+        return n;
     }
 
     private boolean hasRole(String rolesCsv, String role) {

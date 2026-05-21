@@ -59,8 +59,9 @@ public class PeAffService {
         return loginMapper.getOrganizations(year);
     }
 
+    /** 레거시 호환 — 직원 측 호출용. institution_id 없이 c_name JOIN 폴백. */
     public List<Department> getDepartmentsByOrg(String year, String org) {
-        return loginMapper.getDepartmentsByOrg(year, org);
+        return loginMapper.getDepartmentsByOrg(year, org, null);
     }
 
     public List<SubManagement> getSubManagement(String year) {
@@ -98,8 +99,9 @@ public class PeAffService {
         excelMapper.getRoleExcelUpload(user_id, name, year);
     }
 
-    public int countByCodeAndYear(String sub_code, int year) {
-        return excelMapper.countByCodeAndYear(sub_code, year);
+    /** 기관 스코프 부서 카운트. institutionId null 시 기관 무관(레거시 호환). */
+    public int countByCodeAndYear(String sub_code, int year, Integer institutionId) {
+        return excelMapper.countByCodeAndYear(sub_code, year, institutionId);
     }
 
     public void subupdate(SubManagement s) {

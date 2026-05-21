@@ -65,36 +65,54 @@ public interface AffExcelMapper {
   // 부서 업로드 (파라미터는 SubManagement의 카멜케이스 필드에 맞춤)
   @Insert("""
           INSERT INTO personnel_evaluation_aff.sub_management
-            (sub_name, sub_code, eval_year)
+            (sub_name, sub_code, eval_year, institution_id)
           VALUES
-            (#{subName}, #{subCode}, #{evalYear})
+            (#{subName}, #{subCode}, #{evalYear}, #{institutionId})
       """)
   void getSubExcelUpload(SubManagement sub);
 
-  // 부서 코드/연도 중복 카운트 (Param 이름/바인딩 카멜케이스)
+  /**
+   * 부서 코드/연도/기관 중복 카운트.
+   * institutionId 가 null 이면 기관 무관 카운트(레거시 호환).
+   */
   @Select("""
+          <script>
           SELECT COUNT(*)
             FROM personnel_evaluation_aff.sub_management
            WHERE sub_code  = #{subCode}
              AND eval_year = #{year}
+           <if test="institutionId != null">
+             AND institution_id = #{institutionId}
+           </if>
+          </script>
       """)
-  int countByCodeAndYear(@Param("subCode") String subCode, @Param("year") int year);
+  int countByCodeAndYear(@Param("subCode") String subCode,
+                         @Param("year") int year,
+                         @Param("institutionId") Integer institutionId);
 
-  // 부서 업데이트
+  /**
+   * 부서 업데이트 — institution 단위로 스코프 (다른 기관의 동일 sub_code 보호).
+   * institutionId 가 null 이면 레거시 경로 (기관 무관 UPDATE).
+   */
   @Update("""
+          <script>
           UPDATE personnel_evaluation_aff.sub_management
              SET sub_name = #{subName}
            WHERE sub_code  = #{subCode}
              AND eval_year = #{evalYear}
+           <if test="institutionId != null">
+             AND institution_id = #{institutionId}
+           </if>
+          </script>
       """)
   void subupdate(SubManagement s);
 
-  // 부서 인서트 (별도 메서드 유지)
+  // 부서 인서트 (institution_id 포함)
   @Insert("""
           INSERT INTO personnel_evaluation_aff.sub_management
-            (sub_name, sub_code, eval_year)
+            (sub_name, sub_code, eval_year, institution_id)
           VALUES
-            (#{subName}, #{subCode}, #{evalYear})
+            (#{subName}, #{subCode}, #{evalYear}, #{institutionId})
       """)
   void subinsert(SubManagement s);
 }

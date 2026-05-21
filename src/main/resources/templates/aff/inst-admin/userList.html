@@ -67,11 +67,9 @@
 /* ── 뱃지 ── */
 .badge { display:inline-flex; align-items:center; padding:2px 8px; border-radius:20px;
          font-size:11px; font-weight:600; white-space:nowrap; margin:1px 2px 1px 0; }
-.badge-TEAM_HEAD      { background:#fef3c7; color:#b45309; }
-.badge-TEAM_MEMBER    { background:#fef9c3; color:#92400e; }
+.badge-ORG_HEAD       { background:#fce7f3; color:#9d174d; }
+.badge-AGC_HEAD       { background:#ede9fe; color:#5b21b6; }
 .badge-SUB_HEAD       { background:#dbeafe; color:#1d4ed8; }
-.badge-ONE_PERSON_SUB { background:#e0e7ff; color:#4338ca; }
-.badge-MEDICAL_LEADER { background:#dcfce7; color:#166534; }
 .badge-SUB_MEMBER     { background:#f1f5f9; color:#475569; }
 .badge-pwd-ok         { background:#dcfce7; color:#166534; }
 .badge-pwd-none       { background:#fee2e2; color:#991b1b; }
@@ -122,12 +120,10 @@
 
       <select name="role">
         <option value="">역할 전체</option>
-        <option value="team_head"      th:selected="${role == 'team_head'}">경혁팀장</option>
-        <option value="team_member"    th:selected="${role == 'team_member'}">경혁팀원</option>
-        <option value="sub_head"       th:selected="${role == 'sub_head'}">부서장</option>
-        <option value="one_person_sub" th:selected="${role == 'one_person_sub'}">1인부서</option>
-        <option value="medical_leader" th:selected="${role == 'medical_leader'}">의료리더</option>
-        <option value="sub_member"     th:selected="${role == 'sub_member'}">일반직원</option>
+        <option value="AFF_ORG_HEAD" th:selected="${role == 'AFF_ORG_HEAD'}">기관장</option>
+        <option value="AFF_AGC_HEAD" th:selected="${role == 'AFF_AGC_HEAD'}">그룹 대표</option>
+        <option value="AFF_SUB_HEAD" th:selected="${role == 'AFF_SUB_HEAD'}">부서장</option>
+        <option value="SUB_MEMBER"   th:selected="${role == 'SUB_MEMBER'}">일반직원</option>
       </select>
 
       <select name="pwd">
@@ -210,14 +206,12 @@
               <td class="col-roles">
                 <th:block th:if="${user.rolesCsv != null and !user.rolesCsv.isEmpty()}">
                   <th:block th:each="r : ${#strings.arraySplit(user.rolesCsv, ',')}">
-                    <span th:switch="${r.trim()}">
-                      <span th:case="'team_head'"      class="badge badge-TEAM_HEAD">경혁팀장</span>
-                      <span th:case="'team_member'"    class="badge badge-TEAM_MEMBER">경혁팀원</span>
-                      <span th:case="'sub_head'"       class="badge badge-SUB_HEAD">부서장</span>
-                      <span th:case="'one_person_sub'" class="badge badge-ONE_PERSON_SUB">1인부서</span>
-                      <span th:case="'medical_leader'" class="badge badge-MEDICAL_LEADER">의료리더</span>
-                      <span th:case="'sub_member'"     class="badge badge-SUB_MEMBER">일반직원</span>
-                      <span th:case="*"                class="badge badge-SUB_MEMBER" th:text="${r.trim()}">기타</span>
+                    <span th:switch="${r.trim().toUpperCase()}">
+                      <span th:case="'AFF_ORG_HEAD'" class="badge badge-ORG_HEAD">기관장</span>
+                      <span th:case="'AFF_AGC_HEAD'" class="badge badge-AGC_HEAD">그룹 대표</span>
+                      <span th:case="'AFF_SUB_HEAD'" class="badge badge-SUB_HEAD">부서장</span>
+                      <span th:case="'SUB_MEMBER'"   class="badge badge-SUB_MEMBER">일반직원</span>
+                      <span th:case="*"              class="badge badge-SUB_MEMBER" th:text="${r.trim()}">기타</span>
                     </span>
                   </th:block>
                 </th:block>
