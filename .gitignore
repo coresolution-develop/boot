@@ -39,3 +39,7 @@ out/
 ### macOS ###
 .DS_Store
 **/.DS_Store
+
+### Uploaded files (runtime artifacts) ###
+src/main/resources/static/uploads/bg/*
+!src/main/resources/static/uploads/bg/.gitkeep

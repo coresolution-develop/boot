@@ -52,6 +52,10 @@ dependencies {
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 
+	// DB 마이그레이션 (Flyway)
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-mysql'
+
 	implementation 'org.springframework.boot:spring-boot-starter-validation' // ← 추가
 
 	// ✅ 명시 고정 (IDE 인식/충돌 방지)	
