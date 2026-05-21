@@ -49,14 +49,16 @@ public class SuperAdminInstitutionController {
     }
 
     @PostMapping
-    public String create(@RequestParam String code,
-                         @RequestParam String name,
+    public String create(@RequestParam("code") String code,
+                         @RequestParam("name") String name,
+                         @RequestParam(value = "kind", defaultValue = "PE") String kind,
+                         @RequestParam(value = "agcCode", required = false) String agcCode,
                          RedirectAttributes ra) {
         try {
-            institutionService.create(code.trim(), name.trim());
-            ra.addFlashAttribute("message", "기관이 등록되었습니다: " + name);
+            institutionService.create(code.trim(), name.trim(), kind, agcCode);
+            ra.addFlashAttribute("message", "기관이 등록되었습니다: " + name + " (" + kind + ")");
         } catch (Exception e) {
-            log.error("[SuperAdmin] 기관 등록 실패 code={}, name={}", code, name, e);
+            log.error("[SuperAdmin] 기관 등록 실패 code={}, name={}, kind={}, agcCode={}", code, name, kind, agcCode, e);
             ra.addFlashAttribute("error", "기관 등록 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions";
@@ -74,16 +76,18 @@ public class SuperAdminInstitutionController {
     }
 
     @PostMapping("/{id}")
-    public String update(@PathVariable int id,
-                         @RequestParam String code,
-                         @RequestParam String name,
-                         @RequestParam(defaultValue = "false") boolean isActive,
+    public String update(@PathVariable("id") int id,
+                         @RequestParam("code") String code,
+                         @RequestParam("name") String name,
+                         @RequestParam(value = "isActive", defaultValue = "false") boolean isActive,
+                         @RequestParam(value = "kind", defaultValue = "PE") String kind,
+                         @RequestParam(value = "agcCode", required = false) String agcCode,
                          RedirectAttributes ra) {
         try {
-            institutionService.update(id, code.trim(), name.trim(), isActive);
+            institutionService.update(id, code.trim(), name.trim(), isActive, kind, agcCode);
             ra.addFlashAttribute("message", "기관 정보가 수정되었습니다.");
         } catch (Exception e) {
-            log.error("[SuperAdmin] 기관 수정 실패 id={}, code={}, name={}", id, code, name, e);
+            log.error("[SuperAdmin] 기관 수정 실패 id={}, code={}, name={}, kind={}, agcCode={}", id, code, name, kind, agcCode, e);
             ra.addFlashAttribute("error", "수정 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions";
@@ -129,8 +133,8 @@ public class SuperAdminInstitutionController {
             ra.addFlashAttribute("error", "로그인 ID를 입력해주세요.");
             return "redirect:/admin/institutions/" + id + "/admins";
         }
-        if (password == null || password.length() < 6) {
-            ra.addFlashAttribute("error", "비밀번호는 6자 이상이어야 합니다.");
+        if (password == null || password.isEmpty()) {
+            ra.addFlashAttribute("error", "비밀번호를 입력해주세요.");
             return "redirect:/admin/institutions/" + id + "/admins";
         }
         if (adminName == null || adminName.trim().isEmpty()) {
@@ -152,9 +156,9 @@ public class SuperAdminInstitutionController {
     // ── 관리자 비밀번호 재설정 ─────────────────────────────
 
     @PostMapping("/{id}/admins/{adminId}/reset-pwd")
-    public String resetAdminPassword(@PathVariable int id,
-                                     @PathVariable int adminId,
-                                     @RequestParam String newPassword,
+    public String resetAdminPassword(@PathVariable("id") int id,
+                                     @PathVariable("adminId") int adminId,
+                                     @RequestParam("newPassword") String newPassword,
                                      RedirectAttributes ra) {
         try {
             institutionService.resetAdminPassword(adminId, newPassword);
@@ -162,6 +166,27 @@ public class SuperAdminInstitutionController {
         } catch (Exception e) {
             log.error("[SuperAdmin] 기관 관리자 비밀번호 재설정 실패 institutionId={}, adminId={}", id, adminId, e);
             ra.addFlashAttribute("error", "비밀번호 재설정 실패: " + e.getMessage());
+        }
+        return "redirect:/admin/institutions/" + id + "/admins";
+    }
+
+    // ── 관리자 로그인 ID 변경 ─────────────────────────────
+    @PostMapping("/{id}/admins/{adminId}/change-id")
+    public String changeAdminLoginId(@PathVariable("id") int id,
+                                     @PathVariable("adminId") int adminId,
+                                     @RequestParam("newLoginId") String newLoginId,
+                                     RedirectAttributes ra) {
+        try {
+            institutionService.updateAdminLoginId(adminId, newLoginId);
+            ra.addFlashAttribute("message", "로그인 ID가 변경되었습니다: " + newLoginId.trim());
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            ra.addFlashAttribute("error", "이미 사용 중인 로그인 ID입니다: " + newLoginId.trim());
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            log.error("[SuperAdmin] 기관 관리자 로그인 ID 변경 실패 institutionId={}, adminId={}, newLoginId={}",
+                    id, adminId, newLoginId, e);
+            ra.addFlashAttribute("error", "로그인 ID 변경 실패: " + e.getMessage());
         }
         return "redirect:/admin/institutions/" + id + "/admins";
     }

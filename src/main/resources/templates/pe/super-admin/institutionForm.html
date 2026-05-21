@@ -73,6 +73,23 @@
         <p class="form-hint">영문 대문자·숫자·언더스코어(_)로 구성, 중복 불가</p>
       </div>
 
+      <div class="form-group">
+        <label class="form-label">기관 종류 <span style="color:#ef4444">*</span></label>
+        <select name="kind" class="form-control" required>
+          <option value="PE" selected>PE — 직원 평가</option>
+          <option value="AFF">AFF — 계열사</option>
+        </select>
+        <p class="form-hint">한 기관은 PE 또는 AFF 중 하나만 사용합니다. 로그인 진입점이 분리됩니다.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">AGC 그룹 코드</label>
+        <input type="text" name="agcCode" class="form-control"
+               placeholder="예: JEONGSUNG_MOA"
+               pattern="[A-Za-z0-9_]*">
+        <p class="form-hint">같은 그룹(예: 정성모아 1·2·3병원)을 묶을 식별자. 비워두면 단독 기관으로 처리됩니다. 영문·숫자·언더스코어.</p>
+      </div>
+
       <div class="btn-row">
         <button type="submit" class="btn-submit">등록</button>
         <a th:href="@{/admin/institutions}" class="btn-cancel">취소</a>
@@ -96,6 +113,24 @@
                th:value="${institution.code}" required
                pattern="[A-Za-z0-9_]+"
                title="영문·숫자·언더스코어만 허용">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">기관 종류 <span style="color:#ef4444">*</span></label>
+        <select name="kind" class="form-control" required>
+          <option value="PE" th:selected="${institution.kind == null or institution.kind == 'PE'}">PE — 직원 평가</option>
+          <option value="AFF" th:selected="${institution.kind == 'AFF'}">AFF — 계열사</option>
+        </select>
+        <p class="form-hint">변경 시 해당 기관의 관리자들의 로그인 진입점도 함께 바뀝니다.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">AGC 그룹 코드</label>
+        <input type="text" name="agcCode" class="form-control"
+               th:value="${institution.agcCode}"
+               placeholder="예: JEONGSUNG_MOA"
+               pattern="[A-Za-z0-9_]*">
+        <p class="form-hint">같은 그룹(예: 정성모아 1·2·3병원)을 묶을 식별자. 비우면 단독 기관.</p>
       </div>
 
       <div class="form-group">

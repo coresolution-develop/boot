@@ -90,6 +90,14 @@ public interface InstitutionAdminMapper {
         """)
     int updatePassword(@Param("id") int id, @Param("pwd") String pwd);
 
+    /** 로그인 ID 변경 (uq_inst_admin_login_id 유니크 제약 → 중복 시 DuplicateKeyException) */
+    @Update("""
+        UPDATE personnel_evaluation.institution_admins
+        SET login_id = #{loginId}
+        WHERE id = #{id}
+        """)
+    int updateLoginId(@Param("id") int id, @Param("loginId") String loginId);
+
     /** 비활성화 */
     @Update("UPDATE personnel_evaluation.institution_admins SET is_active = 0 WHERE id = #{id}")
     int deactivate(@Param("id") int id);

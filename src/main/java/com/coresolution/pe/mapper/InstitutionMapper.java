@@ -20,7 +20,7 @@ public interface InstitutionMapper {
     // ── 공통 ResultMap 정의 ───────────────────────────────
 
     String BASE_SELECT =
-        "SELECT id, code, name, is_active AS isActive, created_at AS createdAt " +
+        "SELECT id, code, name, is_active AS isActive, kind, agc_code AS agcCode, created_at AS createdAt " +
         "FROM personnel_evaluation.institutions ";
 
     // ── 조회 ─────────────────────────────────────────────
@@ -31,6 +31,8 @@ public interface InstitutionMapper {
         @Result(column = "code",       property = "code"),
         @Result(column = "name",       property = "name"),
         @Result(column = "isActive",   property = "isActive"),
+        @Result(column = "kind",       property = "kind"),
+        @Result(column = "agcCode",    property = "agcCode"),
         @Result(column = "createdAt",  property = "createdAt")
     })
     List<Institution> findAll();
@@ -47,11 +49,18 @@ public interface InstitutionMapper {
     @Select(BASE_SELECT + "WHERE code = #{code}")
     Institution findByCode(@Param("code") String code);
 
+    @Select(BASE_SELECT + "WHERE kind = #{kind} ORDER BY name")
+    List<Institution> findByKind(@Param("kind") String kind);
+
+    /** 같은 AGC 그룹에 속한 기관 목록. AGC 단위 cross-ORG 평가 자동 생성에 사용. */
+    @Select(BASE_SELECT + "WHERE agc_code = #{agcCode} AND is_active = 1 ORDER BY name")
+    List<Institution> findByAgcCode(@Param("agcCode") String agcCode);
+
     // ── 생성 ─────────────────────────────────────────────
 
     @Insert("""
-        INSERT INTO personnel_evaluation.institutions (code, name, is_active)
-        VALUES (#{code}, #{name}, #{isActive})
+        INSERT INTO personnel_evaluation.institutions (code, name, is_active, kind, agc_code)
+        VALUES (#{code}, #{name}, #{isActive}, #{kind}, #{agcCode})
         """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(Institution institution);
@@ -60,7 +69,7 @@ public interface InstitutionMapper {
 
     @Update("""
         UPDATE personnel_evaluation.institutions
-        SET code = #{code}, name = #{name}, is_active = #{isActive}
+        SET code = #{code}, name = #{name}, is_active = #{isActive}, kind = #{kind}, agc_code = #{agcCode}
         WHERE id = #{id}
         """)
     int update(Institution institution);

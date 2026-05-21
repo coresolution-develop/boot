@@ -66,10 +66,12 @@
                   grid-column:1/-1; width:fit-content; }
     .btn-create:hover { filter:brightness(1.15); }
 
-    /* 비밀번호 재설정 인라인 폼 */
-    .pwd-reset-form { display:flex; gap:6px; align-items:center; }
-    .pwd-reset-form input { padding:4px 8px; border:1px solid #d1d5db;
-                            border-radius:5px; font-size:12px; width:140px; }
+    /* 인라인 폼 (비밀번호 재설정 / ID 변경 공용) */
+    .pwd-reset-form, .loginid-change-form { display:flex; gap:6px; align-items:center; }
+    .pwd-reset-form input, .loginid-change-form input {
+      padding:4px 8px; border:1px solid #d1d5db;
+      border-radius:5px; font-size:12px; width:140px;
+    }
 
     .empty-state { text-align:center; padding:40px; color:#94a3b8; }
   </style>
@@ -103,6 +105,7 @@
       <thead>
         <tr>
           <th>로그인 ID</th>
+          <th>ID 변경</th>
           <th>성명</th>
           <th>상태</th>
           <th>등록일</th>
@@ -113,6 +116,15 @@
       <tbody>
         <tr th:each="admin : ${admins}">
           <td style="font-weight:600;" th:text="${admin.loginId}"></td>
+          <td>
+            <form th:action="@{/admin/institutions/{id}/admins/{adminId}/change-id(id=${institution.id},adminId=${admin.id})}"
+                  method="post" class="loginid-change-form">
+              <input type="text" name="newLoginId" placeholder="새 로그인 ID"
+                     th:value="${admin.loginId}" required maxlength="100" autocomplete="off">
+              <button type="submit" class="btn-sm btn-warning"
+                      onclick="return confirm('로그인 ID를 변경하시겠습니까? 현재 로그인 중인 사용자는 다음 로그인부터 새 ID를 사용해야 합니다.')">변경</button>
+            </form>
+          </td>
           <td th:text="${admin.name}"></td>
           <td>
             <span th:if="${admin.isActive}"  class="badge-active">활성</span>
@@ -123,7 +135,7 @@
           <td>
             <form th:action="@{/admin/institutions/{id}/admins/{adminId}/reset-pwd(id=${institution.id},adminId=${admin.id})}"
                   method="post" class="pwd-reset-form">
-              <input type="password" name="newPassword" placeholder="새 비밀번호" required minlength="6">
+              <input type="password" name="newPassword" placeholder="새 비밀번호" required>
               <button type="submit" class="btn-sm btn-warning"
                       onclick="return confirm('비밀번호를 재설정하시겠습니까?')">초기화</button>
             </form>
@@ -169,13 +181,13 @@
       <div class="form-group">
         <label class="form-label">비밀번호 <span style="color:#ef4444">*</span></label>
         <input type="password" name="password" class="form-control"
-               placeholder="6자 이상" required minlength="6">
+               placeholder="비밀번호" required>
       </div>
 
       <div class="form-group">
         <label class="form-label">비밀번호 확인 <span style="color:#ef4444">*</span></label>
         <input type="password" id="confirmPwd" class="form-control"
-               placeholder="동일하게 입력" required minlength="6">
+               placeholder="동일하게 입력" required>
       </div>
 
       <button type="submit" class="btn-create"

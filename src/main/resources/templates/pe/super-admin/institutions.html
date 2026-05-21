@@ -87,6 +87,8 @@
           <th style="width:50px">ID</th>
           <th>기관명</th>
           <th>기관 코드</th>
+          <th style="width:70px">종류</th>
+          <th style="width:130px">AGC 그룹</th>
           <th style="width:80px">상태</th>
           <th>등록일</th>
           <th style="width:280px">작업</th>
@@ -94,7 +96,7 @@
       </thead>
       <tbody>
         <tr th:if="${institutions.isEmpty()}">
-          <td colspan="6">
+          <td colspan="8">
             <div class="empty-state">
               <div class="icon">🏥</div>
               <p>등록된 기관이 없습니다. 기관을 먼저 등록해주세요.</p>
@@ -106,6 +108,22 @@
           <td style="font-weight:600;" th:text="${inst.name}"></td>
           <td><code style="background:#f1f5f9; padding:2px 7px; border-radius:4px; font-size:12px;"
                     th:text="${inst.code}"></code></td>
+          <td>
+            <span th:if="${inst.kind == 'AFF'}"
+                  style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;
+                         padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">AFF</span>
+            <span th:unless="${inst.kind == 'AFF'}"
+                  style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;
+                         padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">PE</span>
+          </td>
+          <td>
+            <code th:if="${inst.agcCode != null and !#strings.isEmpty(inst.agcCode)}"
+                  style="background:#ecfeff;color:#0e7490;border:1px solid #a5f3fc;
+                         padding:2px 7px;border-radius:4px;font-size:11px;"
+                  th:text="${inst.agcCode}"></code>
+            <span th:unless="${inst.agcCode != null and !#strings.isEmpty(inst.agcCode)}"
+                  style="color:#cbd5e1;font-size:11px;">—</span>
+          </td>
           <td>
             <span th:if="${inst.isActive}"  class="badge-active">활성</span>
             <span th:unless="${inst.isActive}" class="badge-inactive">비활성</span>

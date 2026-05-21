@@ -11,7 +11,9 @@ import com.coresolution.pe.mapper.InstitutionAdminMapper;
 import com.coresolution.pe.mapper.InstitutionMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InstitutionService {
@@ -40,21 +42,42 @@ public class InstitutionService {
 
     // ── 기관 생성/수정 ────────────────────────────────────
 
-    public Institution create(String code, String name) {
+    private static final java.util.Set<String> ALLOWED_KINDS = java.util.Set.of("PE", "AFF");
+
+    private static String normalizeKind(String kind) {
+        if (kind == null || kind.isBlank()) return "PE";
+        String upper = kind.trim().toUpperCase();
+        if (!ALLOWED_KINDS.contains(upper)) {
+            throw new IllegalArgumentException("기관 종류는 PE 또는 AFF 여야 합니다: " + kind);
+        }
+        return upper;
+    }
+
+    private static String normalizeAgcCode(String agcCode) {
+        if (agcCode == null) return null;
+        String trimmed = agcCode.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    public Institution create(String code, String name, String kind, String agcCode) {
         Institution inst = new Institution();
         inst.setCode(code);
         inst.setName(name);
         inst.setActive(true);
+        inst.setKind(normalizeKind(kind));
+        inst.setAgcCode(normalizeAgcCode(agcCode));
         institutionMapper.insert(inst);
         return inst; // insert 후 id가 채워진 상태로 반환
     }
 
-    public void update(int id, String code, String name, boolean isActive) {
+    public void update(int id, String code, String name, boolean isActive, String kind, String agcCode) {
         Institution inst = new Institution();
         inst.setId(id);
         inst.setCode(code);
         inst.setName(name);
         inst.setActive(isActive);
+        inst.setKind(normalizeKind(kind));
+        inst.setAgcCode(normalizeAgcCode(agcCode));
         institutionMapper.update(inst);
     }
 
@@ -115,10 +138,51 @@ public class InstitutionService {
     }
 
     /**
-     * 비밀번호 재설정 (슈퍼 어드민이 강제 초기화할 때 사용)
+     * 비밀번호 재설정 (슈퍼 어드민이 강제 초기화할 때 사용).
+     * 영향받은 행이 0이면 IllegalStateException — 잘못된 adminId 또는 삭제된 계정.
      */
     public void resetAdminPassword(int id, String rawPassword) {
-        adminMapper.updatePassword(id, passwordEncoder.encode(rawPassword));
+        if (rawPassword == null || rawPassword.isEmpty()) {
+            throw new IllegalArgumentException("비밀번호를 입력해주세요.");
+        }
+        int affected = adminMapper.updatePassword(id, passwordEncoder.encode(rawPassword));
+        if (affected == 0) {
+            throw new IllegalStateException(
+                "해당 ID의 관리자 계정을 찾을 수 없습니다 (adminId=" + id + ")");
+        }
+        log.info("[InstitutionService] 기관 관리자 비밀번호 재설정 완료 adminId={}, affected={}", id, affected);
+    }
+
+    /**
+     * 로그인 ID 변경 (슈퍼 어드민 전용).
+     * 중복 시 mapper 단에서 {@link org.springframework.dao.DuplicateKeyException} 발생.
+     * 영향받은 행이 0이면 IllegalStateException.
+     */
+    public void updateAdminLoginId(int id, String newLoginId) {
+        if (newLoginId == null) {
+            throw new IllegalArgumentException("로그인 ID를 입력해주세요.");
+        }
+        String trimmed = newLoginId.trim();
+        if (trimmed.isEmpty()) {
+            throw new IllegalArgumentException("로그인 ID를 입력해주세요.");
+        }
+        if (trimmed.length() > 100) {
+            throw new IllegalArgumentException("로그인 ID는 100자 이하여야 합니다.");
+        }
+        InstitutionAdmin before = adminMapper.findById(id);
+        if (before == null) {
+            throw new IllegalStateException("해당 ID의 관리자 계정을 찾을 수 없습니다 (adminId=" + id + ")");
+        }
+        if (trimmed.equals(before.getLoginId())) {
+            log.info("[InstitutionService] 기관 관리자 로그인 ID 변경 — 변경 없음 (동일 값) adminId={}", id);
+            return;
+        }
+        int affected = adminMapper.updateLoginId(id, trimmed);
+        if (affected == 0) {
+            throw new IllegalStateException("해당 ID의 관리자 계정을 찾을 수 없습니다 (adminId=" + id + ")");
+        }
+        log.info("[InstitutionService] 기관 관리자 로그인 ID 변경 완료 adminId={}, oldLoginId={}, newLoginId={}",
+                id, before.getLoginId(), trimmed);
     }
 
     public void deactivateAdmin(int id) {

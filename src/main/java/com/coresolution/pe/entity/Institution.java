@@ -19,5 +19,11 @@ public class Institution {
     /** 활성 여부 (true = 활성) */
     private boolean isActive;
 
+    /** 기관 종류 — "PE"(직원평가) 또는 "AFF"(계열사). 배타적. */
+    private String kind;
+
+    /** AGC(소속 그룹) 식별 코드. 같은 값을 가진 기관끼리 한 그룹으로 묶임. nullable. */
+    private String agcCode;
+
     private Date createdAt;
 }
