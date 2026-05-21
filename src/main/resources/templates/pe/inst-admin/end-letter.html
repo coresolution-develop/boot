@@ -107,50 +107,48 @@
 }
 .bg-thumb-wrap:hover .bg-thumb-overlay { opacity:1; }
 
-/* ── 미리보기 카드 ── */
-.preview-card {
+/* ── 미리보기 (실제 formend 구조와 일치) ── */
+.preview-stack { display:flex; flex-direction:column; gap:10px; }
+.preview-hero {
   position:relative; border-radius:14px; overflow:hidden;
-  min-height:260px;
-  box-shadow:0 4px 20px rgba(0,0,0,.15);
-  display:flex; flex-direction:column;
+  padding:24px 20px; text-align:center;
+  background:linear-gradient(135deg,#1b304a 0%,#2d4f72 100%);
+  box-shadow:0 4px 14px rgba(27,48,74,.22);
+  color:#fff;
+}
+.preview-hero-icon {
+  width:32px; height:32px; margin:0 auto 8px;
+  stroke:#7dd3fc;
+}
+.preview-hero-title {
+  font-size:14px; font-weight:700; line-height:1.4; margin-bottom:4px;
+}
+.preview-hero-title strong { color:#7dd3fc; }
+.preview-hero-sub { font-size:11px; color:#94a3b8; }
+
+.preview-letter {
+  position:relative; overflow:hidden;
+  background:#fff; border:1px solid #e2e8f0; border-radius:14px;
+  box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+.preview-letter-header {
+  background:#f8fafc; border-bottom:1px solid #e2e8f0;
+  padding:8px 16px; font-size:10px; font-weight:700;
+  color:#64748b; letter-spacing:.06em; text-transform:uppercase;
+}
+.preview-letter-body {
+  position:relative; padding:22px 20px;
+  font-size:12px; color:#2b2b2b; line-height:1.9;
+  text-align:center; white-space:pre-wrap; word-break:break-word;
+  font-family:'Malgun Gothic','맑은 고딕',serif;
+  min-height:140px;
 }
 .preview-bg {
   position:absolute; inset:0;
-  background-size:cover; background-position:center;
-  transition:background-image .3s;
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+  opacity:.18; pointer-events:none; z-index:0;
 }
-.preview-bg::after {
-  content:''; position:absolute; inset:0;
-  background:rgba(0,0,0,.42);
-}
-.preview-no-bg {
-  position:absolute; inset:0;
-  background:linear-gradient(135deg,#1b304a 0%,#2d4f72 100%);
-}
-.preview-content {
-  position:relative; z-index:1;
-  padding:28px 24px 24px;
-  display:flex; flex-direction:column;
-  justify-content:space-between; flex:1;
-}
-.preview-title {
-  font-size:15px; font-weight:700; color:#fff;
-  margin-bottom:14px; letter-spacing:-.2px;
-}
-.preview-title strong { color:#7dd3fc; }
-.preview-body {
-  font-size:12.5px; color:rgba(255,255,255,.88);
-  line-height:1.9; white-space:pre-wrap; word-break:break-word;
-  font-family:'Malgun Gothic','맑은 고딕',serif;
-  flex:1; margin-bottom:16px;
-}
-.preview-badge {
-  display:inline-flex; align-items:center; gap:6px;
-  background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.25);
-  backdrop-filter:blur(4px); border-radius:20px;
-  padding:4px 14px; font-size:11px; color:rgba(255,255,255,.8);
-  width:fit-content;
-}
+.preview-body-text { position:relative; z-index:1; }
 
 /* ── 구분선 ── */
 .section-label {
@@ -257,33 +255,31 @@
         <p class="card-title" style="margin-bottom:14px;">실시간 미리보기</p>
         <p class="card-sub" style="margin-bottom:14px;">직원에게 실제 보이는 화면입니다.</p>
 
-        <div class="preview-card" id="previewCard">
-          <!-- 배경: 이미지 or 그라데이션 -->
-          <div class="preview-bg" id="previewBg"
-               th:style="${letter != null and letter.bgImageUrl != null and !#strings.isEmpty(letter.bgImageUrl)}
-                          ? 'background-image:url(' + ${letter.bgImageUrl} + ')'
-                          : 'display:none'"></div>
-          <div class="preview-no-bg" id="previewNoBg"
-               th:style="${letter != null and letter.bgImageUrl != null and !#strings.isEmpty(letter.bgImageUrl)}
-                          ? 'display:none' : ''"></div>
+        <div class="preview-stack" id="previewCard">
+          <!-- hero (그라데이션 고정 — 실제 페이지와 동일) -->
+          <div class="preview-hero">
+            <svg class="preview-hero-icon" viewBox="0 0 24 24" fill="none"
+                 stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <div class="preview-hero-title">
+              <strong>직원명</strong> 님의 평가가 완료되었습니다.
+            </div>
+            <div class="preview-hero-sub">2026년도 직원평가에 응답해주셔서 감사합니다.</div>
+          </div>
 
-          <!-- 텍스트 콘텐츠 -->
-          <div class="preview-content">
-            <div>
-              <div class="preview-title">
-                <strong>직원명</strong> 님의 평가가 완료되었습니다.
-              </div>
-              <div class="preview-body" id="previewBody"
+          <!-- 메시지 카드 — 업로드한 배경은 여기 뒤에 깔린다 -->
+          <div class="preview-letter">
+            <div class="preview-letter-header">메시지</div>
+            <div class="preview-letter-body">
+              <div class="preview-bg" id="previewBg"
+                   th:style="${letter != null and letter.bgImageUrl != null and !#strings.isEmpty(letter.bgImageUrl)}
+                              ? 'background-image:url(' + ${letter.bgImageUrl} + ')'
+                              : 'display:none'"></div>
+              <div class="preview-body-text" id="previewBody"
                    th:text="${letter != null and letter.content != null and !#strings.isEmpty(letter.content)
                               ? letter.content : '(메시지를 작성하면 여기에 표시됩니다)'}">
               </div>
-            </div>
-            <div class="preview-badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"/>
-              </svg>
-              평가 완료
             </div>
           </div>
         </div>
@@ -315,7 +311,6 @@ const ta           = document.getElementById('content');
 const previewBody  = document.getElementById('previewBody');
 const charCount    = document.getElementById('charCount');
 const previewBg    = document.getElementById('previewBg');
-const previewNoBg  = document.getElementById('previewNoBg');
 const bgFileInput  = document.getElementById('bgFileInput');
 const bgDropZone   = document.getElementById('bgDropZone');
 const bgThumb      = document.getElementById('bgThumb');
@@ -338,11 +333,9 @@ function applyBg(url) {
   if (url) {
     previewBg.style.backgroundImage = 'url(' + url + ')';
     previewBg.style.display = '';
-    previewNoBg.style.display = 'none';
   } else {
     previewBg.style.backgroundImage = '';
     previewBg.style.display = 'none';
-    previewNoBg.style.display = '';
   }
 }
 

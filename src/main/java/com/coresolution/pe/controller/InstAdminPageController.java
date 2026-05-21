@@ -2,9 +2,11 @@ package com.coresolution.pe.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -280,11 +282,15 @@ public class InstAdminPageController {
         return "redirect:/pe/inst-admin/userDetail/" + idx + "?year=" + year;
     }
 
-    /** 비밀번호 초기화 */
+    /**
+     * 비밀번호 초기화.
+     * 화면이 어떤 연도(year 파라미터)이든 실제 초기화는 항상 currentEvalYear 테이블에 적용한다.
+     * (이전엔 화면 연도 그대로 초기화하여 로그인은 currentEvalYear 를 봐서 효과 없음 버그가 있었음)
+     */
     @PostMapping("/userDetail/{idx}/resetPwd")
     public String resetPassword(HttpServletRequest request,
-                                @PathVariable int idx,
-                                @RequestParam String year,
+                                @PathVariable("idx") int idx,
+                                @RequestParam("year") String year,
                                 RedirectAttributes ra) {
         String institutionName = resolveInstitutionName(request);
 
@@ -294,8 +300,17 @@ public class InstAdminPageController {
             return "redirect:/pe/inst-admin/userList?year=" + year;
         }
 
-        pe.resetPasswordByIdx(idx, year);
-        ra.addFlashAttribute("success", "비밀번호가 초기화되었습니다. 직원이 이름으로 재로그인 후 비밀번호를 설정해야 합니다.");
+        String activeYear = String.valueOf(currentEvalYear);
+        boolean ok = pe.resetPasswordById(user.getId(), activeYear);
+        if (ok) {
+            ra.addFlashAttribute("success",
+                "현재 연도(" + activeYear + ") 비밀번호가 초기화되었습니다. " +
+                "직원이 이름으로 재로그인 후 비밀번호를 설정해야 합니다.");
+        } else {
+            ra.addFlashAttribute("error",
+                "현재 연도(" + activeYear + ") 테이블에 해당 직원이 없어 초기화하지 못했습니다. " +
+                "직원이 " + activeYear + "년도 평가 대상으로 등록되어 있는지 확인해주세요.");
+        }
         return "redirect:/pe/inst-admin/userDetail/" + idx + "?year=" + year;
     }
 
@@ -509,8 +524,9 @@ public class InstAdminPageController {
         }
 
         try {
-            // 저장 디렉터리 생성
-            Path dir = Paths.get(bgUploadDir);
+            // 저장 디렉터리 생성 — 상대 경로는 절대 경로로 변환 (Tomcat Part.write가
+            // 상대 경로를 work dir에 대해 해석하는 이슈 회피)
+            Path dir = Paths.get(bgUploadDir).toAbsolutePath().normalize();
             Files.createDirectories(dir);
 
             // 고유 파일명 생성
@@ -521,13 +537,15 @@ public class InstAdminPageController {
             }
             String filename = UUID.randomUUID().toString().replace("-", "") + ext;
             Path dest = dir.resolve(filename);
-            file.transferTo(dest.toFile());
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, dest, StandardCopyOption.REPLACE_EXISTING);
+            }
 
             String url = "/uploads/bg/" + filename;
             return ResponseEntity.ok(Map.of("ok", true, "url", url));
 
         } catch (IOException e) {
-            log.error("[end-letter] 배경 이미지 업로드 실패: {}", e.getMessage());
+            log.error("[end-letter] 배경 이미지 업로드 실패", e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("ok", false, "error", "업로드 중 오류가 발생했습니다."));
         }
@@ -540,7 +558,7 @@ public class InstAdminPageController {
         try {
             if (url != null && url.startsWith("/uploads/bg/")) {
                 String filename = url.substring("/uploads/bg/".length());
-                Path file = Paths.get(bgUploadDir).resolve(filename);
+                Path file = Paths.get(bgUploadDir).toAbsolutePath().normalize().resolve(filename);
                 Files.deleteIfExists(file);
             }
             return ResponseEntity.ok(Map.of("ok", true));

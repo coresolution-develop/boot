@@ -61,16 +61,6 @@
     box-shadow: 0 8px 28px rgba(27,48,74,.3);
     background: linear-gradient(135deg, #1b304a 0%, #2d4f72 100%);
   }
-  .hero-card .hero-bg {
-    position: absolute; inset: 0;
-    background-size: cover; background-position: center;
-    z-index: 0;
-  }
-  .hero-card .hero-bg::after {
-    content: ''; position: absolute; inset: 0;
-    background: rgba(0,0,0,.45);
-  }
-  .hero-card > *:not(.hero-bg) { position: relative; z-index: 1; }
   .hero-icon { margin-bottom: 14px; }
   .hero-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
   .hero-title strong { color: #7dd3fc; }
@@ -93,10 +83,19 @@
     font-family: 'yeonsung', 'Malgun Gothic', '맑은 고딕', serif;
     font-size: 14.5px; color: #2b2b2b; line-height: 2;
     white-space: pre-wrap; word-break: break-word;
+    text-align: center;
     position: relative;
+    overflow: hidden;
   }
-  /* watermark */
-  .letter-body::before {
+  /* 기관 관리자가 업로드한 배경 — 메시지 카드 뒤로 깔린다 */
+  .letter-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    opacity: .18;
+    z-index: 0;
+  }
+  /* 업로드 이미지가 없을 때만 기본 워터마크 사용 */
+  .letter-body:not(:has(.letter-bg))::before {
     content: '';
     position: absolute; inset: 0; pointer-events: none;
     background: center / 55% auto no-repeat url('/icon/ev/msg_img.png');
@@ -162,11 +161,6 @@
 
     <!-- hero -->
     <div class="hero-card">
-      <!-- 배경 이미지 (기관 관리자가 설정한 경우) -->
-      <div th:if="${letter != null and letter.bgImageUrl != null and !#strings.isEmpty(letter.bgImageUrl)}"
-           class="hero-bg"
-           th:style="|background-image:url('${letter.bgImageUrl}')|"></div>
-
       <div class="hero-icon">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#7dd3fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
@@ -184,6 +178,10 @@
     <div class="letter-card">
       <div class="letter-header">메시지</div>
       <div class="letter-body">
+        <!-- 기관 관리자가 업로드한 배경 이미지 -->
+        <div th:if="${letter != null and letter.bgImageUrl != null and !#strings.isEmpty(letter.bgImageUrl)}"
+             class="letter-bg"
+             th:style="|background-image:url('${letter.bgImageUrl}')|"></div>
         <div class="letter-body-text">
 
           <!-- DB에 저장된 편지가 있을 경우 -->

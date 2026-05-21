@@ -258,9 +258,14 @@ public class PeService {
         return loginMapper.updateDelYn(idx, year, delYn) > 0;
     }
 
-    /** 비밀번호 초기화 (NULL 설정) */
+    /** 비밀번호 초기화 (NULL 설정) — idx 기준 */
     public boolean resetPasswordByIdx(int idx, String year) {
         return loginMapper.resetPasswordByIdx(idx, year) > 0;
+    }
+
+    /** 비밀번호 초기화 (NULL 설정) — 사번(id) 기준. 연도 간 동일 사번 매칭에 사용. */
+    public boolean resetPasswordById(String id, String year) {
+        return loginMapper.resetPasswordById(id, year) > 0;
     }
 
     /** 역할 전체 교체 (삭제 후 재삽입) */

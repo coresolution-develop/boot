@@ -445,10 +445,16 @@ public interface LoginMapper {
       @Param("year") String year,
       @Param("delYn") String delYn);
 
-  /** 기관 관리자 전용: 비밀번호 초기화 (NULL 설정) */
+  /** 기관 관리자 전용: 비밀번호 초기화 (NULL 설정) — idx 기준 */
   @Update("UPDATE personnel_evaluation.users_${year} SET pwd = NULL WHERE idx = #{idx} AND eval_year = #{year}")
   int resetPasswordByIdx(
       @Param("idx") int idx,
+      @Param("year") String year);
+
+  /** 기관 관리자 전용: 비밀번호 초기화 (NULL 설정) — 사번(id) 기준. 연도 간 동일 사번 매칭에 사용. */
+  @Update("UPDATE personnel_evaluation.users_${year} SET pwd = NULL WHERE id = #{id} AND eval_year = #{year}")
+  int resetPasswordById(
+      @Param("id") String id,
       @Param("year") String year);
 
   /** 기관 관리자 전용: 특정 직원의 역할 전체 삭제 */
