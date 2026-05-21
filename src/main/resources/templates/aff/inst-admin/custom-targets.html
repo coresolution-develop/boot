@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:attr="data-collapsed=${sidebarCollapsed ? 'true' : 'false'}"
+      th:styleappend="|--nav-w:${sidebarCollapsed ? '70px' : '240px'}|">
+<head th:replace="~{Include/aff-inst-admin-layout :: head('커스텀 평가 대상')}"></head>
+<body>
+<div th:replace="~{Include/aff-inst-admin-layout :: header}"></div>
+<div th:replace="~{Include/aff-inst-admin-layout :: nav_section}"></div>
+
+<div class="main-content">
+<div style="max-width:1100px; margin:0 auto; padding:24px 20px;">
+
+<style>
+.card{background:#fff;border:1px solid #e5e9ef;border-radius:12px;padding:20px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.card-title{font-size:16px;font-weight:700;color:#1e293b;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.card-sub{font-size:12px;color:#64748b;margin:0 0 14px;line-height:1.6}
+.form-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;align-items:end}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:12px;font-weight:600;color:#64748b}
+.form-control,.form-select{height:36px;padding:0 10px;border:1px solid #d1d5db;border-radius:7px;font-size:13px;background:#fff;color:#1e293b}
+.form-select:focus,.form-control:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid;text-decoration:none}
+.btn-primary{background:#1b304a;border-color:#1b304a;color:#fff}
+.btn-primary:hover{filter:brightness(1.15)}
+.btn-danger{background:#fff;border-color:#fca5a5;color:#dc2626;height:28px;padding:0 10px;font-size:11px}
+.btn-danger:hover{background:#fef2f2}
+.alert{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-error{background:#fef2f2;border:1px solid #fecaca;color:#dc2626}
+.target-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.target-table thead th{background:#f8fafc;font-weight:600;color:#475569;border-bottom:2px solid #e2e8f0;padding:8px 12px;text-align:left}
+.target-table tbody td{padding:8px 12px;border-bottom:1px solid #f1f5f9;color:#1e293b}
+.target-table tbody tr:hover td{background:#f8faff}
+.chip{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600}
+.chip-type{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}
+.chip-org{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.chip-year{background:#dcfce7;color:#166534;border:1px solid #bbf7d0}
+.empty-state{padding:20px;text-align:center;color:#94a3b8;font-size:12px}
+.hint{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8;line-height:1.6;margin-bottom:14px}
+</style>
+
+<!-- 페이지 헤더 -->
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+  <h1 style="font-size:20px;font-weight:700;color:#1e293b;margin:0">커스텀 평가 대상</h1>
+  <span class="chip chip-org" th:text="${institutionName}">기관명</span>
+  <span class="chip chip-year" th:text="|${year}년도|">2026</span>
+</div>
+
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-error"   th:if="${error}"   th:text="${error}"></div>
+
+<div class="hint">
+  자동 생성 룰로 처리되지 않는 평가(예: 조이 같은 부서 무관 회사, 영양과 cross-부서 등)를
+  관리자가 직접 1:1로 매핑합니다. 평가자·대상은 모두 본 기관 직원이어야 합니다.
+</div>
+
+<!-- ① 평가자 선택 -->
+<div class="card">
+  <p class="card-title">① 평가자 선택</p>
+  <form method="get" th:action="@{/aff/inst-admin/custom-targets}">
+    <input type="hidden" name="year" th:value="${year}">
+    <div class="form-row">
+      <div class="form-group" style="grid-column:span 2">
+        <label>평가자 (부서별 정렬)</label>
+        <select name="userId" class="form-select" onchange="this.form.submit()">
+          <option value="">— 평가자 선택 —</option>
+          <th:block th:each="d : ${departments}">
+            <optgroup th:label="${d.subName}">
+              <option th:each="u : ${d.users}"
+                      th:value="${u.id}"
+                      th:text="|${u.name} (${u.id}) — ${u.position ?: '-'}|"
+                      th:selected="${selectedUserId == u.id}"></option>
+            </optgroup>
+          </th:block>
+        </select>
+        <span th:if="${!hasDepartments}" style="font-size:11px;color:#94a3b8">등록된 직원이 없습니다.</span>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div th:if="${selectedUser == null}" class="card empty-state">
+  평가자를 먼저 선택해주세요.
+</div>
+
+<th:block th:if="${selectedUser != null}">
+
+  <!-- ② 기존 대상 목록 -->
+  <div class="card">
+    <p class="card-title">
+      ② 현재 커스텀 대상 — <span th:text="|${selectedUser.name} (${selectedUser.id})|" style="color:#1d4ed8">평가자</span>
+    </p>
+    <div th:if="${existingTargets == null or existingTargets.isEmpty()}" class="empty-state">
+      등록된 커스텀 대상이 없습니다. 아래 폼에서 추가하세요.
+    </div>
+    <table th:unless="${existingTargets == null or existingTargets.isEmpty()}" class="target-table">
+      <thead>
+        <tr>
+          <th>대상자</th>
+          <th>사번</th>
+          <th>부서</th>
+          <th>평가 유형</th>
+          <th style="text-align:center;width:80px">작업</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="t : ${existingTargets}">
+          <td style="font-weight:600" th:text="${t.name}">대상자</td>
+          <td th:text="${t.id}">사번</td>
+          <td th:text="${t.subName ?: '-'}">부서</td>
+          <td>
+            <span class="chip chip-type" th:text="${t.evalTypeCode ?: '-'}">CODE</span>
+          </td>
+          <td style="text-align:center">
+            <form method="post" th:action="@{/aff/inst-admin/custom-targets/remove}"
+                  onsubmit="return confirm('이 커스텀 대상을 삭제할까요?');" style="display:inline">
+              <input type="hidden" name="year"     th:value="${year}">
+              <input type="hidden" name="userId"   th:value="${selectedUserId}">
+              <input type="hidden" name="targetId" th:value="${t.id}">
+              <button type="submit" class="btn-danger">삭제</button>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ③ 신규 추가 -->
+  <div class="card">
+    <p class="card-title">③ 커스텀 대상 추가</p>
+    <p class="card-sub">평가자가 평가할 대상자와 AFF 도메인 평가 유형을 지정합니다. (dataEv는 typeCode 에서 자동 추론)</p>
+    <form method="post" th:action="@{/aff/inst-admin/custom-targets/add}">
+      <input type="hidden" name="year"   th:value="${year}">
+      <input type="hidden" name="userId" th:value="${selectedUserId}">
+
+      <div class="form-row">
+        <div class="form-group" style="grid-column:span 2">
+          <label>대상자</label>
+          <select name="targetId" class="form-select" required>
+            <option value="">— 대상자 선택 —</option>
+            <th:block th:each="d : ${departments}">
+              <optgroup th:label="${d.subName}">
+                <option th:each="u : ${d.users}"
+                        th:if="${u.id != selectedUserId}"
+                        th:value="${u.id}"
+                        th:text="|${u.name} (${u.id}) — ${u.position ?: '-'}|"></option>
+              </optgroup>
+            </th:block>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>평가 유형 (typeCode)</label>
+          <select name="evalTypeCode" class="form-select" required>
+            <option th:each="e : ${typeCodes}" th:value="${e.key}" th:text="|${e.value} — ${e.key}|"></option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>양식 (dataType)</label>
+          <select name="dataType" class="form-select" required>
+            <option th:each="e : ${dataTypes}" th:value="${e.key}" th:text="|${e.key} — ${e.value}|"></option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>사유 (선택)</label>
+          <input type="text" name="reason" class="form-control" placeholder="예: 영양과 cross-부서">
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <button type="submit" class="btn btn-primary"
+                data-confirm="커스텀 대상을 추가합니까?">대상 추가</button>
+      </div>
+    </form>
+  </div>
+
+</th:block>
+
+</div>
+</div>
+
+<div th:replace="~{Include/aff-inst-admin-layout :: scripts}"></div>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.body.classList.add('page-ready');
+});
+</script>
+</body>
+</html>
