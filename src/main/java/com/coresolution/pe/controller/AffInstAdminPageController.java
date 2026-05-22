@@ -195,9 +195,19 @@ public class AffInstAdminPageController {
     @GetMapping("/api/progress/members/{targetId}/pending")
     @ResponseBody
     public ResponseEntity<List<PendingPairRow>> pending(
+            HttpServletRequest req,
             @PathVariable String targetId,
             @RequestParam int year,
             @RequestParam(defaultValue = "ALL") String ev) {
+
+        // 기관 스코프 가드: targetId가 현재 inst-admin 기관 소속이어야 한다 (PE d9580fa 미러)
+        String orgName = institution(req);
+        UserPE target = affLoginMapper.findById(targetId, year);
+        if (target == null || !orgName.equals(target.getCName())) {
+            log.warn("[AffInstAdmin] pendingPairs 권한 거부 institution={}, targetId={}",
+                    orgName, targetId);
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
 
         List<PendingPairRow> rows = progressService.pendingPairs(year, targetId, ev);
         return ResponseEntity.ok(rows);
