@@ -24,6 +24,8 @@
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
     <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
     <style>
+        /* ev_header(56px) 영역 회피 */
+        .main-content { margin-top: 56px; }
         .card { padding:12px; border:1px solid #e5e7eb; border-radius:12px; margin:10px 0; }
 /* ===== 기본 레이아웃 & 스크롤 ===== */
 .table-wrap {
@@ -137,8 +139,8 @@
 </head>
 
 <body>
-    <div th:replace="~{Include/layout :: header}"></div>
-    <div th:replace="~{Include/layout :: nav_section2}"></div>
+    <div th:replace="~{Include/layout :: ev_header}"></div>
+    <div th:replace="~{Include/layout :: user_nav_new}"></div>
 
     <main class="main-content">
         <!-- 연도 선택기 -->

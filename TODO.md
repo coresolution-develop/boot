@@ -13,9 +13,6 @@
   - AFF: `orgAll`/`agcAll`/`subAll`/`subHeadAll`, `scopeLabels`, `availableYears`, `isPastYear`
 - **선행 작업 완료**: PE/AFF 로그인은 디자인 통일됨, AGC 모델·커스텀 평가·역할 도메인은 정합 완료
 
-### B. PE inst-admin 측 추가 정합 (작업 #32 후속)
-PE `mypage.html`, `mypage-kpi.html`도 admin header fragment 사용 중. `ev_header` 로 통일 필요 (pwdset/report는 이미 완료).
-
 ## 🔐 보안/품질 (참고 — 별도 트랙)
 
 > 코드 분석 중 발견된 항목. 우선순위 별도 판단.
@@ -66,3 +63,4 @@ PE `mypage.html`, `mypage-kpi.html`도 admin header fragment 사용 중. `ev_hea
 
 ### 헤더 정합
 - **PE pwdSet/report 헤더** — `Include/layout :: ev_header` 신규 fragment + `user_nav_new`로 통일. Info와 동일한 `.ev-header` 디자인.
+- **PE mypage/mypage-kpi 헤더** — 동일 패턴(`ev_header` + `user_nav_new`) 적용, `.main-content { margin-top: 56px }` 회피 규칙 추가.

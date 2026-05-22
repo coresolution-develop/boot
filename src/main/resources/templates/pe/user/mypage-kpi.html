@@ -13,6 +13,8 @@
   <link rel="stylesheet" th:href="@{/css/demoinfocss.css}">
     <link rel="stylesheet" th:href="@{/css/leftMenucss2025.css}">
   <style>
+    /* ev_header(56px) 영역 회피 */
+    .main-content { margin-top: 56px; }
     .kpi-cards{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin:10px 0 16px; }
     .kpi-card{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#fff; }
     .kpi-card h4{ margin:0 0 6px; font-size:14px; color:#374151; }
@@ -43,8 +45,8 @@
   </style>
 </head>
 <body>
-  <div th:replace="~{Include/layout :: header}"></div>
-  <div th:replace="~{Include/layout :: nav_section2}"></div>
+  <div th:replace="~{Include/layout :: ev_header}"></div>
+  <div th:replace="~{Include/layout :: user_nav_new}"></div>
 
   <main class="main-content" id="print-area">
     <div class="sticky-pad-cover" aria-hidden="true"></div>
