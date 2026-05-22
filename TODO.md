@@ -4,14 +4,8 @@
 
 ## 🚀 진행 예정
 
-### A. AFF 직원 페이지 디자인 이주 (PE 스타일로)
-`/aff/Info`, `/aff/pwdSet`, `/aff/report` 세 페이지가 작년 2025 디자인(`infocss2025.css`, `leftMenucss2025.css`, `demoinfocss.css` 등)을 그대로 사용 중. PE의 self-contained `.ev-header` + `.evaluator-bar` 디자인으로 이주 필요.
-
-- **이주 방향**: PE 스타일 캐노니컬, AFF 고유 기능(연도 선택기, `isPastYear` 배너) 보존
-- **분류 카테고리 키 불일치** (이주 시 모델 매핑):
-  - PE: `ghAll`/`membersAll`/`medicalAll`/`subHeads`
-  - AFF: `orgAll`/`agcAll`/`subAll`/`subHeadAll`, `scopeLabels`, `availableYears`, `isPastYear`
-- **선행 작업 완료**: PE/AFF 로그인은 디자인 통일됨, AGC 모델·커스텀 평가·역할 도메인은 정합 완료
+### A. AFF 직원 `/aff/report` 본문 PE 디자인 이주 (남은 작업)
+`Info`/`pwdSet`은 PE 스타일 self-contained 디자인으로 이주 완료. `report.html`은 헤더만 `ev_header`/`user_nav_new`로 정합되었고, 본문(2000줄)은 아직 `infocss2025.css`/`demoinfocss.css`/`report.css` 의존. PE `pe/user/report.html` 구조(`evaluator-bar`, `section-card`)로 전면 리라이트는 별도 분기 권장 (블라인드 변환 위험).
 
 ## 🔐 보안/품질 (참고 — 별도 트랙)
 
@@ -19,7 +13,6 @@
 
 - **DB 비밀번호 평문 커밋** — `application-*.properties` 4개 파일에 노출. 환경변수/시크릿 매니저 이관 필요.
 - **슈퍼 어드민 하드코딩** — 사번 `12365478` 단일 계정 의존 (`CustomUserDetailsService` / `CustomAffUserDetailsService`). 인원 변경 시 코드 수정 필요.
-- **AFF inst-admin pendingPairs IDOR** — [AffInstAdminPageController.java:193](src/main/java/com/coresolution/pe/controller/AffInstAdminPageController.java#L193) 기관 스코프 가드 누락. PE 쪽은 적용 완료(커밋 `d9580fa`).
 - **Report Service silent catch** — `AffEvalReportService`/`EvalReportService` 합 33개 catch 중 일부는 의도된 fallback이지만 디버깅 가시성 0인 케이스 혼재. 사례별 판단 후 로깅 추가 검토.
 - **KPI 매퍼의 PE 레거시 역할** — `KpiMapper`/`AffKpiMapper`/`AffKpiInfo2025Mapper`에 `sub_head`/`one_person_sub` 등 소문자 역할 참조 존재. 2025년 데이터 호환 위해 유지 중 — 신규 데이터 표준은 대문자(AFF_*).
 
@@ -61,6 +54,10 @@
 - **사번/비밀번호 토글 라벨** — `#pwdLabel` 텍스트도 함께 전환 (양쪽).
 - **비밀번호 강도·6자 제약 제거** — 직원·관리자 모두 1자리 허용. 강도 UI/JS 제거.
 
+### 보안
+- **AFF inst-admin pendingPairs IDOR 가드** — `/aff/inst-admin/api/progress/members/{targetId}/pending`에 기관 스코프 검증. `affLoginMapper.findById(targetId, year)` 후 `c_name` 미일치 시 403. PE `d9580fa`와 동일 패턴. 회귀 테스트 4건.
+
 ### 헤더 정합
 - **PE pwdSet/report 헤더** — `Include/layout :: ev_header` 신규 fragment + `user_nav_new`로 통일. Info와 동일한 `.ev-header` 디자인.
 - **PE mypage/mypage-kpi 헤더** — 동일 패턴(`ev_header` + `user_nav_new`) 적용, `.main-content { margin-top: 56px }` 회피 규칙 추가.
+- **AFF 직원 페이지 헤더 통일** — `Include/afflayout`에 `ev_header`/`user_nav_new` fragment 신규 (PE 미러, `/aff/Info`·`/aff/logout` 라우팅, "계열사" chip). `aff/user/info.html`·`pwdset.html`은 PE 스타일 self-contained 디자인으로 본문까지 이주(연도 선택기·`isPastYear` 배너 보존, 분류 키 `orgAll`/`agcAll`/`subHeadAll`/`subStaffAll` 매핑). `aff/user/report.html`은 헤더 fragment + `margin-top:56px` 회피만 적용(본문 2000줄 전면 리라이트는 별도 트랙).

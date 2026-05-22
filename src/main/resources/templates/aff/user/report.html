@@ -26,6 +26,8 @@
   <link rel="apple-touch-icon" sizes="180x180" th:href="@{/favicon/favicon.ico}">
   <link rel="icon" sizes="192x192" th:href="@{/favicon/favicon.ico}">
   <style>
+    /* ev_header(56px) 영역 회피 */
+    .main-content { margin-top: 56px; }
     body{
       min-height: 100%;
     }
@@ -1408,8 +1410,8 @@
 </head>
 
 <body>
-  <div th:replace="~{Include/afflayout :: header}"></div>
-  <div th:replace="~{Include/afflayout :: nav_section2}"></div>
+  <div th:replace="~{Include/afflayout :: ev_header}"></div>
+  <div th:replace="~{Include/afflayout :: user_nav_new}"></div>
 
   <main class="main-content">
     <div class="form-area">

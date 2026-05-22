@@ -313,6 +313,256 @@
 		<!-- <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div> -->
 	</div>
 
+	<!-- ── AFF 직원 헤더 (PE ev_header 미러) ───────────────────────── -->
+	<header th:fragment="ev_header" class="ev-header">
+		<style>
+		.ev-header {
+			position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+			height: 56px; background: #1b304a;
+			display: flex; align-items: center; justify-content: space-between;
+			padding: 0 24px; box-shadow: 0 2px 8px rgba(0,0,0,.18);
+		}
+		.ev-logo { color: #fff; font-size: 17px; font-weight: 700;
+				   text-decoration: none; letter-spacing: -.3px; }
+		.ev-logo-chip {
+			display: inline-block; font-size: 11px; font-weight: 700;
+			color: #93c5fd; background: rgba(147,197,253,.12);
+			border: 1px solid rgba(147,197,253,.3); border-radius: 999px;
+			padding: 2px 8px; margin-left: 8px; letter-spacing: .04em;
+			vertical-align: middle;
+		}
+		.ev-header-right { display: flex; align-items: center; gap: 14px; }
+		.ev-user-label { font-size: 13px; color: #94a3b8; }
+		.ev-user-label strong { color: #e2e8f0; font-weight: 600; }
+		.ev-logout { font-size: 12px; color: #94a3b8; text-decoration: none;
+					 border: 1px solid #334e68; padding: 4px 12px; border-radius: 6px;
+					 transition: all .15s; }
+		.ev-logout:hover { background: #243d57; color: #e2e8f0; }
+		.nav-toggle-btn {
+			width: 32px; height: 32px; border: none; background: transparent;
+			color: #e2e8f0; cursor: pointer; display: flex; align-items: center;
+			justify-content: center; padding: 0;
+		}
+		.nav-toggle-btn:hover { background: rgba(255,255,255,.08); border-radius: 6px; }
+		</style>
+		<div style="display:flex;align-items:center;gap:8px">
+			<button class="nav-toggle-btn" type="button" aria-label="메뉴">
+				<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+					<rect y="3" width="20" height="2" rx="1"/>
+					<rect y="9" width="20" height="2" rx="1"/>
+					<rect y="15" width="20" height="2" rx="1"/>
+				</svg>
+			</button>
+			<a href="/aff/Info" class="ev-logo">인사평가<span class="ev-logo-chip">계열사</span></a>
+		</div>
+		<div class="ev-header-right">
+			<span class="ev-user-label" th:if="${userInfo != null}">
+				<span th:text="${userInfo.subName}">부서</span>&nbsp;
+				<strong th:text="${userInfo.name}">이름</strong>
+			</span>
+			<a href="/aff/logout" class="ev-logout">로그아웃</a>
+		</div>
+	</header>
+
+	<!-- ── AFF 직원 사이드바 (PE user_nav_new 미러) ─────────────── -->
+	<th:block th:fragment="user_nav_new">
+	<script>(function(){try{if(localStorage.getItem('unav_c')==='1')document.documentElement.setAttribute('data-unav','c');}catch(e){}})()</script>
+	<style>
+	:root{--unav-w:220px}
+	html[data-unav="c"]{--unav-w:56px}
+	.user-sidebar{
+	  position:fixed;top:56px;left:0;bottom:0;
+	  width:var(--unav-w);background:#1b304a;z-index:150;
+	  display:flex;flex-direction:column;overflow:hidden;
+	  border-right:1px solid rgba(255,255,255,.06);
+	  transition:width .25s ease;
+	}
+	.pg-shell{margin-left:var(--unav-w);transition:margin-left .25s}
+	@media(min-width:901px){
+	  .notice-bar.fixed{left:var(--unav-w)!important;transition:left .25s}
+	}
+	.nav-toggle-btn{
+	  display:none;background:none;border:none;color:#e2e8f0;cursor:pointer;
+	  padding:5px;border-radius:6px;align-items:center;justify-content:center;
+	  flex-shrink:0;transition:background .15s
+	}
+	.nav-toggle-btn:hover{background:rgba(255,255,255,.1)}
+	.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:149}
+	.nav-overlay.open{display:block}
+	@media(max-width:900px){
+	  .user-sidebar{transform:translateX(-220px);width:220px!important}
+	  .user-sidebar.open{transform:translateX(0)}
+	  .pg-shell{margin-left:0!important}
+	  .nav-toggle-btn{display:flex}
+	  .notice-bar.fixed{left:0!important}
+	}
+	.un-sec{padding:12px 0 0}
+	.un-lbl{
+	  font-size:10px;font-weight:700;color:rgba(255,255,255,.3);
+	  letter-spacing:.08em;text-transform:uppercase;
+	  padding:0 16px 5px;white-space:nowrap;overflow:hidden;
+	  transition:opacity .2s,height .2s,padding .2s;
+	}
+	.un-item{
+	  display:flex;align-items:center;gap:10px;
+	  padding:10px 16px;color:rgba(255,255,255,.65);
+	  font-size:13px;font-weight:500;cursor:pointer;
+	  text-decoration:none;transition:all .15s;border:none;
+	  background:none;width:100%;text-align:left;
+	  white-space:nowrap;overflow:hidden;
+	}
+	.un-item:hover{background:rgba(255,255,255,.08);color:#e2e8f0}
+	.un-item.un-active{background:rgba(255,255,255,.12);color:#fff;font-weight:700}
+	.un-item.sub{padding-left:40px;font-size:12px}
+	.un-item span{transition:opacity .15s,width .15s}
+	.un-div{height:1px;background:rgba(255,255,255,.06);margin:8px 0}
+	.un-ico{width:17px;height:17px;flex-shrink:0;opacity:.65;transition:all .2s}
+	.un-item:hover .un-ico,.un-item.un-active .un-ico{opacity:1}
+	html[data-unav="c"] .un-lbl{opacity:0;height:0;padding-top:0;padding-bottom:0;pointer-events:none}
+	html[data-unav="c"] .un-item span{opacity:0;width:0;pointer-events:none}
+	html[data-unav="c"] .un-item{padding:11px 0;justify-content:center;gap:0}
+	html[data-unav="c"] .un-item.sub{padding-left:0}
+	html[data-unav="c"] .un-div{margin:4px 8px}
+	html[data-unav="c"] .un-ico{width:20px;height:20px;opacity:.8}
+	html[data-unav="c"] .un-item{position:relative}
+	html[data-unav="c"] .un-item:hover::after{
+	  content:attr(title);
+	  position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);
+	  background:#0f2236;color:#e2e8f0;font-size:12px;font-weight:600;
+	  padding:5px 10px;border-radius:6px;white-space:nowrap;
+	  pointer-events:none;z-index:300;
+	  box-shadow:0 4px 12px rgba(0,0,0,.3);
+	}
+	.un-fold{
+	  margin-top:auto;width:100%;
+	  display:flex;align-items:center;justify-content:center;gap:8px;
+	  padding:12px 16px;border:none;border-top:1px solid rgba(255,255,255,.07);
+	  background:none;color:rgba(255,255,255,.3);font-size:11px;
+	  cursor:pointer;transition:all .15s;white-space:nowrap;overflow:hidden;
+	}
+	.un-fold:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.6)}
+	.un-fold-ico{flex-shrink:0;transition:transform .25s}
+	.un-fold-txt{transition:opacity .15s,width .15s}
+	html[data-unav="c"] .un-fold-ico{transform:rotate(180deg)}
+	html[data-unav="c"] .un-fold-txt{opacity:0;width:0;pointer-events:none}
+	@media(max-width:900px){.un-fold{display:none}}
+
+	/* ── 연도 선택기 ── */
+	.un-year{
+	  padding:12px 16px 4px;display:flex;flex-direction:column;gap:4px;
+	  border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px;
+	  transition:opacity .2s,height .2s,padding .2s;
+	}
+	.un-year-lbl{
+	  font-size:10px;font-weight:700;color:rgba(255,255,255,.3);
+	  letter-spacing:.08em;text-transform:uppercase;
+	}
+	.un-year select{
+	  background:rgba(255,255,255,.08);color:#e2e8f0;
+	  border:1px solid rgba(255,255,255,.12);border-radius:6px;
+	  padding:6px 8px;font-size:13px;font-weight:600;cursor:pointer;
+	  width:100%;
+	}
+	.un-year select:focus{outline:none;border-color:rgba(147,197,253,.5)}
+	html[data-unav="c"] .un-year{padding:8px 4px;opacity:0;height:0;overflow:hidden;pointer-events:none;border:none;margin:0}
+	</style>
+
+	<div class="nav-overlay" id="un-overlay"></div>
+	<nav class="user-sidebar" id="user-sidebar">
+	  <!-- 연도 선택기 (availableYears 있을 때만) -->
+	  <div class="un-year"
+	       th:if="${availableYears != null and !#lists.isEmpty(availableYears)}">
+	    <span class="un-year-lbl">조회 연도</span>
+	    <select id="un-year-select" aria-label="조회 연도">
+	      <option th:each="y : ${availableYears}"
+	              th:value="${y}"
+	              th:text="${y + '년'}"
+	              th:selected="${y.toString() == year?.toString()}"></option>
+	    </select>
+	  </div>
+	  <div class="un-sec">
+	    <div class="un-lbl">평가</div>
+	    <a class="un-item" href="/aff/Info" id="un-eval" title="직원평가">
+	      <img class="un-ico" src="/icon/ev/icon-staff-eval-off.svg" alt="">
+	      <span>직원평가</span>
+	    </a>
+	  </div>
+	  <div class="un-div"></div>
+	  <div class="un-sec">
+	    <div class="un-lbl">마이페이지</div>
+	    <a class="un-item sub" href="/aff/pwdSet" id="un-pwd" title="비밀번호 변경">
+	      <img class="un-ico" src="/icon/ev/icon-password-change-off.svg" alt="">
+	      <span>비밀번호 변경</span>
+	    </a>
+	    <a class="un-item sub" href="/aff/report" id="un-report" title="평가정보">
+	      <img class="un-ico" src="/icon/ev/icon-evaluation-info-off.svg" alt="">
+	      <span>평가정보</span>
+	    </a>
+	  </div>
+	  <button class="un-fold" id="un-fold" type="button" aria-label="사이드바 접기/펼치기">
+	    <svg class="un-fold-ico" width="14" height="14" viewBox="0 0 24 24"
+	         fill="none" stroke="currentColor" stroke-width="2.5"
+	         stroke-linecap="round" stroke-linejoin="round">
+	      <polyline points="15 18 9 12 15 6"/>
+	    </svg>
+	    <span class="un-fold-txt">접기</span>
+	  </button>
+	</nav>
+
+	<script>
+	(function(){
+	  var KEY='unav_c';
+	  var html=document.documentElement;
+	  var sb=document.getElementById('user-sidebar');
+	  var ov=document.getElementById('un-overlay');
+
+	  var p=location.pathname;
+	  if(p.startsWith('/aff/Info')||p.startsWith('/aff/user/form')||p.startsWith('/aff/FormEnd'))
+	    document.getElementById('un-eval')?.classList.add('un-active');
+	  else if(p.toLowerCase().startsWith('/aff/pwdset'))
+	    document.getElementById('un-pwd')?.classList.add('un-active');
+	  else if(p.toLowerCase().startsWith('/aff/report'))
+	    document.getElementById('un-report')?.classList.add('un-active');
+
+	  document.querySelectorAll('.nav-toggle-btn').forEach(function(btn){
+	    btn.addEventListener('click',function(){
+	      var o=sb.classList.toggle('open');
+	      ov.classList.toggle('open',o);
+	      document.body.style.overflow=o?'hidden':'';
+	    });
+	  });
+	  ov.addEventListener('click',function(){
+	    sb.classList.remove('open');ov.classList.remove('open');
+	    document.body.style.overflow='';
+	  });
+
+	  var foldBtn=document.getElementById('un-fold');
+	  if(foldBtn){
+	    foldBtn.addEventListener('click',function(){
+	      var collapsed=html.getAttribute('data-unav')==='c';
+	      if(collapsed){
+	        html.removeAttribute('data-unav');
+	        try{localStorage.setItem(KEY,'0');}catch(e){}
+	      } else {
+	        html.setAttribute('data-unav','c');
+	        try{localStorage.setItem(KEY,'1');}catch(e){}
+	      }
+	    });
+	  }
+
+	  /* 연도 변경 → 현재 경로에 ?year= 갱신 */
+	  var yearSel=document.getElementById('un-year-select');
+	  if(yearSel){
+	    yearSel.addEventListener('change',function(){
+	      var u=new URL(window.location.href);
+	      u.searchParams.set('year',this.value);
+	      window.location.href=u.toString();
+	    });
+	  }
+	})();
+	</script>
+	</th:block>
+
 	<!-- 페이지 본문은 .main-content 사용 -->
 
 </body>

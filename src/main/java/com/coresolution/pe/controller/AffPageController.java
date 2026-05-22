@@ -516,6 +516,10 @@ public class AffPageController {
         model.addAttribute("idx", userInfo.getIdx()); // 굳이 안 써도 되지만 유지해도 무방
         model.addAttribute("name", userInfo.getName());
 
+        // 사이드바 연도 선택기 노출용
+        model.addAttribute("year", currentEvalYear);
+        model.addAttribute("availableYears", yearService.getYears());
+
         return "aff/user/pwdset";
     }
 
@@ -1045,6 +1049,8 @@ public class AffPageController {
         // }
 
         model.addAttribute("year", y);
+        // 사이드바 연도 선택기 노출용
+        model.addAttribute("availableYears", yearService.getYears());
         // 내 정보
         UserPE me = pe.findByUserIdWithNames(targetId, y);
         model.addAttribute("empId", me.getId());
