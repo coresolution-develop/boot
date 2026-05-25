@@ -43,3 +43,9 @@ out/
 ### Uploaded files (runtime artifacts) ###
 src/main/resources/static/uploads/bg/*
 !src/main/resources/static/uploads/bg/.gitkeep
+
+### Local secrets ###
+.env
+.env.local
+.env.*.local
+!.env.example

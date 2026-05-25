@@ -11,7 +11,7 @@
 
 > 코드 분석 중 발견된 항목. 우선순위 별도 판단.
 
-- **DB 비밀번호 평문 커밋** — `application-*.properties` 4개 파일에 노출. 환경변수/시크릿 매니저 이관 필요.
+- **🔴 유출된 DB 비밀번호 로테이션 필요** — `${DB_USERNAME}`/`${DB_PASSWORD}` 환경변수 이관은 완료(아래 ✅)했으나 과거 커밋(`csdev1234`, `Core0220!_!@@`)이 git history에 그대로 남아 있음. dev/prod DB 양쪽 비밀번호를 즉시 교체하고 새 값을 환경변수로 주입해야 실질적 leak 차단됨. (history rewrite는 강제 푸시 영향 커서 별도 결정 필요.)
 - **슈퍼 어드민 하드코딩** — 사번 `12365478` 단일 계정 의존 (`CustomUserDetailsService` / `CustomAffUserDetailsService`). 인원 변경 시 코드 수정 필요.
 - **Report Service silent catch** — `AffEvalReportService`/`EvalReportService` 합 33개 catch 중 일부는 의도된 fallback이지만 디버깅 가시성 0인 케이스 혼재. 사례별 판단 후 로깅 추가 검토.
 - **KPI 매퍼의 PE 레거시 역할** — `KpiMapper`/`AffKpiMapper`/`AffKpiInfo2025Mapper`에 `sub_head`/`one_person_sub` 등 소문자 역할 참조 존재. 2025년 데이터 호환 위해 유지 중 — 신규 데이터 표준은 대문자(AFF_*).
@@ -19,6 +19,7 @@
 ## ✅ 최근 완료 (이번 세션)
 
 ### 인프라
+- **DB 자격증명 환경변수 이관** — `application(/-local/-dev/-prod).properties` 4개 파일의 평문 username/password 제거 → `${DB_USERNAME}`/`${DB_PASSWORD}` 플레이스홀더(기본값 없음 → 미설정 시 부팅 실패로 누락 즉시 노출). `.env.example` 추가, `.gitignore`에 `.env*` 룰, README에 IDE/PowerShell/setx 사용법 정리. ⚠️ 과거 커밋의 비밀번호는 git history에 남아 있으므로 **DB 비밀번호 로테이션 필수**(보안/품질 섹션 참고).
 - **Flyway 도입** — `flyway-core`/`flyway-mysql` 의존성, `db/migration/` 경로, baseline-version=3, repair-on-startup. SQL은 V1~V6 정리.
 
 ### 데이터 모델
