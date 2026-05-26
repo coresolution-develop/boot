@@ -604,7 +604,9 @@
 
 	/* ===== 년도 선택/메뉴 링크 ===== */
 	function initPage() {
-		const isUserMode = !!document.getElementById('user-nav');
+		// user_nav_new(id=user-sidebar)와 구버전 nav_section2(id=user-nav) 모두 user 모드로 처리.
+		// admin 경로의 syncYearToForms는 localStorage 연도로 hidden을 덮어써 URL year 파라미터를 무시함.
+		const isUserMode = !!(document.getElementById('user-nav') || document.getElementById('user-sidebar'));
 
 		if (isUserMode) {
 			updateMenuLinksUser();
