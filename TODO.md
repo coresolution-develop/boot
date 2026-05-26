@@ -4,8 +4,7 @@
 
 ## 🚀 진행 예정
 
-### A. AFF 직원 `/aff/report` 본문 PE 디자인 이주 (남은 작업)
-`Info`/`pwdSet`은 PE 스타일 self-contained 디자인으로 이주 완료. `report.html`은 헤더만 `ev_header`/`user_nav_new`로 정합되었고, 본문(2000줄)은 아직 `infocss2025.css`/`demoinfocss.css`/`report.css` 의존. PE `pe/user/report.html` 구조(`evaluator-bar`, `section-card`)로 전면 리라이트는 별도 분기 권장 (블라인드 변환 위험).
+(현재 없음)
 
 ## 🔐 보안/품질 (참고 — 별도 트랙)
 
@@ -58,7 +57,12 @@
 ### 보안
 - **AFF inst-admin pendingPairs IDOR 가드** — `/aff/inst-admin/api/progress/members/{targetId}/pending`에 기관 스코프 검증. `affLoginMapper.findById(targetId, year)` 후 `c_name` 미일치 시 403. PE `d9580fa`와 동일 패턴. 회귀 테스트 4건.
 
+### AFF report 이주 (PE 정합)
+- **본문 리라이트** — `aff/user/report.html` 1719 → 921줄(약 55% 축소). PE `pe/user/report.html` 구조 기반. `Include/afflayout`·`/aff/report` URL·`/js/aff/user/report.js`로 정합. PE 전용 섹션 제거(경혁팀 `isKyTeam`/레이더 `renderRadar`/`row` KPI 표). AFF 컨트롤러 모델 키와 1:1 매핑. AFF 전용 보존: `.area-summaries.no-print`, `print-ai-body` flex, `og:url=/aff/login`. empName 마스킹 없음(AFF 정책).
+- **연도 셀렉트 통합** — 본문 `<select id="yearSelect">` → `<input type="hidden">`. 네비 `#un-year-select`가 단일 컨트롤. 폼 submit 시 현재 year 보존.
+- **`initPage()` user 모드 감지 버그 수정** — `user_nav_new`(`#user-sidebar`)가 `#user-nav` 부재로 admin 경로로 흘러 `syncYearToForms`가 모든 `input[name="year"]`을 localStorage 연도(2026)로 덮어쓰던 회귀. `isUserMode`를 `#user-nav || #user-sidebar`로 보강. `layout.html`·`afflayout.html` 양쪽 적용. ⚠️ 브라우저 검증 미완료.
+
 ### 헤더 정합
 - **PE pwdSet/report 헤더** — `Include/layout :: ev_header` 신규 fragment + `user_nav_new`로 통일. Info와 동일한 `.ev-header` 디자인.
 - **PE mypage/mypage-kpi 헤더** — 동일 패턴(`ev_header` + `user_nav_new`) 적용, `.main-content { margin-top: 56px }` 회피 규칙 추가.
-- **AFF 직원 페이지 헤더 통일** — `Include/afflayout`에 `ev_header`/`user_nav_new` fragment 신규 (PE 미러, `/aff/Info`·`/aff/logout` 라우팅, "계열사" chip). `aff/user/info.html`·`pwdset.html`은 PE 스타일 self-contained 디자인으로 본문까지 이주(연도 선택기·`isPastYear` 배너 보존, 분류 키 `orgAll`/`agcAll`/`subHeadAll`/`subStaffAll` 매핑). `aff/user/report.html`은 헤더 fragment + `margin-top:56px` 회피만 적용(본문 2000줄 전면 리라이트는 별도 트랙).
+- **AFF 직원 페이지 헤더 통일** — `Include/afflayout`에 `ev_header`/`user_nav_new` fragment 신규 (PE 미러, `/aff/Info`·`/aff/logout` 라우팅, "계열사" chip). `aff/user/info.html`·`pwdset.html`은 PE 스타일 self-contained 디자인으로 본문까지 이주(연도 선택기·`isPastYear` 배너 보존, 분류 키 `orgAll`/`agcAll`/`subHeadAll`/`subStaffAll` 매핑). `report.html`은 별도 트랙으로 본문 PE 정합 완료(위 "AFF report 이주" 참조).
