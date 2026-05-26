@@ -10,6 +10,30 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 def MAIN_CLASS = 'com.coresolution.pe.PeApplication'
 
+// ── .env.local 자동 로드 ──
+// 로컬 개발 편의용. 파일 없으면 무시(운영/CI 환경 안전).
+// 셸/IDE에 이미 설정된 환경변수가 우선 — .env.local 값은 누락 키만 채움.
+def loadDotEnv = { String filename ->
+    def envFile = file(filename)
+    def map = [:]
+    if (envFile.exists()) {
+        envFile.eachLine { line ->
+            line = line.trim()
+            if (line.isEmpty() || line.startsWith('#')) return
+            def idx = line.indexOf('=')
+            if (idx <= 0) return
+            def key = line.substring(0, idx).trim()
+            def value = line.substring(idx + 1).trim()
+            if (value.startsWith('"') && value.endsWith('"')) {
+                value = value.substring(1, value.length() - 1)
+            }
+            map[key] = value
+        }
+    }
+    return map
+}
+def dotEnv = loadDotEnv('.env.local')
+
 // toolchain → JavaVersion 매핑
 def TARGET_JAVA = providers.provider {
     JavaVersion.toVersion(java.toolchain.languageVersion.get().asInt())
@@ -145,6 +169,15 @@ tasks.register('bootWarProd', BootWar) {
     }
 }
 
+// .env.local 값을 환경변수로 주입 (셸에 이미 설정된 값이 우선)
+def applyDotEnv = { BootRun task ->
+    dotEnv.each { k, v ->
+        if (!System.getenv(k)) {
+            task.environment(k, v)
+        }
+    }
+}
+
 tasks.register('bootRunDev', BootRun) {
     group = "application"
     description = "Run DEV profile"
@@ -153,6 +186,7 @@ tasks.register('bootRunDev', BootRun) {
     systemProperty "file.encoding", "UTF-8"
 
     systemProperty "spring.profiles.active", "dev"
+    applyDotEnv(it)
 }
 
 tasks.named('bootRun', BootRun) {
@@ -163,6 +197,7 @@ tasks.named('bootRun', BootRun) {
         activeProfile = System.getenv("SPRING_PROFILES_ACTIVE")
     }
     systemProperty "spring.profiles.active", activeProfile ?: "local"
+    applyDotEnv(it)
 }
 
 tasks.register('bootRunProd', BootRun) {
@@ -173,6 +208,7 @@ tasks.register('bootRunProd', BootRun) {
     systemProperty "file.encoding", "UTF-8"
 
     systemProperty "spring.profiles.active", "prod"
+    applyDotEnv(it)
 }
 
 tasks.withType(JavaCompile).configureEach {
