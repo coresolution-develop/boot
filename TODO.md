@@ -4,7 +4,7 @@
 
 ## 🚀 진행 예정
 
-(현재 없음)
+- **AI 리포트 저데이터 요약 보강 검증** — 평가 데이터(essay/응답자)가 적을 때 GPT 요약이 너무 간결해지던 문제로, 프롬프트에 "데이터 부족 시 작성 정책"을 추가함(아래 ✅). ⚠️ **운영 데이터 없어 실측 미완료.** 작년(2025) 데이터로 검증 필요: ① 짧은 summary 후보 식별 → ② 대상 1명 summary 백업 → ③ `input_hash` 변조로 캐시 무효화 → ④ [코어 AI 요약] 재생성 → ⑤ old/new 길이 비교(목표 ≥1.5배, "표본이 적어..." 문구 확인). 캐시 키: `(eval_year, target_id, data_ev, kind)`, kind ∈ {ESSAY, SCORE, SCORE_KY}, TOTAL은 data_ev='TOTAL'.
 
 ## 🔐 보안/품질 (참고 — 별도 트랙)
 
@@ -16,6 +16,9 @@
 - **KPI 매퍼의 PE 레거시 역할** — `KpiMapper`/`AffKpiMapper`/`AffKpiInfo2025Mapper`에 `sub_head`/`one_person_sub` 등 소문자 역할 참조 존재. 2025년 데이터 호환 위해 유지 중 — 신규 데이터 표준은 대문자(AFF_*).
 
 ## ✅ 최근 완료 (이번 세션)
+
+### AI 리포트
+- **저데이터 요약 보강** — 평가 데이터가 적을 때 GPT(`gpt-4o-mini`) 요약이 한두 문장으로 압축되던 문제. 프롬프트만 강화(비용/모델/호출 횟수 변화 없음). 4개 프롬프트(EssayPrompt/ScorePrompt/TotalPrompt/KyTotalPrompt) system에 "데이터 부족 시 작성 정책" 블록 추가 — 점수·관계 사실 정리 → 표본 한계 명시 → 일반 행동 원칙·관찰 포인트 → 다음 구간 검증 포인트의 구성 요소로 분량 충족, strengths/improvements 정확히 3개 강제, 회피 문장("데이터가 부족합니다"만으로 채우기) 금지. `EvalReportService`(PE)·`AffEvalReportService`(AFF)·`OpenAiCommentSummarizer`(AFF essay 공유 경로) 반영. EssayPrompt user의 "3~5문장" → "5~7문장" baseSchema 정합. 컴파일 통과. ⚠️ 실측 미완료(위 🚀 참조).
 
 ### 인프라
 - **DB 자격증명 환경변수 이관** — `application(/-local/-dev/-prod).properties` 4개 파일의 평문 username/password 제거 → `${DB_USERNAME}`/`${DB_PASSWORD}` 플레이스홀더(기본값 없음 → 미설정 시 부팅 실패로 누락 즉시 노출). `.env.example` 추가, `.gitignore`에 `.env*` 룰, README에 IDE/PowerShell/setx 사용법 정리. ⚠️ 과거 커밋의 비밀번호는 git history에 남아 있으므로 **DB 비밀번호 로테이션 필수**(보안/품질 섹션 참고).
