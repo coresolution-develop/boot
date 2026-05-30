@@ -2076,10 +2076,12 @@ public class PageController {
     public Map<String, Object> getGate(@RequestParam int year) {
         var g = releaseGateService.getOrNull("user_result", year);
         boolean openNow = releaseGateService.isOpenNow("user_result", year);
-        return Map.of(
-                "exists", g != null,
-                "openNow", openNow,
-                "data", g);
+        // Map.of는 null 값을 허용하지 않으므로(미설정 연도면 g=null) HashMap 사용
+        Map<String, Object> res = new HashMap<>();
+        res.put("exists", g != null);
+        res.put("openNow", openNow);
+        res.put("data", g);
+        return res;
     }
 
     // 저장/갱신

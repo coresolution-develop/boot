@@ -8,7 +8,7 @@
     <!-- SNS 공유시 썸네일 표시(보통 헤드에 들어감) -->
     <meta property="og:title" content="코어솔루션 인사평가시스템">	<!-- 공유시 사이트 이름 -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://hr.sosyge.net/pe/login">	<!-- 공유시 입력될 URL -->
+    <meta property="og:url" content="https://hr.sosyge.net/aff/login">	<!-- 공유시 입력될 URL -->
     <meta property="og:image" content="/resources/Sharing/img/core_icon_big.png">	<!-- 공유시 노출 이미지 (최적 사이즈 : 800 x 400) -->
     <meta property="og:description" content="코어솔루션 인사평가시스템">	<!-- 공유시 보여질 사이트 간략 소개 -->
     <title>관리자페이지</title>
@@ -249,8 +249,8 @@ tbody td::before {
     </style>
 </head>
 <body>
-    <div th:replace="~{Include/layout :: header}"></div>
-    <div th:replace="~{Include/layout :: nav_section}"></div>
+    <div th:replace="~{Include/afflayout :: header}"></div>
+    <div th:replace="~{Include/afflayout :: nav_section}"></div>
     <div class="main-content">
         <div class="main-inner">
             <section class="card">
@@ -302,7 +302,7 @@ tbody td::before {
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-latest.min.js"></script>
-	<div th:replace="~{Include/layout :: scripts}"></div>
+	<div th:replace="~{Include/afflayout :: scripts}"></div>
     <script th:src="@{/js/admin/admin.js}"></script>
 <script>
 (function(){
@@ -333,7 +333,7 @@ tbody td::before {
 
   async function fetchGate(){
     const y = yearSel.value;
-    const res = await fetch(`/admin/release/api/gate?year=${y}`, {credentials:'same-origin'});
+    const res = await fetch(`/aff/admin/release/api/gate?year=${y}`, {credentials:'same-origin'});
     if(!res.ok){ alert('설정 조회 실패'); return; }
     const js = await res.json();
     if(!js.exists){
@@ -361,7 +361,7 @@ tbody td::before {
     if(ca) formData.append('closeAt', ca);
     formData.append('enabled', enabled.checked ? 'true' : 'false');
 
-    const res = await fetch('/admin/release/api/gate', {
+    const res = await fetch('/aff/admin/release/api/gate', {
       method:'POST',
       headers: {'Content-Type':'application/x-www-form-urlencoded'},
       body: formData.toString(),
@@ -394,7 +394,7 @@ tbody td::before {
     if(closeAt.value) fd.append('closeAt', closeAt.value);
     fd.append('enabled', open ? 'true' : 'false');
 
-    const res = await fetch('/admin/release/api/gate', {
+    const res = await fetch('/aff/admin/release/api/gate', {
       method:'POST',
       headers: {'Content-Type':'application/x-www-form-urlencoded'},
       body: fd.toString(),

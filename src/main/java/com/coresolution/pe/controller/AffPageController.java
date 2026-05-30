@@ -30,6 +30,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.bind.annotation.AuthenticationPrincipal;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -1017,36 +1019,25 @@ public class AffPageController {
                 : java.util.Optional.ofNullable(releaseGateService.latestOpenYear("user_result"))
                         .orElse(java.time.Year.now().getValue());
 
-        // 2) 공개일 체크
-        // boolean openNow = releaseGateService.isOpenNow("user_result", y);
+        // 2) 공개일 체크 (PE /release와 동일한 ReleaseGate 메커니즘)
+        boolean openNow = releaseGateService.isOpenNow("user_result", y);
 
-        // 2-1) 사용자가 year를 명시했는데 미공개면 → 무조건 not-open 으로
-        // if (requested != null && !openNow) {
-        // // ev 보존(있으면), 이전 페이지로 돌아가기 위한 backUrl도 옵션으로 붙일 수 있음
-        // String qs = new StringBuilder("?year=").append(requested)
-        // .append(ev != null && !ev.isBlank()
-        // ? "&ev=" + java.net.URLEncoder.encode(ev,
-        // java.nio.charset.StandardCharsets.UTF_8)
-        // : "")
-        // .toString();
-        // return "redirect:/aff/not-open" + qs;
-        // }
-        // 2-2) 사용자가 year 파라미터 없이 들어왔고,
-        // 서버가 정한 기본 y가 미공개면 → 공개된 최신 연도로 '소프트' 안내(있으면),
-        // 없으면 not-open
-        // if (requested == null && !openNow) {
-        // Integer fb = releaseGateService.latestOpenYear("user_result");
-        // if (fb != null) {
-        // String qs = new StringBuilder("?year=").append(fb)
-        // .append(ev != null && !ev.isBlank()
-        // ? "&ev=" + java.net.URLEncoder.encode(ev,
-        // java.nio.charset.StandardCharsets.UTF_8)
-        // : "")
-        // .toString();
-        // return "redirect:/aff/report" + qs;
-        // }
-        // return "redirect:/aff/not-open?year=" + y;
-        // }
+        // 2-1) 사용자가 year를 명시했는데 미공개면 → not-open 으로 (ev 보존)
+        if (requested != null && !openNow) {
+            String qs = "?year=" + requested
+                    + (ev != null && !ev.isBlank()
+                            ? "&ev=" + java.net.URLEncoder.encode(ev, java.nio.charset.StandardCharsets.UTF_8)
+                            : "");
+            return "redirect:/aff/not-open" + qs;
+        }
+        // 2-2) year 파라미터 없이 들어왔고 기본 연도가 미공개면 → 공개된 최신 연도로 소프트 안내, 없으면 not-open
+        if (requested == null && !openNow) {
+            Integer fb = releaseGateService.latestOpenYear("user_result");
+            if (fb != null) {
+                return "redirect:/aff/report?year=" + fb;
+            }
+            return "redirect:/aff/not-open?year=" + y;
+        }
 
         model.addAttribute("year", y);
         // 사이드바 연도 선택기 노출용
@@ -1249,6 +1240,46 @@ public class AffPageController {
         model.addAttribute("currentYear", currentEvalYear);
 
         return "aff/admin/kpi/summary2";
+    }
+
+    // ─────────────────────────────────────────────────────
+    // 결과 공개 설정 (PE /release 미러, ReleaseGate 기반)
+    // ─────────────────────────────────────────────────────
+    @RequestMapping("release")
+    @PreAuthorize("hasRole('ADMIN')")
+    public String release(Model model,
+            @RequestParam(value = "year", required = false, defaultValue = "${app.current.eval-year}") String year) {
+        model.addAttribute("year", year);
+        model.addAttribute("currentYear", currentEvalYear);
+        return "aff/admin/release";
+    }
+
+    // 현재 설정 조회
+    @GetMapping("/admin/release/api/gate")
+    @ResponseBody
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, Object> getGate(@RequestParam int year) {
+        var g = releaseGateService.getOrNull("user_result", year);
+        boolean openNow = releaseGateService.isOpenNow("user_result", year);
+        // Map.of는 null 값을 허용하지 않으므로(미설정 연도면 g=null) HashMap 사용
+        Map<String, Object> res = new HashMap<>();
+        res.put("exists", g != null);
+        res.put("openNow", openNow);
+        res.put("data", g);
+        return res;
+    }
+
+    // 저장/갱신
+    @PostMapping("/admin/release/api/gate")
+    @ResponseBody
+    @PreAuthorize("hasRole('ADMIN')")
+    public Map<String, Object> saveGate(
+            @RequestParam int year,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime openAt,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm") LocalDateTime closeAt,
+            @RequestParam(defaultValue = "true") boolean enabled) {
+        releaseGateService.saveGate("user_result", year, openAt, closeAt, enabled);
+        return Map.of("ok", true);
     }
 
     @GetMapping("/not-open")
