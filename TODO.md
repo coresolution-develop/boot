@@ -4,6 +4,7 @@
 
 ## 🚀 진행 예정
 
+- **🔴 배포 후 결과 공개 연도 설정 필수** — AFF report 게이트를 재활성화(아래 ✅)하면서 PE와 동일하게 **"설정 안 된 연도 = 닫힘"** 동작이 됨. 배포 직후 관리자가 `/aff/release`(및 필요 시 `/pe/release`)에서 **현재 연도(2026)를 `지금 공개하기`** 로 열기 전까지 직원이 결과를 못 봄. 과거 공개 연도(2025 등)도 노출 유지하려면 각 연도 개별 설정 필요.
 - **AI 리포트 저데이터 요약 보강 검증** — 평가 데이터(essay/응답자)가 적을 때 GPT 요약이 너무 간결해지던 문제로, 프롬프트에 "데이터 부족 시 작성 정책"을 추가함(아래 ✅). ⚠️ **운영 데이터 없어 실측 미완료.** 작년(2025) 데이터로 검증 필요: ① 짧은 summary 후보 식별 → ② 대상 1명 summary 백업 → ③ `input_hash` 변조로 캐시 무효화 → ④ [코어 AI 요약] 재생성 → ⑤ old/new 길이 비교(목표 ≥1.5배, "표본이 적어..." 문구 확인). 캐시 키: `(eval_year, target_id, data_ev, kind)`, kind ∈ {ESSAY, SCORE, SCORE_KY}, TOTAL은 data_ev='TOTAL'.
 
 ## 🔐 보안/품질 (참고 — 별도 트랙)
@@ -16,6 +17,11 @@
 - **KPI 매퍼의 PE 레거시 역할** — `KpiMapper`/`AffKpiMapper`/`AffKpiInfo2025Mapper`에 `sub_head`/`one_person_sub` 등 소문자 역할 참조 존재. 2025년 데이터 호환 위해 유지 중 — 신규 데이터 표준은 대문자(AFF_*).
 
 ## ✅ 최근 완료 (이번 세션)
+
+### 평가결과 공개(릴리즈 게이트)
+- **PE 결과 공개 원클릭 토글** — `/pe/release`("결과 공개 설정")에 `지금 공개하기`/`비공개로 전환` 버튼 추가. 기존 `POST /admin/release/api/gate` 재사용(백엔드 변경 없음) — 공개는 `open_at`을 현재 시각으로 당기고 `enabled=true`, 비공개는 `enabled=false`. 네비 라벨 "평가결과 차단" → "평가결과 공개 설정"로 정리(링크는 원래 존재).
+- **`getGate` NPE 수정** — 미설정 연도(예: 2026) 조회 시 `Map.of(..., "data", null)`이 NPE→500 나던 버그. `HashMap`으로 교체해 `exists:false` 정상 반환. PE/AFF 양쪽 적용. (이 버그로 신규 연도를 설정창에서 못 열던 문제 해소.)
+- **AFF 결과 공개 설정 신설(PE 미러, ReleaseGate)** — AFF는 report 게이트가 통째로 주석 처리돼 있었고(결과 미게이팅), `/aff/release`는 컨트롤러·템플릿 없는 죽은 nav 링크였음. ① `/aff/release` 페이지(`aff/admin/release.html`, PE 픽셀 미러 + 원클릭 토글) + `GET/POST /aff/admin/release/api/gate`(`@PreAuthorize ADMIN`, `AffReleaseGateService`) 신설, ② AFF `resultPage` 게이트 enforcement 재활성화(미공개 시 `/aff/not-open` 리다이렉트, PE 동일 로직), ③ 죽은 nav 링크 라벨 정리. `./gradlew compileJava` 통과. ⚠️ 게이트 재활성화로 연도별 공개 설정 필요(위 🔴 진행 예정 참조). 런타임/브라우저 미검증. cf) `/aff/admin/evalrelease`(ReleaseWindow)는 결과 공개가 아니라 **평가 제출 창구** 제어 — 별개 기능.
 
 ### AI 리포트
 - **저데이터 요약 보강** — 평가 데이터가 적을 때 GPT(`gpt-4o-mini`) 요약이 한두 문장으로 압축되던 문제. 프롬프트만 강화(비용/모델/호출 횟수 변화 없음). 4개 프롬프트(EssayPrompt/ScorePrompt/TotalPrompt/KyTotalPrompt) system에 "데이터 부족 시 작성 정책" 블록 추가 — 점수·관계 사실 정리 → 표본 한계 명시 → 일반 행동 원칙·관찰 포인트 → 다음 구간 검증 포인트의 구성 요소로 분량 충족, strengths/improvements 정확히 3개 강제, 회피 문장("데이터가 부족합니다"만으로 채우기) 금지. `EvalReportService`(PE)·`AffEvalReportService`(AFF)·`OpenAiCommentSummarizer`(AFF essay 공유 경로) 반영. EssayPrompt user의 "3~5문장" → "5~7문장" baseSchema 정합. 컴파일 통과. ⚠️ 실측 미완료(위 🚀 참조).
